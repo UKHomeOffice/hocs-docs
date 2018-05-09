@@ -12,7 +12,7 @@ pipeline:
     environment:
       - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
-      - docker build -t hocs-document .
+      - docker build -t hocs-docs .
     when:
       branch: [master, refs/tags/*]
       event: [push, tag]
@@ -25,8 +25,8 @@ pipeline:
       - docker_password
     commands:
       - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
-      - docker tag hocs-document quay.io/ukhomeofficedigital/hocs-document:build-$${DRONE_BUILD_NUMBER}
-      - docker push quay.io/ukhomeofficedigital/hocs-document:build-$${DRONE_BUILD_NUMBER}
+      - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
+      - docker push quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
     when:
       branch: master
       event: push
@@ -39,15 +39,15 @@ pipeline:
       - docker_password
     commands:
       - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
-      - docker tag hocs-document quay.io/ukhomeofficedigital/hocs-document:$${DRONE_TAG}
-      - docker push quay.io/ukhomeofficedigital/hocs-document:$${DRONE_TAG}
+      - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
+      - docker push quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
     when:
       event: tag
   
   clone-kube-project:
     image: plugins/git
     commands:
-      - git clone https://github.com/UKHomeOffice/kube-hocs-document.git
+      - git clone https://github.com/UKHomeOffice/kube-hocs-dos.git
     when:
       event: [push, tag, deployment]
 
@@ -59,9 +59,9 @@ pipeline:
       - VERSION=build-${DRONE_BUILD_NUMBER}
       - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_document_dev
+      - hocs_docs_dev
     commands:
-      - cd kube-hocs-document
+      - cd kube-hocs-docs
       - ./deploy.sh
     when:
       branch: master
@@ -70,14 +70,14 @@ pipeline:
   deployment:
     image: quay.io/ukhomeofficedigital/kd:v0.8.0
     environment:
-      - KUBE_NAMESPACE=hocs-document-${DRONE_DEPLOY_TO}
+      - KUBE_NAMESPACE=hocs-docs-${DRONE_DEPLOY_TO}
       - ENVIRONMENT=${DRONE_DEPLOY_TO}
       - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_document_dev
-      - hocs_document_qa
+      - hocs_docs_dev
+      - hocs_docs_qa
     commands:
-      - cd kube-hocs-document
+      - cd kube-hocs-docs
       - ./deploy.sh
     when:
       event: deployment
@@ -91,9 +91,9 @@ pipeline:
       - VERSION=${IMAGE_VERSION}
       - KUBE_SERVER=https://kube-api-prod.prod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_document_pr
+      - hocs_docs_pr
     commands:
-      - cd kube-hocs-document
+      - cd kube-hocs-docs
       - ./deploy.sh
     when:
       event: deployment
