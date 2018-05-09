@@ -47,7 +47,7 @@ pipeline:
   clone-kube-project:
     image: plugins/git
     commands:
-      - git clone https://github.com/UKHomeOffice/kube-hocs-dos.git
+      - git clone https://github.com/UKHomeOffice/kube-hocs-docs.git
     when:
       event: [push, tag, deployment]
 
