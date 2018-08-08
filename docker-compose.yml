@@ -1,0 +1,54 @@
+version: '3.1'
+
+services:
+
+  clamd:
+    image: quay.io/ukhomeofficedigital/clamav:v1.4.0
+    ports:
+      - "3310:3310/tcp"
+    networks:
+      - hocs-network
+
+  clamav-rest:
+     image: lokori/clamav-rest
+     environment:
+       - CLAMD_HOST=clamd
+     ports:
+       - "8086:8080"
+     networks:
+       - hocs-network
+
+  awsCli:
+    image: garland/aws-cli-docker
+    networks:
+      - hocs-network
+    command:
+          - /bin/sh
+          - -c
+          - |
+              aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-case-sqs
+              aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-document-sqs
+              aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-untrusted-s3
+              aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-trusted-s3
+    environment:
+      AWS_ACCESS_KEY_ID: UNSET
+      AWS_SECRET_ACCESS_KEY: UNSET
+      AWS_DEFAULT_REGION: eu-west-2
+    depends_on:
+     - localstack
+
+  localstack:
+      image: localstack/localstack:latest
+      ports:
+        - 9000:8080
+        - 4572:4572
+        - 4576:4576
+      networks:
+        - hocs-network
+      environment:
+        HOSTNAME_EXTERNAL: localstack
+        DEFAULT_REGION: eu-west-2
+        SERVICES: sqs,s3
+
+networks:
+  hocs-network:
