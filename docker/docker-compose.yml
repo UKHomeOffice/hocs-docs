@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  clamd:
+    image: quay.io/ukhomeofficedigital/clamav:v1.4.0
+    ports:
+      - "3310:3310/tcp"
+
+  clamav-rest:
+     image: lokori/clamav-rest
+     environment:
+       - CLAMD_HOST=clamd
+     ports:
+       - "8086:8080"

@@ -1,17 +1,15 @@
 package uk.gov.digital.ho.hocs.document.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 
 public class Document {
 
     private String filename;
+    private String originalFilename;
     private byte[] data;
-    private String md5;
+    private String fileType;
 
-    public String getMd5() {
-        return md5;
+    public String getFileType() {
+        return fileType;
     }
 
     public String getFilename() {
@@ -22,11 +20,14 @@ public class Document {
         return data;
     }
 
-
-    public Document(String filename, byte[] data, String md5) {
-        this.filename = filename;
-        this.data = data;
-        this.md5 = md5;
+    public String getOriginalFilename() {
+        return originalFilename;
     }
 
+    public Document(String filename, String originalFilename, byte[] data, String fileType) {
+        this.filename = filename;
+        this.originalFilename = originalFilename;
+        this.data = data;
+        this.fileType = fileType;
+    }
 }

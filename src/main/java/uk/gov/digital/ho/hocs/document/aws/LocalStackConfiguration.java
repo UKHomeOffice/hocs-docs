@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.hocs.document;
+package uk.gov.digital.ho.hocs.document.aws;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -12,6 +12,7 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
@@ -40,10 +41,13 @@ public class LocalStackConfiguration {
 
     @Bean
     public AmazonS3 s3Client() {
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration("http://localhost:4572/", "eu-west-2");
 
         return AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("test", "test")))
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
+                .withCredentials(awsCredentialsProvider)
+                .withPathStyleAccessEnabled(true)
+                .withEndpointConfiguration(endpoint)
                 .build();
     }
 
