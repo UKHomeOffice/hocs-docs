@@ -19,10 +19,10 @@ import java.util.UUID;
 @Service
 public class S3DocumentService {
 
-
     private String untrustedS3BucketName;
     private String trustedS3BucketName;
     private AmazonS3 s3Client;
+    private final String CONVERTED_DOCUMENT_EXTENSION = "pdf";
 
     public S3DocumentService(@Value("${docs.untrustedS3bucket}") String untrustedS3BucketName, @Value("${docs.trustedS3bucket}") String trustedS3Bucket, AmazonS3 s3Client) {
 
@@ -35,12 +35,11 @@ public class S3DocumentService {
         return getFileFromS3Bucket(key, untrustedS3BucketName);
     }
 
-
     public Document copyToTrustedBucket(String sourceKey, String caseUUID, String fileType) throws IOException {
 
             ObjectMetadata metaData = new ObjectMetadata();
 
-            String destinationKey = String.format("%s/%s.%$", caseUUID, UUID.randomUUID().toString(), fileType);
+            String destinationKey = String.format("%s/%s.%s", caseUUID, UUID.randomUUID().toString(), fileType);
 
             Map<String, String> userMetaData = new HashMap<>(1);
             userMetaData.put("caseUUID", caseUUID);
@@ -67,14 +66,13 @@ public class S3DocumentService {
 
         ObjectMetadata metaData = new ObjectMetadata();
 
-        String destinationKey = String.format("%s/%s", document.getCaseUUID(), UUID.randomUUID().toString());
+        String destinationKey = String.format("%s/%s.%s", document.getCaseUUID(), UUID.randomUUID().toString(),CONVERTED_DOCUMENT_EXTENSION);
 
         Map<String, String> userMetaData = new HashMap<>(1);
         userMetaData.put("caseUUID", document.getCaseUUID());
         metaData.setUserMetadata(userMetaData);
 
         PutObjectResult response = s3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(document.getData()),metaData);
-
         return new Document(destinationKey, document.getFilename(),null,  response.getContentMd5());
 
     }
@@ -83,10 +81,10 @@ public class S3DocumentService {
         try {
             S3Object s3File = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
-            String originalName = Optional.of(s3File.getObjectMetadata().getUserMetaDataOf("originalName"))
+            String originalName = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf("originalName"))
                     .orElse("");
 
-            String filename = Optional.of(s3File.getObjectMetadata().getUserMetaDataOf("filename"))
+            String filename = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf("filename"))
                     .orElse(key);
 
             String extension = getFileExtension(originalName);

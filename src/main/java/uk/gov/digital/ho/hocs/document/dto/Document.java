@@ -20,9 +20,7 @@ public class Document {
         return data;
     }
 
-    public String getOriginalFilename() {
-        return originalFilename;
-    }
+    public String getOriginalFilename() { return originalFilename; }
 
     public Document(String filename, String originalFilename, byte[] data, String fileType) {
         this.filename = filename;

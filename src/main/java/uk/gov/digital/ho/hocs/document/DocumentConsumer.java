@@ -61,7 +61,7 @@ public class DocumentConsumer extends RouteBuilder {
     }
 
     @Override
-    public void configure() throws Exception {
+    public void configure() {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
@@ -76,6 +76,7 @@ public class DocumentConsumer extends RouteBuilder {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
                 }));
+
 
         onException(ApplicationExceptions.MalwareCheckException.class).maximumRedeliveries(0);
         onException(ApplicationExceptions.DocumentConversionException.class).maximumRedeliveries(1);
@@ -105,7 +106,7 @@ public class DocumentConsumer extends RouteBuilder {
                     .when(bodyAs(String.class).not().contains("Everything ok : true"))
                     .throwException(new ApplicationExceptions.MalwareCheckException("Document failed malware check"))
                 .otherwise()
-                    .log("Clam AV check complete")
+                    .log(LoggingLevel.INFO,"Clam AV check complete")
                     .to("direct:convertdocument");
 
         from("direct:convertdocument")
@@ -113,8 +114,6 @@ public class DocumentConsumer extends RouteBuilder {
                 .log(LoggingLevel.INFO,"Retrieving document from S3")
                 .bean(s3BucketService, "copyToTrustedBucket(${property.fileLink},${property.caseUUID},${property.fileType})")
                 .setProperty("originalFilename",simple("${body.filename}"))
-                //.log(LoggingLevel.INFO, "Validating S3 hash matches virus scanned document")
-                //.validate(validateMd5Hash())
                 .process(buildMultipartEntity())
                 .log("Calling document converter service")
                 .to(hocsConverterPath)
@@ -135,10 +134,6 @@ public class DocumentConsumer extends RouteBuilder {
                 .to(caseQueue)
                 .log(LoggingLevel.INFO,"Document case request sent to case queue")
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-    }
-
-    private Predicate validateMd5Hash() {
-        return exchangeProperty("md5").isEqualTo(simple("${body.md5}"));
     }
 
     private Predicate validateHttpResponse = header(Exchange.HTTP_RESPONSE_CODE).isLessThan(300);
