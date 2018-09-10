@@ -1,6 +1,7 @@
 buildscript {
 	ext {
 		springBootVersion = '2.0.1.RELEASE'
+		camelVersion = '2.22.0'
 	}
 	repositories {
 		mavenCentral()
@@ -25,13 +26,19 @@ repositories {
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')
-	compile('org.springframework.boot:spring-boot-starter-webflux')
-	compile('org.flywaydb:flyway-core')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('net.logstash.logback:logstash-logback-encoder:5.1')
 
-    runtime( 'org.hsqldb:hsqldb' )
-	runtime('org.postgresql:postgresql')
+	compile group: 'org.apache.camel', name: 'camel-spring-boot', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-jackson', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-aws', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-http4', version: camelVersion
+	compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
+	compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.380'
+
 
 	compileOnly('org.projectlombok:lombok')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-	testCompile('io.projectreactor:reactor-test')
+	testCompile group: 'org.apache.camel', name: 'camel-test', version: camelVersion
+	testCompile group: 'com.adobe.testing', name: 's3mock-junit4', version: '2.0.9'
 }
