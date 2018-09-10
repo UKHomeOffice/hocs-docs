@@ -3,16 +3,16 @@ pipeline:
   build-project:
     image: quay.io/ukhomeofficedigital/openjdk8
     commands:
-      - ./gradlew build
+    - ./gradlew build
     when:
       event: [push, pull_request, tag]
 
   docker-build:
     image: docker:17.09.1
     environment:
-      - DOCKER_HOST=tcp://172.17.0.1:2375
+    - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
-      - docker build -t hocs-docs .
+    - docker build -t hocs-docs .
     when:
       branch: [master, refs/tags/*]
       event: [push, tag]
@@ -20,13 +20,13 @@ pipeline:
   install-docker-image:
     image: docker:17.09.1
     environment:
-      - DOCKER_HOST=tcp://172.17.0.1:2375
+    - DOCKER_HOST=tcp://172.17.0.1:2375
     secrets:
-      - docker_password
+    - docker_password
     commands:
-      - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
-      - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
-      - docker push quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
+    - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
+    - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
+    - docker push quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
     when:
       branch: master
       event: push
@@ -34,35 +34,35 @@ pipeline:
   tag-docker-image-with-git-tag:
     image: docker:17.09.1
     environment:
-      - DOCKER_HOST=tcp://172.17.0.1:2375
+    - DOCKER_HOST=tcp://172.17.0.1:2375
     secrets:
-      - docker_password
+    - docker_password
     commands:
-      - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
-      - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
-      - docker push quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
+    - docker login -u="ukhomeofficedigital+hocs" -p=$${DOCKER_PASSWORD} quay.io
+    - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
+    - docker push quay.io/ukhomeofficedigital/hocs-docs:$${DRONE_TAG}
     when:
       event: tag
-  
+
   clone-kube-project:
     image: plugins/git
     commands:
-      - git clone https://github.com/UKHomeOffice/kube-hocs-docs.git
+    - git clone https://github.com/UKHomeOffice/kube-hocs-docs.git
     when:
       event: [push, tag, deployment]
 
   deploy-to-dev-from-build-number:
     image: quay.io/ukhomeofficedigital/kd:v0.8.0
     environment:
-      - KUBE_NAMESPACE=cs-dev
-      - ENVIRONMENT=dev
-      - VERSION=build-${DRONE_BUILD_NUMBER}
-      - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
+    - KUBE_NAMESPACE=cs-dev
+    - ENVIRONMENT=dev
+    - VERSION=build-${DRONE_BUILD_NUMBER}
+    - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_docs_dev
+    - hocs_docs_dev
     commands:
-      - cd kube-hocs-docs
-      - ./deploy.sh
+    - cd kube-hocs-docs
+    - ./deploy.sh
     when:
       branch: master
       event: [push, tag]
@@ -70,31 +70,31 @@ pipeline:
   deployment:
     image: quay.io/ukhomeofficedigital/kd:v0.8.0
     environment:
-      - KUBE_NAMESPACE=hocs-docs-${DRONE_DEPLOY_TO}
-      - ENVIRONMENT=${DRONE_DEPLOY_TO}
-      - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
+    - KUBE_NAMESPACE=cs-${DRONE_DEPLOY_TO}
+    - ENVIRONMENT=${DRONE_DEPLOY_TO}
+    - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_docs_dev
-      - hocs_docs_qa
+    - hocs_docs_dev
+    - hocs_docs_qa
     commands:
-      - cd kube-hocs-docs
-      - ./deploy.sh
+    - cd kube-hocs-docs
+    - ./deploy.sh
     when:
       event: deployment
-      environment: [dev, test, preprod]
+      environment: [dev, qa]
 
   deploy-to-prod:
     image: quay.io/ukhomeofficedigital/kd:v0.8.0
     environment:
-      - KUBE_NAMESPACE=cs-prod
-      - ENVIRONMENT=pr
-      - VERSION=${IMAGE_VERSION}
-      - KUBE_SERVER=https://kube-api-prod.prod.acp.homeoffice.gov.uk
+    - KUBE_NAMESPACE=cs-prod
+    - ENVIRONMENT=prod
+    - VERSION=${IMAGE_VERSION}
+    - KUBE_SERVER=https://kube-api-prod.prod.acp.homeoffice.gov.uk
     secrets:
-      - hocs_docs_pr
+    - hocs_docs_prod
     commands:
-      - cd kube-hocs-docs
-      - ./deploy.sh
+    - cd kube-hocs-docs
+    - ./deploy.sh
     when:
       event: deployment
-      environment: pr
+      environment: prod
