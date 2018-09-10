@@ -11,16 +11,12 @@ public class RequestData {
     private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
     private static final String USER_ID_HEADER = "X-Auth-Userid";
     private static final String USERNAME_HEADER = "X-Auth-Username";
-    private static final String ANONYMOUS = "anonymous";
 
     public String correlationId() {
         return MDC.get(CORRELATION_ID_HEADER);
     }
-
     public String userId() { return MDC.get(USER_ID_HEADER); }
-
     public String username() { return MDC.get(USERNAME_HEADER); }
-
 
     public static Processor transferHeadersToMDC() {
         return ex -> {

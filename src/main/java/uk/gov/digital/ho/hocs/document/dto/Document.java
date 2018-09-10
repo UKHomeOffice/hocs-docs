@@ -3,10 +3,12 @@ package uk.gov.digital.ho.hocs.document.dto;
 
 public class Document {
 
-    private String filename;
-    private String originalFilename;
-    private byte[] data;
-    private String fileType;
+    private final String filename;
+    private final String originalFilename;
+    private final byte[] data;
+    private final String fileType;
+    private final String mimeType;
+
 
     public String getFileType() {
         return fileType;
@@ -22,10 +24,13 @@ public class Document {
 
     public String getOriginalFilename() { return originalFilename; }
 
-    public Document(String filename, String originalFilename, byte[] data, String fileType) {
+    public String getMimeType() { return mimeType; }
+
+    public Document(String filename, String originalFilename, byte[] data, String fileType, String mimeType) {
         this.filename = filename;
         this.originalFilename = originalFilename;
         this.data = data;
         this.fileType = fileType;
+        this.mimeType = mimeType;
     }
 }

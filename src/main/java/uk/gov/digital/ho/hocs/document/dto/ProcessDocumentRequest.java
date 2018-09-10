@@ -1,16 +1,18 @@
 package uk.gov.digital.ho.hocs.document.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-import java.util.UUID;
 
-@AllArgsConstructor
+
 public class ProcessDocumentRequest {
 
-    @JsonProperty("caseUUID")
+
     private String caseUUID;
+
+
+    private String fileLink;
 
     public String getCaseUUID() {
         return caseUUID;
@@ -20,6 +22,9 @@ public class ProcessDocumentRequest {
         return fileLink;
     }
 
-    @JsonProperty("fileLink")
-    private String fileLink;
+    @JsonCreator
+    public ProcessDocumentRequest(@JsonProperty("caseUUID") String caseUUID,@JsonProperty("fileLink") String fileLink) {
+        this.caseUUID = caseUUID;
+        this.fileLink = fileLink;
+    }
 }

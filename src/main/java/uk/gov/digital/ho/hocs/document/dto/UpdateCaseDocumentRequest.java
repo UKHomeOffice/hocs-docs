@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
-public class UpdateDocumentFromQueueRequest {
+public class UpdateCaseDocumentRequest {
 
     @JsonProperty("uuid")
     private String uuid;
@@ -18,7 +18,7 @@ public class UpdateDocumentFromQueueRequest {
     @JsonProperty("originalFileLink")
     private String originalFileLink;
 
-    public UpdateDocumentFromQueueRequest(String uuid, String caseUUID, String pdfLink, String originalFileLink) {
+    public UpdateCaseDocumentRequest(String uuid, String caseUUID, String pdfLink, String originalFileLink) {
         this.uuid = uuid;
         this.caseUUID = caseUUID;
         this.pdfLink = pdfLink;
