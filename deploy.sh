@@ -7,17 +7,21 @@ if [[ -z ${VERSION} ]] ; then
     export VERSION=${IMAGE_VERSION}
 fi
 
-if [[ ${ENVIRONMENT} == "pr" ]] ; then
-    echo "deploy ${VERSION} to pr namespace, using HOCS_DOCS_PR drone secret"
-    export KUBE_TOKEN=${HOCS_DOCS_PR}
+if [[ ${ENVIRONMENT} == "prod" ]] ; then
+    echo "deploy ${VERSION} to prod namespace, using HOCS_DOCS_PR drone secret"
+    export KUBE_TOKEN=${HOCS_DOCS_PROD}
+    export REPLICAS="2"
 else
-    if [[ ${ENVIRONMENT} == "test" ]] ; then
-        echo "deploy ${VERSION} to test namespace, using HOCS_DOCS_QA drone secret"
+    if [[ ${ENVIRONMENT} == "qa" ]] ; then
+        echo "deploying ${VERSION} to test namespace, using HOCS_DOCS_QA drone secret"
         export KUBE_TOKEN=${HOCS_DOCS_QA}
+        export REPLICAS="2"
     else
         echo "deploy ${VERSION} to dev namespace, using HOCS_DOCS_DEV drone secret"
         export KUBE_TOKEN=${HOCS_DOCS_DEV}
+        export REPLICAS="1"
     fi
+    
 fi
 
 if [[ -z ${KUBE_TOKEN} ]] ; then
@@ -28,6 +32,6 @@ fi
 cd kd
 
 kd --insecure-skip-tls-verify \
-    -f networkPolicy.yaml \
+   --timeout 10m \
     -f deployment.yaml \
     -f service.yaml
