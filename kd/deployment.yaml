@@ -6,7 +6,7 @@ metadata:
   labels:
     version: {{.VERSION}}
 spec:
-  replicas: 1
+  replicas: {{.REPLICAS}}
   selector:
     matchLabels:
       name: hocs-docs
@@ -19,6 +19,7 @@ spec:
     metadata:
       labels:
         name: hocs-docs
+        role: hocs-backend
         version: {{.VERSION}}
     spec:
       imagePullSecrets:
@@ -78,7 +79,7 @@ spec:
               readOnly: true
 
         - name: proxy
-          image: quay.io/ukhomeofficedigital/nginx-proxy:v3.2.9
+          image: quay.io/ukhomeofficedigital/nginx-proxy:v3.2.11
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
@@ -104,6 +105,8 @@ spec:
               value: 'FALSE'
             - name: HTTPS_REDIRECT
               value: 'FALSE'
+            - name: BASIC_AUTH
+              value: /etc/nginx/authsecrets/htpasswd
             - name: SERVER_CERT
               value: /certs/tls.pem
             - name: SERVER_KEY
@@ -117,10 +120,12 @@ spec:
             - name: secrets
               mountPath: /etc/nginx/secrets
               readOnly: true
+            - name: auth-secrets
+              mountPath: /etc/nginx/authsecrets
+              readOnly: true
           ports:
             - name: https
               containerPort: 10443
-
         - name: hocs-docs
           image: quay.io/ukhomeofficedigital/hocs-docs:{{.VERSION}}
           imagePullPolicy: Always
@@ -130,19 +135,70 @@ spec:
               drop:
                 - SETUID
                 - SETGID
+          envFrom:
+            - configMapRef:
+                name: hocs-queue-config
           env:
             - name: JAVA_OPTS
-              value: '-Xms150m -Xmx250m -Djavax.net.ssl.trustStore=/etc/keystore/truststore.jks'
+              value: '-Xms150m -Xmx768m -Djavax.net.ssl.trustStore=/etc/keystore/truststore.jks -Dhttps.proxyHost=hocs-outbound-proxy.{{.KUBE_NAMESPACE}}.svc.cluster.local -Dhttps.proxyPort=31290 -Dhttp.nonProxyHosts=*.{{.KUBE_NAMESPACE}}.svc.cluster.local'
             - name: JDK_TRUST_FILE
               value: '/etc/keystore/truststore.jks'
             - name: SERVER_PORT
               value: '8080'
             - name: ENDPOINTS_INFO_ENABLED
               value: 'false'
+            - name: SPRING_PROFILES_ACTIVE
+              value: 'sqs'
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-rds
+                  key: endpoint
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-rds
+                  key: port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-rds
+                  key: db_name
+            - name: DB_SCHEMA_NAME
+              value:
+                'cs_docs_001'
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-rds
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-rds
+                  key: password
+            - name: AWS_SQS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cs-dev-case-sqs
+                  key: access_key_id
+            - name: AWS_SQS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cs-dev-case-sqs
+                  key: secret_access_key
+            - name: CASE_QUEUE_NAME
+              value: cs-dev-case-sqs
+            - name: CASE_DLQ_NAME
+              value: cs-dev-case-sqs-dlq
+            - name: DOCUMENT_QUEUE_NAME
+              value: cs-dev-document-sqs
+            - name: DOCUMENT_DLQ_NAME
+              value: cs-dev-document-sqs-dlq
           resources:
             limits:
-              cpu: 1600m
-              memory: 612Mi
+              cpu: 350m
+              memory: 1024Mi
             requests:
               cpu: 100m
               memory: 484Mi
@@ -151,22 +207,22 @@ spec:
               containerPort: 8080
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /actuator/health
               port: http
               httpHeaders:
                 - name: X-probe
                   value: kubelet
-            initialDelaySeconds: 10
+            initialDelaySeconds: 180
             periodSeconds: 20
             timeoutSeconds: 10
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /actuator/health
               port: http
               httpHeaders:
                 - name: X-probe
                   value: kubelet
-            initialDelaySeconds: 10
+            initialDelaySeconds: 240
             periodSeconds: 20
             timeoutSeconds: 10
           volumeMounts:
@@ -186,3 +242,6 @@ spec:
         - name: secrets
           emptyDir:
             medium: "Memory"
+        - name: auth-secrets
+          secret:
+            secretName: ui-casework-creds
