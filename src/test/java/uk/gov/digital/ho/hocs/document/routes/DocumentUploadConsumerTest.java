@@ -74,19 +74,6 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
         getMockEndpoint(toEndpoint).assertIsNotSatisfied();
     }
 
-
-
-    @Test
-    public void shouldAddPropertiesToExchange() throws Exception {
-        Document document = getTestDocument();
-        when(s3BucketService.uploadFile(any())).thenReturn(document);
-
-        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedPropertyReceived("caseUUID", "somecase");
-        template.sendBody(endpoint,request);
-        mockEndpoint.assertIsSatisfied();
-    }
-
     private Document getTestDocument() throws URISyntaxException, IOException {
         return new Document("somecase/convertedUUID", "/somecase/unconvertedUUID", null, "pdf", "application/pdf");
     }

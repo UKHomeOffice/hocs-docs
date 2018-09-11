@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class GetDocumentResponse {
+public class Document {
 
     @JsonProperty("type")
     private DocumentType type;
@@ -39,8 +39,8 @@ public class GetDocumentResponse {
     @JsonProperty("deleted")
     private Boolean deleted;
 
-    public static GetDocumentResponse from(DocumentData documentData) {
-        return new GetDocumentResponse(
+    public static Document from(DocumentData documentData) {
+        return new Document(
                 documentData.getType(),
                 documentData.getName(),
                 documentData.getFileLink(),
