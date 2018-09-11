@@ -13,7 +13,7 @@ import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
 
-import static uk.gov.digital.ho.hocs.document.RequestData.transferHeadersToMDC;
+import static uk.gov.digital.ho.hocs.document.application.RequestData.transferHeadersToMDC;
 
 @Component
 public class DocumentConsumer extends RouteBuilder {
@@ -67,17 +67,20 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
                 .log(LoggingLevel.INFO, "Reading document request for case")
+                .log("${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
-                .process(generateMalwareCheck())
+                .setProperty("uuid", simple("${body.uuid}"))
+                .setProperty("caseUUID", simple("${body.caseUUID}"))
+                //.process(generateMalwareCheck())
                 .to(toQueue);
     }
 
 
-    private Processor generateMalwareCheck() {
-        return exchange -> {
-            ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
-            exchange.getOut().setBody(new DocumentMalwareRequest(request.getFileLink(), request.getCaseUUID()));
-        };
-    }
+    //private Processor generateMalwareCheck() {
+    //    return exchange -> {
+    //        ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
+    //        exchange.getOut().setBody(new DocumentMalwareRequest(request.getFileLink(), request.getCaseUUID()));
+    //    };
+    //}
 
 }

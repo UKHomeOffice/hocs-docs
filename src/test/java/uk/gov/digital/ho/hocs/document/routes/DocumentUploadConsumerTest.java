@@ -1,7 +1,5 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
-import com.amazonaws.services.cloudsearchdomain.model.UploadDocumentsRequest;
-import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -9,11 +7,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.dto.Document;
-import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
-import uk.gov.digital.ho.hocs.document.dto.UpdateCaseDocumentRequest;
-import uk.gov.digital.ho.hocs.document.dto.UploadDocument;
+import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.model.UploadDocument;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,6 +26,9 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
     @Mock
     S3DocumentService s3BucketService;
 
+    @Mock
+    DocumentDataService documentDataService;
+
     private final String endpoint = "direct:uploadtrustedfile";
     private final String dlq = "mock:cs-dev-document-sqs-dlq";
     private final String toEndpoint = "mock:case-queue";
@@ -41,7 +41,7 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new UploadDocumentConsumer(s3BucketService, toEndpoint, dlq, 0,0,0);
+      return new UploadDocumentConsumer(s3BucketService, documentDataService, toEndpoint, dlq, 0,0,0);
     }
 
     @Test

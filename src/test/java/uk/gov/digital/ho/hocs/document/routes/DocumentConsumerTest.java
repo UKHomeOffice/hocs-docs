@@ -4,21 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.http.entity.ContentType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.util.MimeType;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.dto.Document;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
-
-import javax.activation.MimetypesFileTypeMap;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,7 +24,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "/somecase/someuuid");
+    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "/somecase/someuuid", "someLink");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {

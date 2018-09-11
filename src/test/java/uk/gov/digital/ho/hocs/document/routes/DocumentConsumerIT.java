@@ -11,7 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import uk.gov.digital.ho.hocs.document.dto.Document;
+import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class DocumentConsumerIT {
     MockEndpoint mock;
 
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "/somecase/someuuid");
+    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "/somecase/someuuid", "someLink");
 
 
     @Test

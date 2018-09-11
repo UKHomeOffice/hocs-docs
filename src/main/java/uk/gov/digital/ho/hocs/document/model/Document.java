@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.hocs.document.dto;
+package uk.gov.digital.ho.hocs.document.model;
 
 
 public class Document {

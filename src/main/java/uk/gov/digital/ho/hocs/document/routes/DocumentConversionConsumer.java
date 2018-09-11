@@ -8,10 +8,11 @@ import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.ApplicationExceptions;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.HttpProcessors;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.dto.UploadDocument;
+import uk.gov.digital.ho.hocs.document.model.UploadDocument;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
@@ -22,6 +23,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
     private final int backOffMultiplier;
     private S3DocumentService s3BucketService;
     private final String hocsConverterPath;
+    private final String documentServiceQueueName;
     private final String toQueue;
 
     @Autowired
@@ -32,9 +34,11 @@ public class DocumentConversionConsumer extends RouteBuilder {
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
-            @Value("${uploadDocumentQueueName}") String toQueue) {
+            @Value("${uploadDocumentQueueName}") String toQueue,
+            @Value("${documentServiceQueueName}") String documentServiceQueueName) {
         this.s3BucketService = s3BucketService;
         this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false", hocsConverterPath);
+        this.documentServiceQueueName = documentServiceQueueName;
         this.dlq = dlq;
         this.maximumRedeliveries = maximumRedeliveries;
         this.redeliveryDelay = redeliveryDelay;
@@ -80,6 +84,8 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .to(toQueue)
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Error ${body}")
+                    .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
+                    .to(documentServiceQueueName)
                     .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed"))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }

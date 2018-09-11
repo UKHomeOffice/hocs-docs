@@ -1,16 +1,17 @@
-package uk.gov.digital.ho.hocs.document.dto;
+package uk.gov.digital.ho.hocs.document.model;
 
 
 public class UploadDocument {
 
     private String filename;
+
     private byte[] data;
+
+    private String caseUUID;
 
     public String getCaseUUID() {
         return caseUUID;
     }
-
-    private String caseUUID;
 
     public String getFilename() {
         return filename;
@@ -19,7 +20,6 @@ public class UploadDocument {
     public byte[] getData() {
         return data;
     }
-
 
     public UploadDocument(String filename, byte[] data, String caseUUID) {
         this.filename = filename;
