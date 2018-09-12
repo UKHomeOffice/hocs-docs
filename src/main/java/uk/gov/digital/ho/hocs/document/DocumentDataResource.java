@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentResponse;
+import uk.gov.digital.ho.hocs.document.dto.Document;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
@@ -39,7 +40,14 @@ class DocumentDataResource {
     }
 
     @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity getDocumentResourceLocation(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    public ResponseEntity<Document> getDocumentResourceLocation(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+        DocumentData document = documentDataService.getDocumentData(documentUUID);
+        return ResponseEntity.ok(Document.from(document));
+    }
+
+    @DeleteMapping(value = "/case/{caseUUID}/document/{documentUUID}")
+    public ResponseEntity<Document> deleteDocument(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+        documentDataService.deleteDocument(documentUUID);
         return ResponseEntity.ok().build();
     }
 }
