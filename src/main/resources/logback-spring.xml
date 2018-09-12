@@ -28,7 +28,15 @@
         </logger>
     </springProfile>
 
+    <logger name="org.camunda" additivity="false" level="INFO">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
     <logger name="org.eclipse.jetty" additivity="false" level="WARN">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.flywaydb" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
 
@@ -47,9 +55,5 @@
     <logger name="com.zaxxer" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
-
-    <root level="INFO">
-        <appender-ref ref="consoleAppender"/>
-    </root>
 
 </configuration>
