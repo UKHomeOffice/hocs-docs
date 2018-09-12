@@ -47,17 +47,24 @@ public class DocumentDataService {
         log.info("Updated Document: {}", documentData.getUuid());
     }
 
-    private DocumentData getDocumentData(UUID stageUUID) {
-        DocumentData documentData = documentRepository.findByUuid(stageUUID);
+    public DocumentData getDocumentData(UUID documentUUID) {
+        DocumentData documentData = documentRepository.findByUuid(documentUUID);
         if (documentData != null) {
             return documentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException("Document UUID: %s not found!", stageUUID);
+            throw new ApplicationExceptions.EntityNotFoundException("Document UUID: %s not found!", documentUUID);
         }
     }
 
     public Set<DocumentData> getDocumentsForCase(UUID caseUuid) {
         Set<DocumentData> documents = documentRepository.findAllByCaseUUID(caseUuid);
         return documents;
+    }
+
+    public void deleteDocument(UUID documentUUID) {
+        DocumentData documentData = documentRepository.findByUuid(documentUUID);
+        documentData.setDeleted(true);
+        documentRepository.save(documentData);
+        log.info("Set document to deleted: {}", documentUUID);
     }
 }
