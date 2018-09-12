@@ -70,7 +70,6 @@ public class DocumentConsumer extends RouteBuilder {
                 .log("${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
-                .setProperty("caseUUID", simple("${body.caseUUID}"))
                 .process(generateMalwareCheck())
                 .to(toQueue);
     }
@@ -79,7 +78,7 @@ public class DocumentConsumer extends RouteBuilder {
     private Processor generateMalwareCheck() {
         return exchange -> {
             ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
-            exchange.getOut().setBody(new DocumentMalwareRequest(request.getFileLink(), request.getCaseUUID()));
+            exchange.getOut().setBody(new DocumentMalwareRequest(request.getCaseUUID(), request.getFileLink()));
         };
     }
 

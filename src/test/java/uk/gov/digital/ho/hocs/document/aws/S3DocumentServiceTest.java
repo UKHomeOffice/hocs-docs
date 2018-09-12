@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
@@ -20,7 +21,7 @@ import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-
+@Ignore
 public class S3DocumentServiceTest {
 
 
