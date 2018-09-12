@@ -1,20 +1,15 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
-import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.dto.Document;
-import uk.gov.digital.ho.hocs.document.dto.UpdateCaseDocumentRequest;
-
-import java.util.UUID;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 @Component
 public class UploadDocumentConsumer extends RouteBuilder {
@@ -24,17 +19,20 @@ public class UploadDocumentConsumer extends RouteBuilder {
     private final int redeliveryDelay;
     private final int backOffMultiplier;
     private S3DocumentService s3BucketService;
+    private DocumentDataService documentDataService;
 
 
     @Autowired
     public UploadDocumentConsumer(
             S3DocumentService s3BucketService,
-            @Value("${case.queue}") String toQueue,
+            DocumentDataService documentDataService,
+            @Value("${documentServiceQueueName}") String toQueue,
             @Value("${docs.queue.dlq}") String dlq,
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier) {
         this.s3BucketService = s3BucketService;
+        this.documentDataService = documentDataService;
         this.dlq = dlq;
         this.maximumRedeliveries = maximumRedeliveries;
         this.redeliveryDelay = redeliveryDelay;
@@ -61,22 +59,17 @@ public class UploadDocumentConsumer extends RouteBuilder {
 
         from("direct:uploadtrustedfile").routeId("case-queue")
                 .log(LoggingLevel.INFO, "Uploading file to trusted bucket")
-                .setProperty("caseUUID", simple("${body.caseUUID}"))
                 .bean(s3BucketService, "uploadFile")
-                .process(buildCaseMessage())
-                .marshal().json(JsonLibrary.Jackson)
-                .log(LoggingLevel.INFO, "Sending message to case queue")
-                .to(toQueue)
-                .log(LoggingLevel.INFO,"Document case request sent to case queue")
+                .log("${body.filename}")
+                .setProperty("pdfFilename", simple("${body.filename}"))
+                .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
+                .to(toQueue);
+
+        from("direct:updaterecord")
+                .log(LoggingLevel.INFO, "Updating document record")
+                .bean(documentDataService, "updateDocument(${property.uuid},${property.status},${property.originalFilename}, ${property.pdfFilename})")
+                .log(LoggingLevel.INFO, "Updated document record")
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
 
-    private Processor buildCaseMessage() {
-        return exchange -> {
-            Document response = exchange.getIn().getBody(Document.class);
-            String caseUUID = exchange.getProperty("caseUUID").toString();
-            UpdateCaseDocumentRequest request = new UpdateCaseDocumentRequest(UUID.randomUUID().toString(),caseUUID, response.getFilename(),response.getOriginalFilename());
-            exchange.getOut().setBody(request);
-        };
-    }
 }

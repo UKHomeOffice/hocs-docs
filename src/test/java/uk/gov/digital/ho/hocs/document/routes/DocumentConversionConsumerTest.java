@@ -9,9 +9,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.dto.Document;
+import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
-import uk.gov.digital.ho.hocs.document.dto.UploadDocument;
+import uk.gov.digital.ho.hocs.document.model.UploadDocument;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -30,6 +30,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     private final String endpoint = "direct:convertdocument";
     private final String dlq = "mock:cs-dev-document-sqs-dlq";
     private final String toEndpoint = "mock:uploadtrustedfile";
+    private final String documentServiceEndpoint = "mock:updaterecord";
     private final String conversionService = "mock:conversion-service";
 
     private DocumentConversionRequest request = new DocumentConversionRequest("sample.docx", "caseUUID", "docx");
@@ -37,7 +38,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConversionConsumer(s3BucketService,conversionService, dlq, 0,0,0,toEndpoint);
+      return new DocumentConversionConsumer(s3BucketService, conversionService, dlq, 0,0,0,toEndpoint, documentServiceEndpoint);
     }
 
     @Test

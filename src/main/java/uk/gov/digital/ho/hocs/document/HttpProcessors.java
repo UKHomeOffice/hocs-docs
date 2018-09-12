@@ -7,7 +7,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
-import uk.gov.digital.ho.hocs.document.dto.Document;
+import uk.gov.digital.ho.hocs.document.model.Document;
 
 import java.io.ByteArrayInputStream;
 

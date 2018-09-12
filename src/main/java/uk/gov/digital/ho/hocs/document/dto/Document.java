@@ -1,36 +1,54 @@
 package uk.gov.digital.ho.hocs.document.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import uk.gov.digital.ho.hocs.document.model.DocumentData;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
+import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
 public class Document {
 
-    private final String filename;
-    private final String originalFilename;
-    private final byte[] data;
-    private final String fileType;
-    private final String mimeType;
+    @JsonProperty("type")
+    private DocumentType type;
 
+    @JsonProperty("name")
+    private String name;
 
-    public String getFileType() {
-        return fileType;
-    }
+    @JsonProperty("s3_orig_link")
+    private String fileLink;
 
-    public String getFilename() {
-        return filename;
-    }
+    @JsonProperty("s3_pdf_link")
+    private String pdfLink;
 
-    public byte[] getData() {
-        return data;
-    }
+    @JsonProperty("status")
+    private DocumentStatus status;
 
-    public String getOriginalFilename() { return originalFilename; }
+    @JsonProperty("document_uuid")
+    private UUID uuid;
 
-    public String getMimeType() { return mimeType; }
+    @JsonProperty("timestamp")
+    private LocalDateTime timestamp;
 
-    public Document(String filename, String originalFilename, byte[] data, String fileType, String mimeType) {
-        this.filename = filename;
-        this.originalFilename = originalFilename;
-        this.data = data;
-        this.fileType = fileType;
-        this.mimeType = mimeType;
+    @JsonProperty("deleted")
+    private Boolean deleted;
+
+    public static Document from(DocumentData documentData) {
+        return new Document(
+                documentData.getType(),
+                documentData.getName(),
+                documentData.getFileLink(),
+                documentData.getPdfLink(),
+                documentData.getStatus(),
+                documentData.getUuid(),
+                documentData.getTimestamp(),
+                documentData.getDeleted()
+        );
     }
 }
