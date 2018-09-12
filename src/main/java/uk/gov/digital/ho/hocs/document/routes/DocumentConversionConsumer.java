@@ -51,7 +51,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .log("Failed to process document")
+                .log("Failed to convert document")
                 .useOriginalMessage()
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)

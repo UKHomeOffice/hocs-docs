@@ -67,7 +67,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
                 .log(LoggingLevel.INFO, "Reading document request for case")
-                .log("${body}")
+                .log("Received process dowcuemtn request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
                 .process(generateMalwareCheck())

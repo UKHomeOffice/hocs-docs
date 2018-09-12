@@ -8,44 +8,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
-import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 @Component
-public class UploadDocumentConsumer extends RouteBuilder {
-    private final String toQueue;
+public class UpdateDocumentConsumer extends RouteBuilder {
+
     private String dlq;
     private final int maximumRedeliveries;
     private final int redeliveryDelay;
     private final int backOffMultiplier;
-    private S3DocumentService s3BucketService;
+
     private DocumentDataService documentDataService;
 
-
     @Autowired
-    public UploadDocumentConsumer(
-            S3DocumentService s3BucketService,
+    public UpdateDocumentConsumer(
             DocumentDataService documentDataService,
-            @Value("${documentServiceQueueName}") String toQueue,
             @Value("${docs.queue.dlq}") String dlq,
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier) {
-        this.s3BucketService = s3BucketService;
         this.documentDataService = documentDataService;
         this.dlq = dlq;
         this.maximumRedeliveries = maximumRedeliveries;
         this.redeliveryDelay = redeliveryDelay;
         this.backOffMultiplier = backOffMultiplier;
-        this.toQueue = toQueue;
     }
 
     @Override
-    public void configure() {
+    public void configure()  {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .log("Failed to upload converted document")
+                .log("Failed to update document record ")
                 .useOriginalMessage()
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)
@@ -57,19 +50,11 @@ public class UploadDocumentConsumer extends RouteBuilder {
                             Exception.class).getMessage());
                 }));
 
-        from("direct:uploadtrustedfile").routeId("case-queue")
-                .log(LoggingLevel.INFO, "Uploading file to trusted bucket")
-                .bean(s3BucketService, "uploadFile")
-                .log("${body.filename}")
-                .setProperty("pdfFilename", simple("${body.filename}"))
-                .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
-                .to(toQueue);
-
         from("direct:updaterecord")
                 .log(LoggingLevel.INFO, "Updating document record")
-                .bean(documentDataService, "updateDocument(${property.uuid},${property.status},${property.originalFilename}, ${property.pdfFilename})")
+                .bean(documentDataService, "updateDocument(${property.uuid},${property.status}," +
+                        "${property.originalFilename},${property.pdfFilename})")
                 .log(LoggingLevel.INFO, "Updated document record")
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
-
 }
