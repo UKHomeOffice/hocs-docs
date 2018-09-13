@@ -23,7 +23,9 @@ sourceCompatibility = 1.8
 repositories {
 	mavenCentral()
 }
-
+bootRun {
+    args = ["--spring.profiles.active=local, development"]
+}
 dependencies {
 
     compile('org.springframework.boot:spring-boot-starter-web')
@@ -42,7 +44,7 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
     compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.380'
 
-    runtime('org.hsqldb:hsqldb')
+    compile 'org.hsqldb:hsqldb'
     runtime('org.postgresql:postgresql')
 
     compileOnly('org.projectlombok:lombok')
