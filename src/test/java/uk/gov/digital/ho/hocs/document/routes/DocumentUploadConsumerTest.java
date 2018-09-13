@@ -43,7 +43,7 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new UploadDocumentConsumer(s3BucketService, documentDataService, toEndpoint, dlq, 0,0,0);
+      return new UploadDocumentConsumer(s3BucketService, toEndpoint, dlq, 0,0,0);
     }
 
     @Test

@@ -37,15 +37,18 @@ public class S3DocumentService {
     }
 
     public Document copyToTrustedBucket(DocumentConversionRequest copyRequest) throws IOException {
-
-
             String destinationKey = String.format("%s/%s.%s", copyRequest.getCaseUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
+
+            ObjectMetadata metaData = new ObjectMetadata();
+            metaData.addUserMetadata("caseUUID", copyRequest.getCaseUUID());
+            metaData.addUserMetadata("filename", destinationKey);
+            metaData.addUserMetadata("originalName", copyRequest.getFileLink());
 
             CopyObjectRequest request = new CopyObjectRequest(untrustedS3BucketName,
                     copyRequest.getFileLink(),
                     trustedS3BucketName,
                     destinationKey)
-                    .withMetadataDirective(MetadataDirective.COPY);
+                    .withNewObjectMetadata(metaData);
         try {
             s3Client.copyObject(request);
 
