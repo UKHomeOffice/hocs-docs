@@ -9,7 +9,6 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
 
@@ -24,18 +23,15 @@ public class DocumentConsumer extends RouteBuilder {
     private final int maximumRedeliveries;
     private final int redeliveryDelay;
     private final int backOffMultiplier;
-    private S3DocumentService s3BucketService;
 
     @Autowired
     public DocumentConsumer(
-            S3DocumentService s3BucketService,
             @Value("${docs.queue}") String docsQueue,
             @Value("${docs.queue.dlq}") String dlq,
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
             @Value("${malwareQueueName}") String toQueue) {
-        this.s3BucketService = s3BucketService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
         this.dlq = dlq;
@@ -67,7 +63,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
                 .log(LoggingLevel.INFO, "Reading document request for case")
-                .log("Received process dowcuemtn request ${body}")
+                .log("Received process document request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
                 .process(generateMalwareCheck())
@@ -78,7 +74,7 @@ public class DocumentConsumer extends RouteBuilder {
     private Processor generateMalwareCheck() {
         return exchange -> {
             ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
-            exchange.getOut().setBody(new DocumentMalwareRequest(request.getCaseUUID(), request.getFileLink()));
+            exchange.getOut().setBody(new DocumentMalwareRequest(request.getFileLink(), request.getCaseUUID()));
         };
     }
 

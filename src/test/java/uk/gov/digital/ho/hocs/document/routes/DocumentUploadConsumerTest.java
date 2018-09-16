@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.model.UploadDocument;
@@ -27,9 +26,6 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
 
     @Mock
     S3DocumentService s3BucketService;
-
-    @Mock
-    DocumentDataService documentDataService;
 
     private final String endpoint = "direct:uploadtrustedfile";
     private final String dlq = "mock:cs-dev-document-sqs-dlq";

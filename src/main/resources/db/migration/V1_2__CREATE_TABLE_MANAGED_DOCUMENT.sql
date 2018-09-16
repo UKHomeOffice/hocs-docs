@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS managed_document_data
 );
 
 CREATE INDEX  idx_manged_document_data_uuid
-  ON managed_document_uuid_idempotent (uuid);
+  ON managed_document_data (uuid);
 

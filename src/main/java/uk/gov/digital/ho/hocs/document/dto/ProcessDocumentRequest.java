@@ -1,23 +1,18 @@
 package uk.gov.digital.ho.hocs.document.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-
+@AllArgsConstructor
 @Getter
 public class ProcessDocumentRequest {
 
-    private String uuid;
+    @JsonProperty("uuid")
+    private final String uuid;
+    @JsonProperty("caseUUID")
+    private final String caseUUID;
+    @JsonProperty("fileLink")
+    private final String fileLink;
 
-    private String caseUUID;
-
-    private String fileLink;
-
-    @JsonCreator
-    public ProcessDocumentRequest(@JsonProperty("uuid") String uuid,@JsonProperty("caseUUID") String caseUUID,@JsonProperty("fileLink") String fileLink) {
-        this.uuid = uuid;
-        this.caseUUID = caseUUID;
-        this.fileLink = fileLink;
-    }
 }

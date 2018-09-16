@@ -6,17 +6,12 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentConsumerTest extends CamelTestSupport {
-
-    @Mock
-    S3DocumentService s3BucketService;
 
     private String endpoint = "direct://cs-dev-document-sqs";
     private String dlq = "mock:cs-dev-document-sqs-dlq";
@@ -28,7 +23,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(s3BucketService,endpoint, dlq, 0,0,0,toEndpoint);
+      return new DocumentConsumer(endpoint, dlq, 0,0,0,toEndpoint);
     }
 
     @Test

@@ -30,7 +30,16 @@ public class LocalStackConfiguration {
                 .build();
     }
 
-    @Bean
+    @Bean("Trusted")
+    public AmazonS3 trustedS3Client() {
+        return s3Client();
+    }
+
+    @Bean("UnTrusted")
+    public AmazonS3 untrustedS3Client() {
+        return s3Client();
+    }
+
     public AmazonS3 s3Client() {
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration("http://localhost:4572/", "eu-west-2");
 

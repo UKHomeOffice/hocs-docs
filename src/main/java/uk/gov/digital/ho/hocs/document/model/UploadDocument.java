@@ -26,4 +26,8 @@ public class UploadDocument {
         this.data = data;
         this.caseUUID = caseUUID;
     }
+
+    public static UploadDocument from(String caseUUID, Document document) {
+        return new UploadDocument(document.getOriginalFilename(), document.getData(),caseUUID);
+    }
 }

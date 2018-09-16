@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document.aws;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.digital.ho.hocs.document.model.Document;
@@ -20,20 +21,22 @@ import java.util.UUID;
 @Service
 public class S3DocumentService {
 
-    private String untrustedS3BucketName;
     private String trustedS3BucketName;
-    private AmazonS3 s3Client;
+    private AmazonS3 trustedS3Client;
+    private String untrustedS3BucketName;
+    private AmazonS3 untrustedS3Client;
     private final String CONVERTED_DOCUMENT_EXTENSION = "pdf";
 
-    public S3DocumentService(@Value("${docs.untrustedS3bucket}") String untrustedS3BucketName, @Value("${docs.trustedS3bucket}") String trustedS3Bucket, AmazonS3 s3Client) {
+    public S3DocumentService( @Value("${docs.untrustedS3bucket}") String untrustedS3BucketName, @Value("${docs.trustedS3bucket}") String trustedS3Bucket, @Qualifier("Trusted") AmazonS3 trustedS3Client, @Qualifier("UnTrusted") AmazonS3 untrustedS3Client) {
 
         this.untrustedS3BucketName = untrustedS3BucketName;
         this.trustedS3BucketName = trustedS3Bucket;
-        this.s3Client = s3Client;
+        this.untrustedS3Client = untrustedS3Client;
+        this.trustedS3Client = trustedS3Client;
     }
 
     public Document getFileFromS3(String key) throws IOException {
-        return getFileFromS3Bucket(key, untrustedS3BucketName);
+        return getFileFromS3Bucket(key, untrustedS3Client, untrustedS3BucketName);
     }
 
     public Document copyToTrustedBucket(DocumentConversionRequest copyRequest) throws IOException {
@@ -44,20 +47,10 @@ public class S3DocumentService {
             metaData.addUserMetadata("filename", destinationKey);
             metaData.addUserMetadata("originalName", copyRequest.getFileLink());
 
-            CopyObjectRequest request = new CopyObjectRequest(untrustedS3BucketName,
-                    copyRequest.getFileLink(),
-                    trustedS3BucketName,
-                    destinationKey)
-                    .withNewObjectMetadata(metaData);
-        try {
-            s3Client.copyObject(request);
+            Document copyDocument = getFileFromS3(copyRequest.getFileLink());
+            trustedS3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(copyDocument.getData()), metaData);
 
-
-        } catch (AmazonS3Exception ex) {
-            throw new IOException("Error copying document from to trusted S3 bucket");
-        }
-
-            return getFileFromS3Bucket(destinationKey, trustedS3BucketName);
+            return new Document(destinationKey, copyDocument.getFilename(), copyDocument.getData(),  copyDocument.getFileType(),  metaData.getContentType());
     }
 
     public Document uploadFile(UploadDocument document) {
@@ -71,12 +64,12 @@ public class S3DocumentService {
         userMetaData.put("caseUUID", document.getCaseUUID());
         metaData.setUserMetadata(userMetaData);
 
-        PutObjectResult response = s3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(document.getData()),metaData);
+        PutObjectResult response = trustedS3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(document.getData()),metaData);
         return new Document(destinationKey, document.getFilename(),null,  response.getContentMd5(), "application/pdf");
 
     }
 
-    private Document getFileFromS3Bucket(String key, String bucketName) throws IOException {
+    private Document getFileFromS3Bucket(String key, AmazonS3 s3Client, String bucketName) throws IOException {
         try {
             S3Object s3File = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
