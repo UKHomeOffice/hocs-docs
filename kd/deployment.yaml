@@ -148,7 +148,7 @@ spec:
             - name: ENDPOINTS_INFO_ENABLED
               value: 'false'
             - name: SPRING_PROFILES_ACTIVE
-              value: 'sqs'
+              value: 'sqs, postgres'
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
@@ -177,24 +177,48 @@ spec:
                 secretKeyRef:
                   name: {{.KUBE_NAMESPACE}}-rds
                   key: password
-            - name: AWS_SQS_ACCESS_KEY
+            - name: DOCS_QUEUE_NAME
+              value:
+                '{{.KUBE_NAMESPACE}}-document-sqs'
+            - name: DOCS_QUEUE_DLQ
+              value:
+                '{{.KUBE_NAMESPACE}}-document-sqs-dlq'
+            - name: DOCS_TRUSTEDS3BUCKETNAME
+              value:
+                '{{.KUBE_NAMESPACE}}-trusted-s3'
+            - name: DOCS_UNTRUSTEDS3BUCKETNAME
+              value:
+                '{{.KUBE_NAMESPACE}}-untrusted-s3'
+            - name: DOCS_AWS_SQS_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: cs-dev-case-sqs
+                  name: {{.KUBE_NAMESPACE}}-document-sqs
                   key: access_key_id
-            - name: AWS_SQS_SECRET_KEY
+            - name: DOCS_AWS_SQS_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: cs-dev-case-sqs
+                  name: {{.KUBE_NAMESPACE}}-document-sqs
                   key: secret_access_key
-            - name: CASE_QUEUE_NAME
-              value: cs-dev-case-sqs
-            - name: CASE_DLQ_NAME
-              value: cs-dev-case-sqs-dlq
-            - name: DOCUMENT_QUEUE_NAME
-              value: cs-dev-document-sqs
-            - name: DOCUMENT_DLQ_NAME
-              value: cs-dev-document-sqs-dlq
+            - name: TRUSTED_AWS_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-trusted-s3
+                  key: access_key_id
+            - name: TRUSTED_AWS_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-trusted-s3
+                  key: secret_access_key
+            - name: UNTRUSTED_AWS_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-untrusted-s3
+                  key: access_key_id
+            - name: UNTRUSTED_AWS_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-untrusted-s3
+                  key: secret_access_key
           resources:
             limits:
               cpu: 350m
