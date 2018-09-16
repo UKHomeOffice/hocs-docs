@@ -148,7 +148,7 @@ spec:
             - name: ENDPOINTS_INFO_ENABLED
               value: 'false'
             - name: SPRING_PROFILES_ACTIVE
-              value: 'sqs, postgres'
+              value: 'sqs, s3, postgres'
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
