@@ -79,7 +79,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .log("Document conversion complete")
                 .choice()
                 .when(HttpProcessors.validateHttpResponse)
-                    .convertBodyTo(byte[].class)
+                    .log(LoggingLevel.INFO, "Document conversion successful")
                     .process(generateUploadDocument())
                     .to(toQueue)
                 .otherwise()
@@ -92,7 +92,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private Processor generateUploadDocument() {
         return exchange -> {
-            byte[] content =  (byte[]) exchange.getIn().getBody();
+            byte[] content =  exchange.getIn().getBody(byte[].class);
             String filename = exchange.getProperty("originalFilename").toString();
             String caseUUID = exchange.getProperty("caseUUID").toString();
             exchange.getOut().setBody(new UploadDocument(filename, content, caseUUID));

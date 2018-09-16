@@ -17,8 +17,8 @@ import org.springframework.util.StringUtils;
 public class SqsConfiguration {
 
     @Bean
-    public AmazonSQS sqsClient(@Value("${aws.sqs.access.key}") String accessKey,
-                               @Value("${aws.sqs.secret.key}") String secretKey,
+    public AmazonSQS sqsClient(@Value("${docs.aws.sqs.access.key}") String accessKey,
+                               @Value("${docs.aws.sqs.secret.key}") String secretKey,
                                @Value("${aws.sqs.region}") String region) {
 
         if (StringUtils.isEmpty(accessKey)) {
@@ -30,7 +30,7 @@ public class SqsConfiguration {
         }
 
         if (StringUtils.isEmpty(region)) {
-            throw new BeanCreationException("Failed to create SQS client bean. Need non-blank values for region: " + region);
+            throw new BeanCreationException("Failed to create SQS client bean. Need non-blank values for region");
         }
 
         return AmazonSQSClientBuilder.standard()

@@ -29,10 +29,11 @@ public class S3DocumentServiceTest {
 
 
     @ClassRule
-    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).withInitialBuckets(untrustedBucketName, trustedBucketName).silent().build();
+    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).withInitialBuckets(trustedBucketName, untrustedBucketName).silent().build();
 
-    private final AmazonS3 s3Client = S3_MOCK_RULE.createS3Client();
-    private S3DocumentService service = new S3DocumentService(untrustedBucketName, trustedBucketName, s3Client);
+    private final AmazonS3 untrustedClient = S3_MOCK_RULE.createS3Client();
+    private final AmazonS3 trustedClient = S3_MOCK_RULE.createS3Client();
+    private S3DocumentService service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient);
 
     @Before
     public void setUp() throws Exception {
@@ -69,10 +70,10 @@ public class S3DocumentServiceTest {
     @Test
     public void shouldCopyToTrustedBucket() throws IOException {
 
-        assertThat(s3Client.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
+        assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
         DocumentConversionRequest copyRequest = new DocumentConversionRequest("someUUID.docx","someCase", "docx");
         Document document = service.copyToTrustedBucket(copyRequest);
-        assertThat(s3Client.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
+        assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
 
 //    @Test
@@ -95,7 +96,7 @@ public class S3DocumentServiceTest {
         metaData.addUserMetadata("originalName", "sample.docx");
         metaData.addUserMetadata("filename", "someUUID.docx");
 
-        s3Client.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
+        untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
     }
 
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
