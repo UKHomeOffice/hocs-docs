@@ -12,4 +12,3 @@
   
  
  To start local instances run `./docker/docker-compose up`.
- 
