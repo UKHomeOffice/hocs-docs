@@ -33,7 +33,7 @@ public class S3DocumentServiceTest {
 
     private final AmazonS3 untrustedClient = S3_MOCK_RULE.createS3Client();
     private final AmazonS3 trustedClient = S3_MOCK_RULE.createS3Client();
-    private S3DocumentService service = new S3DocumentService(trustedBucketName, trustedClient, untrustedBucketName, untrustedClient);
+    private S3DocumentService service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient);
 
     @Before
     public void setUp() throws Exception {
