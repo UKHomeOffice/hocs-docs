@@ -9,6 +9,9 @@
  ## Developing locally
  
  The service will run against localstack using the `local` Spring profile and the docker-compose services in `docker/docker-compose.yml`
+ 
+ 
+
   
  To start local instances run `./docker/docker-compose up`.
  
