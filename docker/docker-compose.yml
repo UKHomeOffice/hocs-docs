@@ -41,3 +41,11 @@ services:
     environment:
       DEFAULT_REGION: eu-west-2
       SERVICES: sqs,s3
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      SERVICES: sqs,s3

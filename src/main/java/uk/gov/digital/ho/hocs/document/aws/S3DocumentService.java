@@ -50,7 +50,7 @@ public class S3DocumentService {
             Document copyDocument = getFileFromS3(copyRequest.getFileLink());
             trustedS3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(copyDocument.getData()), metaData);
 
-            return new Document(destinationKey, copyDocument.getFilename(), copyDocument.getData(),  copyDocument.getFileType(),  metaData.getContentType());
+            return new Document(destinationKey, copyDocument.getFilename(), copyDocument.getData(),  copyDocument.getFileType(), copyDocument.getMimeType());
     }
 
     public Document uploadFile(UploadDocument document) {

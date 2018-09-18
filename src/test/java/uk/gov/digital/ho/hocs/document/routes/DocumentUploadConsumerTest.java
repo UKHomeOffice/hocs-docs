@@ -20,7 +20,6 @@ import java.nio.file.Paths;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentUploadConsumerTest extends CamelTestSupport {
 
@@ -50,7 +49,7 @@ public class DocumentUploadConsumerTest extends CamelTestSupport {
     }
 
     @Test
-    public void shouldAddDocumentToCaseQueueOnSuccess() throws Exception {
+    public void shouldAddDocumentToDocumentDataServiceQueueOnSuccess() throws Exception {
         Document document = getTestDocument();
         when(s3BucketService.uploadFile(any())).thenReturn(document);
 

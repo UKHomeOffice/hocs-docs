@@ -37,7 +37,7 @@ public class S3DocumentServiceTest {
 
     @Before
     public void setUp() throws Exception {
-
+        clearS3Buckets();
         uploadUntrustedFiles();
     }
 
@@ -76,21 +76,20 @@ public class S3DocumentServiceTest {
         assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
 
-//    @Test
-//    public void shouldSetMetaDataWhenCopyToTrustedBucket() throws IOException {
-//
-//        DocumentConversionRequest copyRequest = new DocumentConversionRequest("someUUID.docx","someCase", "docx");
-//        Document document = service.copyToTrustedBucket(copyRequest);
-//
-//        assertThat(document.getOriginalFilename()).isEqualTo("sample.docx");
-//        assertThat(document.getFilename()).isEqualTo("someUUID.docx");
-//        assertThat(document.getFileType()).isEqualTo("docx");
-//        assertThat(document.getMimeType()).isEqualTo("application/docx");
-//    }
+    @Test
+    public void shouldSetMetaDataWhenCopyToTrustedBucket() throws IOException {
+
+        DocumentConversionRequest copyRequest = new DocumentConversionRequest("someUUID.docx","someCase", "docx");
+        Document document = service.copyToTrustedBucket(copyRequest);
+
+        assertThat(document.getOriginalFilename()).isEqualTo("someUUID.docx");
+        assertThat(document.getFilename()).startsWith("someCase");
+        assertThat(document.getFileType()).isEqualTo("docx");
+        assertThat(document.getMimeType()).isEqualTo("application/docx");
+    }
 
 
     private void uploadUntrustedFiles() throws URISyntaxException, IOException {
-
         ObjectMetadata metaData = new ObjectMetadata();
         metaData.setContentType("application/docx");
         metaData.addUserMetadata("originalName", "sample.docx");
@@ -100,6 +99,19 @@ public class S3DocumentServiceTest {
     }
 
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
-       return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
+        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
+    }
+
+    private void clearS3Buckets() {
+        if(untrustedClient.doesBucketExistV2(untrustedBucketName)) {
+            untrustedClient.deleteBucket(untrustedBucketName);
+        }
+
+        if(trustedClient.doesBucketExistV2(trustedBucketName)) {
+            trustedClient.deleteBucket(trustedBucketName);
+        }
+
+        untrustedClient.createBucket(untrustedBucketName);
+        trustedClient.createBucket(trustedBucketName);
     }
 }

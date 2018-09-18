@@ -51,7 +51,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     @Test
-    public void shouldAddDocumentToCaseQueueOnSuccess() throws Exception {
+    public void shouldAddDocumentToDocumentServiceQueueOnSuccess() throws Exception {
         Document document = getTestDocument();
         when(s3BucketService.copyToTrustedBucket(any())).thenReturn(document);
         MockEndpoint mockConversionService = mockConversionService();
@@ -123,11 +123,6 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     private Document getTestDocument() throws URISyntaxException, IOException {
         byte[] data = Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
         return new Document("UUID", "sample.docx", data, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    }
-
-    private UploadDocument getTestUploadDocument() throws URISyntaxException, IOException {
-
-        return new UploadDocument("UUID", getPDFDocument(),"somecase");
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
