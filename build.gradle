@@ -50,8 +50,10 @@ dependencies {
 
     compileOnly('org.projectlombok:lombok')
 
+    testCompile group: 'org.springframework.cloud', name: 'spring-cloud-contract-wiremock', version: '2.0.1.RELEASE'
     testCompile group: 'org.apache.camel', name: 'camel-test-spring', version: camelVersion
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.assertj:assertj-core')
     testCompile group: 'com.adobe.testing', name: 's3mock-junit4', version: '2.0.9'
+    testCompile group: 'com.adobe.testing', name: 's3mock', version: '2.0.9'
 }

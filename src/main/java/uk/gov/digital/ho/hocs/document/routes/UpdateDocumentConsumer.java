@@ -38,7 +38,7 @@ public class UpdateDocumentConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .log("Failed to update document record ")
+                .log("Failed to update document record")
                 .useOriginalMessage()
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)
