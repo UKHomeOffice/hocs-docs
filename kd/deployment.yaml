@@ -150,9 +150,9 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: 'sqs, s3, postgres'
             - name: CLAMAV_ROOT
-              value: 'https://clamav.virus-scan-svc.cluster.local'
+              value: 'https4://clamav.virus-scan-svc.cluster.local'
             - name: HOCSCONVERTER_ROOT
-              value: 'https://hocs-docs-converter.{{.KUBE_NAMESPACE}}.svc.cluster.local'   
+              value: 'https4://hocs-docs-converter.{{.KUBE_NAMESPACE}}.svc.cluster.local'   
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
