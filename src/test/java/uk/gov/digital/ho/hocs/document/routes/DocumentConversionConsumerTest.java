@@ -111,7 +111,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     private MockEndpoint mockFailedConversionService() throws IOException, URISyntaxException {
-        MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false");
+        MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
             exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
