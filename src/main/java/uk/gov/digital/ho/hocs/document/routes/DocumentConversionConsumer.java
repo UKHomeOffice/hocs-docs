@@ -37,7 +37,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
             @Value("${uploadDocumentQueueName}") String toQueue,
             @Value("${documentServiceQueueName}") String documentServiceQueueName) {
         this.s3BucketService = s3BucketService;
-        this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false", hocsConverterPath);
+        this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true", hocsConverterPath);
         this.documentServiceQueueName = documentServiceQueueName;
         this.dlq = dlq;
         this.maximumRedeliveries = maximumRedeliveries;
