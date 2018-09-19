@@ -9,7 +9,6 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.hocs.document.dto.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
 
