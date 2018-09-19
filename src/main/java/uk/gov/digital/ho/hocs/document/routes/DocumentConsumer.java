@@ -42,9 +42,6 @@ public class DocumentConsumer extends RouteBuilder {
 
     @Override
     public void configure() {
-
-
-
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
