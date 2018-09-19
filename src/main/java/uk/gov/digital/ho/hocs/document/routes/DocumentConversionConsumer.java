@@ -5,6 +5,10 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
+import org.apache.camel.component.http4.HttpComponent;
+import org.apache.camel.util.jsse.KeyManagersParameters;
+import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.util.jsse.SSLContextParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -44,10 +48,15 @@ public class DocumentConversionConsumer extends RouteBuilder {
         this.redeliveryDelay = redeliveryDelay;
         this.backOffMultiplier = backOffMultiplier;
         this.toQueue = toQueue;
+
+
     }
 
     @Override
     public void configure() {
+
+
+
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)

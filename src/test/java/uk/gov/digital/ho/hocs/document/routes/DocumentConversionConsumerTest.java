@@ -44,10 +44,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     @Test
     public void shouldCallS3CopyDocument() throws Exception {
         when(s3BucketService.copyToTrustedBucket(any())).thenReturn(getTestDocument());
-        MockEndpoint mockConversionService = mockConversionService();
         template.sendBody(endpoint, request);
         verify(s3BucketService, times(1)).copyToTrustedBucket(request);
-        mockConversionService.assertIsSatisfied();
     }
 
     @Test
