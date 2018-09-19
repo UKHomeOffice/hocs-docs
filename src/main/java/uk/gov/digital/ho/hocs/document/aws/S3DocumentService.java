@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document.aws;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class S3DocumentService {
 
@@ -48,7 +50,9 @@ public class S3DocumentService {
             metaData.addUserMetadata("originalName", copyRequest.getFileLink());
 
             Document copyDocument = getFileFromS3(copyRequest.getFileLink());
+            log.info("Received Document from untrusted bucket, uploading to trusted bucket");
             trustedS3Client.putObject(trustedS3BucketName, destinationKey, new ByteArrayInputStream(copyDocument.getData()), metaData);
+            log.info("Uploaded Document to trusted bucket");
 
             return new Document(destinationKey, copyDocument.getFilename(), copyDocument.getData(),  copyDocument.getFileType(), copyDocument.getMimeType());
     }
