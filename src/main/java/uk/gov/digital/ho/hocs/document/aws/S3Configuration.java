@@ -1,9 +1,13 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +24,22 @@ public class S3Configuration {
     public AmazonS3 trustedS3Client(@Value("${trusted.aws.s3.access.key}") String accessKey,
                              @Value("${trusted.aws.s3.secret.key}") String secretKey,
                              @Value("${aws.sqs.region}") String region) {
-        return s3Client(accessKey, secretKey, region);
+        //return s3Client(accessKey, secretKey, region);
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        AmazonS3 s3client = new AmazonS3Client(credentials);
+        s3client.setRegion(Region.getRegion(Regions.valueOf(region)));
+        return s3client;
     }
 
     @Bean("UnTrusted")
     public AmazonS3 untrustedS3Client(@Value("${untrusted.aws.s3.access.key}") String accessKey,
                              @Value("${untrusted.aws.s3.secret.key}") String secretKey,
                              @Value("${aws.sqs.region}") String region) {
-        return s3Client(accessKey, secretKey, region);
+        //return s3Client(accessKey, secretKey, region);
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        AmazonS3 s3client = new AmazonS3Client(credentials);
+        s3client.setRegion(Region.getRegion(Regions.valueOf(region)));
+        return s3client;
     }
 
     private static AmazonS3 s3Client(String accessKey, String secretKey, String region) {
