@@ -27,7 +27,7 @@ public class S3Configuration {
         //return s3Client(accessKey, secretKey, region);
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         AmazonS3 s3client = new AmazonS3Client(credentials);
-        s3client.setRegion(Region.getRegion(Regions.valueOf(region)));
+        s3client.setRegion(Region.getRegion(Regions.EU_WEST_2));
         return s3client;
     }
 
@@ -38,7 +38,7 @@ public class S3Configuration {
         //return s3Client(accessKey, secretKey, region);
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         AmazonS3 s3client = new AmazonS3Client(credentials);
-        s3client.setRegion(Region.getRegion(Regions.valueOf(region)));
+        s3client.setRegion(Region.getRegion(Regions.EU_WEST_2));
         return s3client;
     }
 
