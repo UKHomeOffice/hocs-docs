@@ -29,12 +29,12 @@ public class S3DocumentService {
     private AmazonS3 untrustedS3Client;
     private final String CONVERTED_DOCUMENT_EXTENSION = "pdf";
 
-    public S3DocumentService( @Value("${docs.untrustedS3bucket}") String untrustedS3BucketName, @Value("${docs.trustedS3bucket}") String trustedS3Bucket, @Qualifier("UnTrusted") AmazonS3 trustedS3Client, @Qualifier("UnTrusted") AmazonS3 untrustedS3Client) {
+    public S3DocumentService( @Value("${docs.untrustedS3bucket}") String untrustedS3BucketName, @Value("${docs.trustedS3bucket}") String trustedS3Bucket, @Qualifier("Trusted") AmazonS3 trustedS3Client, @Qualifier("UnTrusted") AmazonS3 untrustedS3Client) {
 
         this.untrustedS3BucketName = untrustedS3BucketName;
-        this.trustedS3BucketName = trustedS3Bucket;
+        this.trustedS3BucketName = untrustedS3BucketName;
         this.untrustedS3Client = untrustedS3Client;
-        this.trustedS3Client = trustedS3Client;
+        this.trustedS3Client = untrustedS3Client;
     }
 
     public Document getFileFromS3(String key) throws IOException {
