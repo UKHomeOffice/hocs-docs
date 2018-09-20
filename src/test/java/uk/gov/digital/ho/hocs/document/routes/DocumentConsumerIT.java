@@ -93,7 +93,6 @@ public class DocumentConsumerIT  {
 
     @Test
     public void shouldNotCallConversionServiceWhenMalwareCheckFails() throws Exception {
-
         wireMockServer.resetAll();
 
         stubFor(post(urlEqualTo("/scan"))
@@ -104,7 +103,6 @@ public class DocumentConsumerIT  {
 
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
-
 
         template.sendBody(endpoint, mapper.writeValueAsString(request));
 
@@ -115,12 +113,9 @@ public class DocumentConsumerIT  {
     @Test
     public void shouldNotCallConversionServiceWhenMalwareFound() throws Exception {
         wireMockServer.resetAll();
-
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
-
         template.sendBody(endpoint, mapper.writeValueAsString(request));
-
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -132,27 +127,9 @@ public class DocumentConsumerIT  {
 
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
-
         template.sendBody(endpoint, mapper.writeValueAsString(request));
-
         verify(3, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
-
-    }
-
-    @Test
-    public void shouldRetryWhenConversionCheckFails() throws Exception {
-
-        wireMockServer.resetAll();
-
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
-
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
-
-        verify(3, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
-
     }
 
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
@@ -169,7 +146,6 @@ public class DocumentConsumerIT  {
         properties.put(S3MockApplication.PROP_SECURE_CONNECTION, false);
         properties.put(S3MockApplication.PROP_SILENT, false);
         properties.put(S3MockApplication.PROP_INITIAL_BUCKETS, trustedBucketName + ", " + untrustedBucketName);
-
         S3MockApplication.start(properties);
     }
 
@@ -180,7 +156,4 @@ public class DocumentConsumerIT  {
         metaData.addUserMetadata("filename", "someUUID.docx");
         untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
     }
-
-
-
 }
