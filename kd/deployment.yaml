@@ -213,7 +213,7 @@ spec:
                 secretKeyRef:
                   name: {{.KUBE_NAMESPACE}}-trusted-s3
                   key: secret_access_key
-            - name: DOCS_TRUSTED_S3_BUCKET_KMS_KEY_ID
+            - name: DOCS_TRUSTEDS3BUCKETKMSKEYID
               valueFrom:
                 secretKeyRef:
                   name: {{.KUBE_NAMESPACE}}-trusted-s3
