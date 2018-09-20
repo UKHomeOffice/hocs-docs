@@ -54,9 +54,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     @Override
     public void configure() {
-
-
-
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
@@ -77,10 +74,9 @@ public class DocumentConversionConsumer extends RouteBuilder {
         this.getContext().setStreamCaching(true);
 
         from("direct:convertdocument").routeId("conversion-queue")
-                .log(LoggingLevel.INFO, "Retrieving document from S3")
+                .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
                 .setProperty("caseUUID", simple("${body.caseUUID}"))
-                .bean(s3BucketService, "copyToTrustedBucket")
-                .log("${body.filename}")
+                .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
                 .setProperty("originalFilename", simple("${body.filename}"))
                 .process(HttpProcessors.buildMultipartEntity())
                 .log("Calling document converter service")

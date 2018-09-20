@@ -20,7 +20,4 @@ public class SpringConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(createRequestData());
     }
 
-    @Bean
-    public RestTemplate createRestTemplate() { return new RestTemplate();}
-
 }

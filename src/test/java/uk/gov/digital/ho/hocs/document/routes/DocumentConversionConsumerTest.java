@@ -9,9 +9,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
-import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
-import uk.gov.digital.ho.hocs.document.model.UploadDocument;
+import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.dto.DocumentCopyRequest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -42,18 +42,9 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     @Test
-    public void shouldCallS3CopyDocument() throws Exception {
-        when(s3BucketService.copyToTrustedBucket(any())).thenReturn(getTestDocument());
-        template.sendBody(endpoint, request);
-        verify(s3BucketService, times(1)).copyToTrustedBucket(request);
-    }
-
-    @Test
     public void shouldAddDocumentToDocumentServiceQueueOnSuccess() throws Exception {
-        Document document = getTestDocument();
-        when(s3BucketService.copyToTrustedBucket(any())).thenReturn(document);
         MockEndpoint mockConversionService = mockConversionService();
-
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedMessageCount(1);
         template.sendBody(endpoint,request);
@@ -61,13 +52,11 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         mockConversionService.assertIsSatisfied();
     }
 
-
     @Test
-    public void shouldAddMessagetoDLQAndNotCallConverstionServiceOnS3CopyError() throws Exception {
-        when(s3BucketService.copyToTrustedBucket(any())).thenThrow(new IOException());
+    public void shouldAddMessagetoDLQAndNotCallConverstionServiceOnS3Error() throws Exception {
 
         MockEndpoint mockConversionService = mockConversionService();
-
+        when(s3BucketService.getFileFromTrustedS3(any())).thenThrow(new IOException());
         getMockEndpoint(dlq).expectedMessageCount(1);
         template.sendBody(endpoint,request);
         getMockEndpoint(dlq).assertIsSatisfied();
@@ -76,11 +65,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Test
     public void shouldAddMessagetoDLQWhenConversionServiceFails() throws Exception {
-        Document document = getTestDocument();
-        when(s3BucketService.copyToTrustedBucket(any())).thenReturn(document);
-
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService();
-
         getMockEndpoint(dlq).expectedMessageCount(1);
         template.sendBody(endpoint,request);
         getMockEndpoint(dlq).assertIsSatisfied();
@@ -89,16 +75,14 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Test
     public void shouldAddPropertiesToExchange() throws Exception {
-        Document document = getTestDocument();
-        when(s3BucketService.copyToTrustedBucket(any())).thenReturn(document);
-
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("caseUUID", "somecase");
         template.sendBody(endpoint,request);
         mockEndpoint.assertIsSatisfied();
     }
 
-    private MockEndpoint mockConversionService() throws IOException, URISyntaxException {
+    private MockEndpoint mockConversionService() {
         MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
@@ -108,7 +92,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         return mock;
     }
 
-    private MockEndpoint mockFailedConversionService() throws IOException, URISyntaxException {
+    private MockEndpoint mockFailedConversionService() {
         MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
@@ -120,7 +104,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     private Document getTestDocument() throws URISyntaxException, IOException {
         byte[] data = Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
-        return new Document("UUID", "sample.docx", data, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        return new Document("somecaseUUID/UUID.docx", "sample.docx", data, "docx", "\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"");
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
