@@ -66,7 +66,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .log("Received process document request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
-                .setProperty("uuid", simple("${body.caseUUID}"))
+                .setProperty("caseUUID", simple("${body.caseUUID}"))
                 .process(generateMalwareCheck())
                 .to(toQueue);
     }

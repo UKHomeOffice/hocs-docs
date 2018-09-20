@@ -8,6 +8,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.model.Document;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -19,7 +23,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "/somecase/someuuid", "someLink");
+    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "someCaseUuid", "someLink");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -40,5 +44,16 @@ public class DocumentConsumerTest extends CamelTestSupport {
         template.sendBody(endpoint, "BAD BODY");
         getMockEndpoint(dlq).assertIsSatisfied();
     }
+
+    @Test
+    public void shouldAddPropertiesToExchange() throws Exception {
+        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
+        mockEndpoint.expectedPropertyReceived("caseUUID", "someCaseUuid");
+        mockEndpoint.expectedPropertyReceived("uuid", "someuuid");
+        mockEndpoint.expectedMessageCount(1);
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        mockEndpoint.assertIsSatisfied();
+    }
+
 
 }
