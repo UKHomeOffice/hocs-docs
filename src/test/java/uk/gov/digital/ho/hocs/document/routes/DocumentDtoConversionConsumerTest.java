@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DocumentConversionConsumerTest extends CamelTestSupport {
+public class DocumentDtoConversionConsumerTest extends CamelTestSupport {
 
     @Mock
     S3DocumentService s3BucketService;

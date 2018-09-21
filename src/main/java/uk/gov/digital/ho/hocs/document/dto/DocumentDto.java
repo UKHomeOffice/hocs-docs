@@ -17,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-public class Document {
+public class DocumentDto {
 
     @JsonProperty("type")
     private DocumentType type;
@@ -43,10 +43,10 @@ public class Document {
     @JsonProperty("deleted")
     private Boolean deleted;
 
-    public static Document from(DocumentData documentData) {
+    public static DocumentDto from(DocumentData documentData) {
 
 
-        return new Document(
+        return new DocumentDto(
                 documentData.getType(),
                 documentData.getName(),
                 urlEncode(documentData.getFileLink()),

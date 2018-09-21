@@ -81,17 +81,17 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .process(HttpProcessors.buildMultipartEntity())
                 .log("Calling document converter service")
                 .to(hocsConverterPath)
-                .log("Document conversion complete")
+                .log("DocumentDto conversion complete")
                 .choice()
                 .when(HttpProcessors.validateHttpResponse)
-                    .log(LoggingLevel.INFO, "Document conversion successful")
+                    .log(LoggingLevel.INFO, "DocumentDto conversion successful")
                     .process(generateUploadDocument())
                     .to(toQueue)
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Error ${body}")
                     .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
                     .to(documentServiceQueueName)
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed"))
+                    .throwException(new ApplicationExceptions.DocumentConversionException("DocumentDto conversion failed"))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
 

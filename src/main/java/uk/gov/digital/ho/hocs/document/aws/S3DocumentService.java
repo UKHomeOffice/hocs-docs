@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.dto.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.model.UploadDocument;
@@ -45,11 +46,11 @@ public class S3DocumentService {
         this.trustedBucketKMSkeyId = trustedBucketKMSkeyId;
     }
 
-    public Document getFileFromUntrustedS3(String key) throws IOException {
+    public Document getFileFromUntrustedS3(String key) {
         return getFileFromS3Bucket(key, untrustedS3Client, untrustedS3BucketName);
     }
 
-    public Document getFileFromTrustedS3(String key) throws IOException {
+    public Document getFileFromTrustedS3(String key)  {
         return getFileFromS3Bucket(key, trustedS3Client, trustedS3BucketName);
     }
 
@@ -94,7 +95,7 @@ public class S3DocumentService {
 
     }
 
-    private Document getFileFromS3Bucket(String key, AmazonS3 s3Client, String bucketName) throws IOException {
+    private Document getFileFromS3Bucket(String key, AmazonS3 s3Client, String bucketName) {
         try {
 
             S3Object s3File = s3Client.getObject(new GetObjectRequest(bucketName, key));
@@ -113,11 +114,13 @@ public class S3DocumentService {
 
         } catch (AmazonS3Exception ex) {
             if (ex.getStatusCode() == 404) {
-                throw new FileNotFoundException("File not found in S3 bucket");
+                throw new ApplicationExceptions.EntityNotFoundException("File not found in S3 bucket");
             }
             else {
-                throw new IOException("Error retrieving document from S3");
+                throw new ApplicationExceptions.EntityNotFoundException("Error retrieving document from S3");
             }
+        } catch (IOException e) {
+            throw new ApplicationExceptions.EntityNotFoundException("Error converting document to byteArray");
         }
     }
 
