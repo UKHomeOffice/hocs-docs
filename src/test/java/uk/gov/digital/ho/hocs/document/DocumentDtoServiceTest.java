@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -23,14 +24,19 @@ public class DocumentDtoServiceTest {
     private DocumentRepository documentRepository;
 
     @Mock
+    private S3DocumentService s3DocumentService;
+
+    @Mock
     //private AuditService auditService;
 
     private DocumentDataService documentService;
 
+
+
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository);
+                documentRepository, s3DocumentService);
     }
 
     @Test
