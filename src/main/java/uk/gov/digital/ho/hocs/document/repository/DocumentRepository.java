@@ -12,5 +12,5 @@ public interface DocumentRepository extends CrudRepository<DocumentData, String>
 
     DocumentData findByUuid(UUID uuid);
 
-    Set<DocumentData> findAllByCaseUUID(UUID caseUuid);
+    Set<DocumentData> findAllByExternalReferenceUUID(UUID externalReferenceUUID);
 }

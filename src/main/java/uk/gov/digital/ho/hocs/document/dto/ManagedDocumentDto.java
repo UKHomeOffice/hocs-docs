@@ -5,19 +5,18 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
+import uk.gov.digital.ho.hocs.document.model.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-public class DocumentDto {
+public class ManagedDocumentDto {
 
     @JsonProperty("UUID")
     private UUID uuid;
@@ -26,7 +25,7 @@ public class DocumentDto {
     private UUID externalReferenceUUID;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private ManagedDocumentType type;
 
     @JsonProperty("displayName")
     private String displayName;
@@ -34,11 +33,8 @@ public class DocumentDto {
     @JsonProperty("fileLink")
     private String fileLink;
 
-    @JsonProperty("pdfLink")
-    private String pdfLink;
-
     @JsonProperty("status")
-    private DocumentStatus status;
+    private ManagedDocumentStatus status;
 
     @JsonProperty("created")
     private LocalDateTime created;
@@ -46,22 +42,24 @@ public class DocumentDto {
     @JsonProperty("updated")
     private LocalDateTime updated;
 
+    @JsonProperty("expires")
+    private LocalDate expires;
+
     @JsonProperty("deleted")
     private Boolean deleted;
 
-    public static DocumentDto from(DocumentData documentData) {
+    public static ManagedDocumentDto from(ManagedDocumentData documentData) {
 
-
-        return new DocumentDto(
+        return new ManagedDocumentDto(
                 documentData.getUuid(),
                 documentData.getExternalReferenceUUID(),
                 documentData.getType(),
                 documentData.getDisplayName(),
                 urlEncode(documentData.getFileLink()),
-                urlEncode(documentData.getPdfLink()),
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),
+                documentData.getExpires(),
                 documentData.getDeleted()
         );
     }

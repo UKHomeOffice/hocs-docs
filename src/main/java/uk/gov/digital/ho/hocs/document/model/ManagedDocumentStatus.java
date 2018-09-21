@@ -4,6 +4,7 @@ import lombok.Getter;
 
 public enum ManagedDocumentStatus {
 
+    PENDING("Pending"),
     ACTIVE("Active"),
     EXPIRED("Expired");
 
