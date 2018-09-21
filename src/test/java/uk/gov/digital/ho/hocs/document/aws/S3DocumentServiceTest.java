@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
-public class S3DocumentDtoServiceTest {
+public class S3DocumentServiceTest {
     private static String untrustedBucketName = "untrusted-bucked";
     private static String trustedBucketName = "trusted-bucked";
 
