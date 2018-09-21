@@ -60,6 +60,7 @@ public class S3DocumentService {
            S3Document copyDocument = getFileFromUntrustedS3(copyRequest.getFileLink());
 
             ObjectMetadata metaData = new ObjectMetadata();
+            metaData.setContentType(copyDocument.getMimeType());
             metaData.addUserMetadata("caseUUID", copyRequest.getCaseUUID());
             metaData.addUserMetadata("filename", destinationKey);
             metaData.addUserMetadata("originalName", copyDocument.getOriginalFilename());

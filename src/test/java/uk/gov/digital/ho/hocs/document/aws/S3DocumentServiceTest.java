@@ -83,10 +83,12 @@ public class S3DocumentServiceTest {
 
         DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx");
         S3Document document = service.copyToTrustedBucket(copyRequest);
-        assertThat(document.getFilename()).startsWith("someCase");
-        assertThat(document.getFileType()).isEqualTo("docx");
-    }
 
+        ObjectMetadata metadata = trustedClient.getObjectMetadata(trustedBucketName,document.getFilename());
+        assertThat(metadata.getContentType()).isEqualTo("application/docx");
+        assertThat(metadata.getUserMetaDataOf("filename")).startsWith("someCase");
+        assertThat(metadata.getUserMetaDataOf("originalName")).isEqualTo("sample.docx");
+    }
 
     @Test
     public void shouldUploadToTrustedBucket() throws IOException, URISyntaxException {
