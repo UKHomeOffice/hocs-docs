@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.*;
 import uk.gov.digital.ho.hocs.document.repository.ManagedDocumentRepository;
@@ -44,13 +45,12 @@ public class ManagedDocumentDataService {
         log.info("Updated Document: {}", managedDocumentData.getUuid());
     }
 
-
     public ManagedDocumentData getManagedDocumentData(UUID documentUUID) {
         ManagedDocumentData managedDocumentData = managedDocumentRepository.findByUuid(documentUUID);
         if (managedDocumentData != null) {
             return managedDocumentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException("Managed DocumentDto UUID: %s not found!", documentUUID);
+            throw new ApplicationExceptions.EntityNotFoundException("Managed Document UUID: %s not found!", documentUUID);
         }
     }
 
@@ -66,7 +66,7 @@ public class ManagedDocumentDataService {
         log.info("Set Managed document to deleted: {}", documentUUID);
     }
 
-    public Document getDocumentFile(UUID documentUUID) {
+    public S3Document getDocumentFile(UUID documentUUID) {
         ManagedDocumentData managedDocumentData = getManagedDocumentData(documentUUID);
         try {
             return s3DocumentService.getFileFromTrustedS3(managedDocumentData.getFileLink());

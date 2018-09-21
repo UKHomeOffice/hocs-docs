@@ -81,7 +81,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
                 .setProperty("filename", simple("${body.filename}"))
                 .setProperty("originalFilename", simple("${body.originalFilename}"))
-                .log("Origincal Filename ${body.originalFilename}")
+                .log("Original Filename ${body.originalFilename}")
                 .process(HttpProcessors.buildMultipartEntity())
                 .to("direct:convert");
 

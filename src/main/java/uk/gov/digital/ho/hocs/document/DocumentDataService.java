@@ -27,11 +27,10 @@ public class DocumentDataService {
     public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
-
     }
 
     @Transactional
-    public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
+    DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
         log.debug("Creating Document: {}, Case UUID: {}", displayName, caseUUID);
         DocumentData documentData = new DocumentData(caseUUID, type, displayName);
         documentRepository.save(documentData);
@@ -69,7 +68,7 @@ public class DocumentDataService {
         log.info("Set Document to deleted: {}", documentUUID);
     }
 
-    public Document getDocumentFile(UUID documentUUID) {
+    public S3Document getDocumentFile(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try {
             return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
