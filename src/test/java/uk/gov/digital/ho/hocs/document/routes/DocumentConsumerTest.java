@@ -7,11 +7,9 @@ import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
-import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import java.util.UUID;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -20,10 +18,11 @@ public class DocumentConsumerTest extends CamelTestSupport {
     private String endpoint = "direct://cs-dev-document-sqs";
     private String dlq = "mock:cs-dev-document-sqs-dlq";
     private String toEndpoint = "mock:malwarecheck";
+    private UUID documentUUID = UUID.randomUUID();
 
     ObjectMapper mapper = new ObjectMapper();
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest("someuuid", "someCaseUuid", "someLink");
+    private ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID.toString(), "someCaseUuid", "someLink");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -49,7 +48,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
     public void shouldAddPropertiesToExchange() throws Exception {
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("caseUUID", "someCaseUuid");
-        mockEndpoint.expectedPropertyReceived("uuid", "someuuid");
+        mockEndpoint.expectedPropertyReceived("uuid", documentUUID.toString());
         mockEndpoint.expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         mockEndpoint.assertIsSatisfied();

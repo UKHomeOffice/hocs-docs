@@ -1,17 +1,15 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
 import com.adobe.testing.s3mock.junit4.S3MockRule;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import uk.gov.digital.ho.hocs.document.dto.DocumentConversionRequest;
-import uk.gov.digital.ho.hocs.document.model.Document;
-import uk.gov.digital.ho.hocs.document.dto.DocumentCopyRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -44,19 +42,17 @@ public class S3DocumentServiceTest {
 
     @Test
     public void shouldGetOriginalUploadedFileFromS3() throws IOException, URISyntaxException {
-        Document document = service.getFileFromUntrustedS3("someUUID.docx");
+        S3Document document = service.getFileFromUntrustedS3("someUUID.docx");
         byte[] originalUploadedDocument = getDocumentByteArray();
         assertThat(document.getData()).isEqualTo(originalUploadedDocument);
     }
 
     @Test
     public void shouldReturnUploadedMetaData() throws IOException, URISyntaxException {
-        Document document = service.getFileFromUntrustedS3("someUUID.docx");
-
+        S3Document document = service.getFileFromUntrustedS3("someUUID.docx");
         assertThat(document.getOriginalFilename()).isEqualTo("sample.docx");
         assertThat(document.getFilename()).isEqualTo("someUUID.docx");
         assertThat(document.getFileType()).isEqualTo("docx");
-        assertThat(document.getMimeType()).isEqualTo("application/docx");
     }
 
     @Test
@@ -78,26 +74,41 @@ public class S3DocumentServiceTest {
 
         assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
         DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx");
-        DocumentConversionRequest document = service.copyToTrustedBucket(copyRequest);
-        assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFileLink())).isTrue();
+        S3Document document = service.copyToTrustedBucket(copyRequest);
+        assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
 
     @Test
     public void shouldSetMetaDataWhenCopyToTrustedBucket() throws IOException {
 
         DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx");
-        DocumentConversionRequest document = service.copyToTrustedBucket(copyRequest);
-        assertThat(document.getFileLink()).startsWith("someCase");
-        assertThat(document.getFileType()).isEqualTo("docx");
+        S3Document document = service.copyToTrustedBucket(copyRequest);
+
+        ObjectMetadata metadata = trustedClient.getObjectMetadata(trustedBucketName,document.getFilename());
+        assertThat(metadata.getContentType()).isEqualTo("application/docx");
+        assertThat(metadata.getUserMetaDataOf("filename")).startsWith("someCase");
+        assertThat(metadata.getUserMetaDataOf("originalName")).isEqualTo("sample.docx");
     }
 
+    @Test
+    public void shouldUploadToTrustedBucket() throws IOException, URISyntaxException {
 
-    private void uploadUntrustedFiles() throws URISyntaxException, IOException {
+        assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
+        UploadDocument uploadRequest = new UploadDocument("someUUID.docx", getPDFDocument(),"someCase", "sample.docx");
+        S3Document document = service.uploadFile(uploadRequest);
+        assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
+    }
+
+    public void uploadUntrustedFiles() throws URISyntaxException, IOException {
         ObjectMetadata metaData = new ObjectMetadata();
         metaData.setContentType("application/docx");
         metaData.addUserMetadata("originalName", "sample.docx");
         metaData.addUserMetadata("filename", "someUUID.docx");
         untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
+    }
+
+    private byte[] getPDFDocument() throws URISyntaxException, IOException {
+        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
     }
 
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {

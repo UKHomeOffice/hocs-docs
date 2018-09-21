@@ -1,11 +1,11 @@
-package uk.gov.digital.ho.hocs.document.model;
+package uk.gov.digital.ho.hocs.document.dto.camel;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class Document {
+public class S3Document {
 
     private final String filename;
     private final String originalFilename;
