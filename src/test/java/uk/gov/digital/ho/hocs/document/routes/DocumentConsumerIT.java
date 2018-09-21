@@ -16,7 +16,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
+import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.model.DocumentData;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
+import uk.gov.digital.ho.hocs.document.model.DocumentType;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,6 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @ActiveProfiles("test")
@@ -39,6 +45,9 @@ public class DocumentConsumerIT {
 
     @Autowired
     private ProducerTemplate template;
+
+    @Autowired
+    private DocumentDataService documentService;
 
     private String endpoint = "direct://cs-dev-document-sqs";
 
@@ -54,12 +63,26 @@ public class DocumentConsumerIT {
     @Qualifier("UnTrusted")
     AmazonS3 untrustedClient;
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "someUUID.docx");
+    @Autowired
+    @Qualifier("Trusted")
+    AmazonS3 trustedClient;
+
     private static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().port(9002));
 
+    private final String caseUUID = UUID.randomUUID().toString();
+    private String documentUUID;
+    private final String filename = "someUUID.docx";
+    private final String originalFilename = "sample.docx";
+
+    private  DocumentData document;
+    private ProcessDocumentRequest request ;
 
     @Before
     public void setup() throws Exception {
+        document = documentService.createDocument(UUID.fromString(caseUUID), "some document", DocumentType.ORIGINAL);
+        documentUUID = document.getUuid().toString();
+        request = new ProcessDocumentRequest(documentUUID, caseUUID, filename);
+
         if(!setUpIsDone) {
             configureFor("localhost", 9002);
             wireMockServer.start();
@@ -76,30 +99,12 @@ public class DocumentConsumerIT {
 
     @Test
     public void shouldCallMalwareAndConverterService() throws Exception {
-
-        wireMockServer.resetAll();
-
-             stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
-
-        stubFor(post(urlEqualTo("/uploadFile"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
-
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
-
-        verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(1, postRequestedFor(urlEqualTo("/uploadFile")));
+        runSuccessfulConversion();
     }
 
     @Test
     public void shouldNotCallConversionServiceWhenMalwareCheckFails() throws Exception {
         wireMockServer.resetAll();
-
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
-
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
@@ -132,6 +137,119 @@ public class DocumentConsumerIT {
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
 
+
+    @Test
+    public void shouldRetryWhenConversionFails() throws Exception {
+
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        stubFor(post(urlEqualTo("/uploadFile"))
+                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(6, postRequestedFor(urlEqualTo("/uploadFile")));
+    }
+
+    @Test
+    public void shouldUploadOriginalDocumentAndConvertedPDFAfterMalwareScan() throws Exception {
+        runSuccessfulConversion();
+        assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void shouldAddMetaDataToPDFandOriginalFile() throws Exception {
+        runSuccessfulConversion();
+        String pdfKey = getKeyFromExtension("pdf");
+        String docxKey = getKeyFromExtension("docx");
+
+       ObjectMetadata pdfMetadata = trustedClient.getObjectMetadata(trustedBucketName, pdfKey);
+       assertThat(pdfMetadata.getContentType()).isEqualTo("application/pdf");
+       assertThat(pdfMetadata.getUserMetaDataOf("caseUUID")).isEqualTo(caseUUID);
+       assertThat(pdfMetadata.getUserMetaDataOf("originalName")).isEqualTo("sample.pdf");
+
+        ObjectMetadata docxMetadata = trustedClient.getObjectMetadata(trustedBucketName, docxKey);
+        assertThat(docxMetadata.getUserMetaDataOf("caseUUID")).isEqualTo(caseUUID);
+        assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
+    }
+
+    @Test
+    public void shouldUpdateDocumentStatusInDatabaseOnSuccess() throws Exception {
+        wireMockServer.resetAll();
+
+        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
+
+        runSuccessfulConversion();
+
+        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.UPLOADED);
+    }
+
+    @Test
+    public void shouldUpdateDocumentStatusInDatabaseOnMalwareFound() throws Exception {
+        wireMockServer.resetAll();
+
+        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
+
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+
+        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_VIRUS);
+    }
+
+    @Test
+    public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure() throws Exception {
+        wireMockServer.resetAll();
+
+        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
+
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        stubFor(post(urlEqualTo("/uploadFile"))
+                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/uploadFile")));
+
+        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
+    }
+
+
+    private String getKeyFromExtension(String extension) {
+        return trustedClient.listObjectsV2(trustedBucketName)
+                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(caseUUID))))
+                .findFirst().get().getKey();
+    }
+
+    private void runSuccessfulConversion() throws IOException, URISyntaxException {
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        stubFor(post(urlEqualTo("/uploadFile"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(1, postRequestedFor(urlEqualTo("/uploadFile")));
+    }
+
+
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
         return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
     }
@@ -152,8 +270,8 @@ public class DocumentConsumerIT {
     private void uploadUntrustedFiles() throws URISyntaxException, IOException {
         ObjectMetadata metaData = new ObjectMetadata();
         metaData.setContentType("application/docx");
-        metaData.addUserMetadata("originalName", "sample.docx");
-        metaData.addUserMetadata("filename", "someUUID.docx");
-        untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
+        metaData.addUserMetadata("originalName", originalFilename);
+        metaData.addUserMetadata("filename", filename);
+        untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, filename, new ByteArrayInputStream(getDocumentByteArray()), metaData));
     }
 }

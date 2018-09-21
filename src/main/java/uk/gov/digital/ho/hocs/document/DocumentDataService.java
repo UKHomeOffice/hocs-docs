@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
-import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.model.DocumentType;
@@ -27,10 +27,11 @@ public class DocumentDataService {
     public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
+
     }
 
     @Transactional
-    DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
+    public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
         log.debug("Creating DocumentDto: {}, Case UUID: {}", displayName, caseUUID);
         DocumentData documentData = new DocumentData(caseUUID, type, displayName);
         documentRepository.save(documentData);
@@ -68,7 +69,7 @@ public class DocumentDataService {
         log.info("Set document to deleted: {}", documentUUID);
     }
 
-    public Document getDocumentOriginal(UUID documentUUID) {
+    public S3Document getDocumentOriginal(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try {
             return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
@@ -77,7 +78,7 @@ public class DocumentDataService {
         }
     }
 
-    public Document getDocumentPdf(UUID documentUUID) {
+    public S3Document getDocumentPdf(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try{
             return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());

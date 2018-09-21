@@ -11,7 +11,7 @@ import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentResponse;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
-import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
 import java.util.Set;
@@ -57,7 +57,7 @@ class DocumentDataResource {
 
     @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/original", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<ByteArrayResource> getDocumentOriginal(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
-        Document document = documentDataService.getDocumentOriginal(documentUUID);
+        S3Document document = documentDataService.getDocumentOriginal(documentUUID);
 
         ByteArrayResource resource = new ByteArrayResource(document.getData());
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
@@ -71,7 +71,7 @@ class DocumentDataResource {
 
     @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/pdf", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
-        Document document = documentDataService.getDocumentPdf(documentUUID);
+        S3Document document = documentDataService.getDocumentPdf(documentUUID);
         ByteArrayResource resource = new ByteArrayResource(document.getData());
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
 

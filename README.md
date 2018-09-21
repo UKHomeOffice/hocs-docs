@@ -2,9 +2,9 @@
 
 ## Dependencies
  - AWS SQS queues (document input and case output) or localstack
- - AWS S3 buckets (untrusted)
  - HOCS Converter service 
  - ClamAV REST service
+ - Postgres 
  
  ## Developing locally
  
