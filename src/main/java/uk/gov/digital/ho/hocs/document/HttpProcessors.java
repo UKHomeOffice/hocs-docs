@@ -7,7 +7,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
-import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 
 import java.io.ByteArrayInputStream;
 
@@ -20,7 +20,7 @@ public class HttpProcessors {
 
     public static Processor buildMultipartEntity() {
         return exchange -> {
-            Document response = exchange.getIn().getBody(Document.class);
+            S3Document response = exchange.getIn().getBody(S3Document.class);
             ContentBody content = new InputStreamBody(new ByteArrayInputStream(response.getData()), response.getFilename());
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)

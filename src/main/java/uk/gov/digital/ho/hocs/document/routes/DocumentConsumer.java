@@ -9,8 +9,10 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.dto.DocumentMalwareRequest;
-import uk.gov.digital.ho.hocs.document.dto.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.DocumentMalwareRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
+
+import java.util.UUID;
 
 import static uk.gov.digital.ho.hocs.document.application.RequestData.transferHeadersToMDC;
 
@@ -75,7 +77,8 @@ public class DocumentConsumer extends RouteBuilder {
     private Processor generateMalwareCheck() {
         return exchange -> {
             ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
-            exchange.getOut().setBody(new DocumentMalwareRequest(request.getFileLink(), request.getCaseUUID()));
+
+            exchange.getOut().setBody( new DocumentMalwareRequest(UUID.fromString(request.getUuid()),request.getFileLink(), request.getCaseUUID()));
         };
     }
 
