@@ -77,7 +77,6 @@ public class DocumentDataService {
     public Document getDocumentPdf(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         Document document = s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
-        log.info("fsfffs");
         return document;
     }
 }
