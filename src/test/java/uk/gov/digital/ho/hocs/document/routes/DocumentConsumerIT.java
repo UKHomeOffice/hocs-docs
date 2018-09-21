@@ -33,7 +33,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 @SpringBootTest
 @RunWith(CamelSpringBootRunner.class)
 @DisableJmx
-public class DocumentDtoConsumerIT {
+public class DocumentConsumerIT {
 
     private static boolean setUpIsDone = false;
 

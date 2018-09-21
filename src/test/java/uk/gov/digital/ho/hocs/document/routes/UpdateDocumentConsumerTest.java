@@ -14,7 +14,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
-public class UpdateDocumentDtoConsumerTest extends CamelTestSupport {
+public class UpdateDocumentConsumerTest extends CamelTestSupport {
 
 
     @Mock

@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DocumentDtoUploadConsumerTest extends CamelTestSupport {
+public class DocumentUploadConsumerTest extends CamelTestSupport {
 
     @Mock
     S3DocumentService s3BucketService;
@@ -32,7 +32,7 @@ public class DocumentDtoUploadConsumerTest extends CamelTestSupport {
 
     private UploadDocument request = getTestUploadDocument();
 
-    public DocumentDtoUploadConsumerTest() throws IOException, URISyntaxException {
+    public DocumentUploadConsumerTest() throws IOException, URISyntaxException {
     }
 
 

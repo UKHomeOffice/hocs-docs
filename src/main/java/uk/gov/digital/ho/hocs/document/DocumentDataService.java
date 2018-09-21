@@ -70,13 +70,19 @@ public class DocumentDataService {
 
     public Document getDocumentOriginal(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
-        Document document = s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
-        return document;
+        try {
+            return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
+        } catch (IOException e) {
+            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage());
+        }
     }
 
     public Document getDocumentPdf(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
-        Document document = s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
-        return document;
+        try{
+            return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+        } catch (IOException e) {
+            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage());
+        }
     }
 }

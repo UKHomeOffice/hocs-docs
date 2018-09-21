@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DocumentDtoServiceTest {
+public class DocumentServiceTest {
 
     @Mock
     private DocumentRepository documentRepository;

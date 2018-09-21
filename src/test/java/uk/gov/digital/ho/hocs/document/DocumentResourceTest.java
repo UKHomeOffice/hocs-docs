@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DocumentDtoResourceTest {
+public class DocumentResourceTest {
 
     @Mock
     private DocumentDataService documentService;
