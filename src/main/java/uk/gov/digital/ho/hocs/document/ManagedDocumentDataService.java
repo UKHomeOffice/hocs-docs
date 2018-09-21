@@ -25,20 +25,20 @@ public class ManagedDocumentDataService {
 
     @Transactional
     ManagedDocumentData createManagedDocument(String displayName, ManagedDocumentType type) {
-        log.debug("Creating Managed Document: {} Type: {}", displayName, type);
+        log.debug("Creating Managed DocumentDto: {} Type: {}", displayName, type);
         ManagedDocumentData managedDocumentData = new ManagedDocumentData(type, displayName);
         managedDocumentRepository.save(managedDocumentData);
-        log.info("Created Managed Document: {}, Type: {}", managedDocumentData.getUuid(), type);
+        log.info("Created Managed DocumentDto: {}, Type: {}", managedDocumentData.getUuid(), type);
         return managedDocumentData;
     }
 
     @Transactional
     public void updateDocument(UUID documentUUID, String fileLink, String pdfLink) {
-        log.debug("Updating Managed Document: {}", documentUUID);
+        log.debug("Updating Managed DocumentDto: {}", documentUUID);
         ManagedDocumentData managedDocumentData = getManagedDocumentData(documentUUID);
         managedDocumentData.update(fileLink, pdfLink);
         managedDocumentRepository.save(managedDocumentData);
-        log.info("Updated Managed Document: {}", managedDocumentData.getUuid());
+        log.info("Updated Managed DocumentDto: {}", managedDocumentData.getUuid());
     }
 
     public ManagedDocumentData getManagedDocumentData(UUID documentUUID) {
@@ -46,7 +46,7 @@ public class ManagedDocumentDataService {
         if (managedDocumentData != null) {
             return managedDocumentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException("Managed Document UUID: %s not found!", documentUUID);
+            throw new ApplicationExceptions.EntityNotFoundException("Managed DocumentDto UUID: %s not found!", documentUUID);
         }
     }
 

@@ -2,12 +2,16 @@ package uk.gov.digital.ho.hocs.document;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentResponse;
-import uk.gov.digital.ho.hocs.document.dto.Document;
+import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
+import uk.gov.digital.ho.hocs.document.model.Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
 import java.util.Set;
@@ -40,14 +44,42 @@ class DocumentDataResource {
     }
 
     @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Document> getDocumentResourceLocation(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
         DocumentData document = documentDataService.getDocumentData(documentUUID);
-        return ResponseEntity.ok(Document.from(document));
+        return ResponseEntity.ok(DocumentDto.from(document));
     }
 
     @DeleteMapping(value = "/case/{caseUUID}/document/{documentUUID}")
-    public ResponseEntity<Document> deleteDocument(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
         documentDataService.deleteDocument(documentUUID);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/original", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<ByteArrayResource> getDocumentOriginal(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+        Document document = documentDataService.getDocumentOriginal(documentUUID);
+
+        ByteArrayResource resource = new ByteArrayResource(document.getData());
+        MediaType mediaType = MediaType.valueOf(document.getMimeType());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getFilename())
+                .contentType(mediaType)
+                .contentLength(document.getData().length)
+                .body(resource);
+    }
+
+    @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/pdf", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+        Document document = documentDataService.getDocumentPdf(documentUUID);
+        ByteArrayResource resource = new ByteArrayResource(document.getData());
+        MediaType mediaType = MediaType.valueOf(document.getMimeType());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename())
+                .contentType(mediaType)
+                .contentLength(document.getData().length)
+                .body(resource);
+    }
+
 }

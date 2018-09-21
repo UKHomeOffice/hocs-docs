@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class DocumentConsumerTest extends CamelTestSupport {
+public class DocumentDtoConsumerTest extends CamelTestSupport {
 
     private String endpoint = "direct://cs-dev-document-sqs";
     private String dlq = "mock:cs-dev-document-sqs-dlq";
