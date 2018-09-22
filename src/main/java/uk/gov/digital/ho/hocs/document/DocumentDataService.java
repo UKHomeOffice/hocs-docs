@@ -30,7 +30,7 @@ public class DocumentDataService {
     }
 
     @Transactional
-    DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
+    public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
         log.debug("Creating Document: {}, Case UUID: {}", displayName, caseUUID);
         DocumentData documentData = new DocumentData(caseUUID, type, displayName);
         documentRepository.save(documentData);
