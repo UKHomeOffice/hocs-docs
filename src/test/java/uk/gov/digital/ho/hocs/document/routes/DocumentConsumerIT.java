@@ -74,7 +74,7 @@ public class DocumentConsumerIT {
     private final String filename = "someUUID.docx";
     private final String originalFilename = "sample.docx";
 
-    private  DocumentData document;
+    private DocumentData document;
     private ProcessDocumentRequest request ;
 
     @Before
