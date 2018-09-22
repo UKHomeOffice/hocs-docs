@@ -49,7 +49,7 @@ class DocumentDataResource {
     }
 
     @DeleteMapping(value = "/document/{documentUUID}")
-    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID documentUUID) {
         documentDataService.deleteDocument(documentUUID);
         return ResponseEntity.ok().build();
     }

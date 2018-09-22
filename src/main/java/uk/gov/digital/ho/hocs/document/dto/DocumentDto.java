@@ -9,8 +9,6 @@ import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,10 +17,10 @@ import java.util.UUID;
 @Slf4j
 public class DocumentDto {
 
-    @JsonProperty("UUID")
+    @JsonProperty("uuid")
     private UUID uuid;
 
-    @JsonProperty("externalReferenceUUID")
+    @JsonProperty("caseUUID")
     private UUID externalReferenceUUID;
 
     @JsonProperty("type")
@@ -30,12 +28,6 @@ public class DocumentDto {
 
     @JsonProperty("displayName")
     private String displayName;
-
-    @JsonProperty("fileLink")
-    private String fileLink;
-
-    @JsonProperty("pdfLink")
-    private String pdfLink;
 
     @JsonProperty("status")
     private DocumentStatus status;
@@ -57,24 +49,10 @@ public class DocumentDto {
                 documentData.getExternalReferenceUUID(),
                 documentData.getType(),
                 documentData.getDisplayName(),
-                urlEncode(documentData.getFileLink()),
-                urlEncode(documentData.getPdfLink()),
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),
                 documentData.getDeleted()
         );
-    }
-
-    private static String urlEncode(String value) {
-
-        if(value != null) {
-            try {
-                return URLEncoder.encode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                log.error(e.getMessage());
-            }
-        }
-        return null;
     }
 }

@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.digital.ho.hocs.document.model.*;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,9 +27,6 @@ public class ManagedDocumentDto {
 
     @JsonProperty("displayName")
     private String displayName;
-
-    @JsonProperty("fileLink")
-    private String fileLink;
 
     @JsonProperty("status")
     private ManagedDocumentStatus status;
@@ -55,24 +50,11 @@ public class ManagedDocumentDto {
                 documentData.getExternalReferenceUUID(),
                 documentData.getType(),
                 documentData.getDisplayName(),
-                urlEncode(documentData.getFileLink()),
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),
                 documentData.getExpires(),
                 documentData.getDeleted()
         );
-    }
-
-    private static String urlEncode(String value) {
-
-        if(value != null) {
-            try {
-                return URLEncoder.encode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                log.error(e.getMessage());
-            }
-        }
-        return null;
     }
 }

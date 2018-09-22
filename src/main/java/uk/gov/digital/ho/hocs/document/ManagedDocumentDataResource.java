@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.*;
-import uk.gov.digital.ho.hocs.document.model.Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.ManagedDocumentData;
 
 import java.util.Set;
@@ -53,7 +53,7 @@ class ManagedDocumentDataResource {
 
     @GetMapping(value = "/managed/{documentUUID}/original", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<ByteArrayResource> getDocumentFile(@PathVariable UUID documentUUID) {
-        Document document = managedDocumentDataService.getDocumentFile(documentUUID);
+        S3Document document = managedDocumentDataService.getDocumentFile(documentUUID);
 
         ByteArrayResource resource = new ByteArrayResource(document.getData());
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
