@@ -9,6 +9,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 
@@ -25,15 +26,18 @@ public class DocumentConsumer extends RouteBuilder {
     private final int maximumRedeliveries;
     private final int redeliveryDelay;
     private final int backOffMultiplier;
+    private final DocumentDataService documentDataService;
 
     @Autowired
     public DocumentConsumer(
+            DocumentDataService documentDataService,
             @Value("${docs.queue}") String docsQueue,
             @Value("${docs.queue.dlq}") String dlq,
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
             @Value("${malwareQueueName}") String toQueue) {
+        this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
         this.dlq = dlq;
@@ -68,7 +72,9 @@ public class DocumentConsumer extends RouteBuilder {
                 .log("Received process document request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
-                .setProperty("caseUUID", simple("${body.caseUUID}"))
+                .setProperty("fileLink", simple("${body.fileLink}"))
+                .bean(documentDataService, "getDocumentData(${body.uuid})")
+                .setProperty("caseUUID", simple("${body.externalReferenceUUID}"))
                 .process(generateMalwareCheck())
                 .to(toQueue);
     }
@@ -76,9 +82,10 @@ public class DocumentConsumer extends RouteBuilder {
 
     private Processor generateMalwareCheck() {
         return exchange -> {
-            ProcessDocumentRequest request = exchange.getIn().getBody(ProcessDocumentRequest.class);
-
-            exchange.getOut().setBody( new DocumentMalwareRequest(UUID.fromString(request.getUuid()),request.getFileLink(), request.getCaseUUID()));
+            UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
+            UUID caseUUID = UUID.fromString(exchange.getProperty("caseUUID").toString());
+            String fileLink = exchange.getProperty("fileLink").toString();
+            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, caseUUID));
         };
     }
 
