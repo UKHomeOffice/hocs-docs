@@ -170,7 +170,7 @@ spec:
                   key: db_name
             - name: DB_SCHEMA_NAME
               value:
-                'cs_docs_001'
+                'cs_docs_002'
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
