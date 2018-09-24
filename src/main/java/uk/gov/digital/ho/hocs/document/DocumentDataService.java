@@ -29,7 +29,6 @@ public class DocumentDataService {
         this.s3DocumentService = s3DocumentService;
     }
 
-    @Transactional
     public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
         log.debug("Creating Document: {}, Case UUID: {}", displayName, caseUUID);
         DocumentData documentData = new DocumentData(caseUUID, type, displayName);
@@ -38,13 +37,16 @@ public class DocumentDataService {
         return documentData;
     }
 
-    @Transactional
     public void updateDocument(UUID documentUUID, DocumentStatus status, String fileLink, String pdfLink) {
         log.debug("Updating Document: {}", documentUUID);
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
         documentRepository.save(documentData);
         log.info("Updated Document: {}", documentData.getUuid());
+    }
+
+    public DocumentData getDocumentData(String documentUUID) {
+        return getDocumentData(UUID.fromString(documentUUID));
     }
 
     public DocumentData getDocumentData(UUID documentUUID) {

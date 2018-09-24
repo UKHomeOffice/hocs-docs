@@ -81,7 +81,7 @@ public class DocumentConsumerIT {
     public void setup() throws Exception {
         document = documentService.createDocument(UUID.fromString(caseUUID), "some document", DocumentType.ORIGINAL);
         documentUUID = document.getUuid().toString();
-        request = new ProcessDocumentRequest(documentUUID, caseUUID, filename);
+        request = new ProcessDocumentRequest(documentUUID, filename);
 
         if(!setUpIsDone) {
             configureFor("localhost", 9002);
