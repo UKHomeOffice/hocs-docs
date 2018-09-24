@@ -3,21 +3,21 @@ package uk.gov.digital.ho.hocs.document.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
+import uk.gov.digital.ho.hocs.document.model.ManagedDocumentType;
 
 import java.util.UUID;
 
 @AllArgsConstructor
 @Getter
-public class CreateDocumentRequest {
+public class CreateManagedDocumentRequest {
 
     @JsonProperty("name")
     private String name;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private ManagedDocumentType type;
 
-    @JsonProperty("caseUUID")
-    private UUID caseUUID;
+    @JsonProperty("externalReferenceUUID")
+    private UUID externalReferenceUUID;
 
 }

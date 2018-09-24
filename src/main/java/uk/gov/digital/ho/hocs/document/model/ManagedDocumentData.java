@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "managed_document_data")
+@Where(clause = "not deleted")
 @NoArgsConstructor
 public class ManagedDocumentData implements Serializable {
 
@@ -21,31 +23,35 @@ public class ManagedDocumentData implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "uuid")
+    @Getter
+    private UUID uuid;
+
+    @Column(name = "external_reference_uuid")
+    @Getter
+    private UUID externalReferenceUUID;
+
     @Column(name = "type")
     private String type;
 
     @Column(name = "display_name")
     @Getter
-    private String name;
+    private String displayName;
 
-    @Column(name = "orig_link")
+    @Column(name = "file_link")
     @Getter
     private String fileLink;
 
-    @Column(name = "pdf_link")
-    @Getter
-    private String pdfLink;
-
     @Column(name = "status")
-    private String status = DocumentStatus.PENDING.toString();
-
-    @Column(name = "uuid")
-    @Getter
-    private UUID uuid;
+    private String status = ManagedDocumentStatus.PENDING.toString();
 
     @Column(name = "created")
     @Getter
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime created = LocalDateTime.now();
+
+    @Column(name = "updated")
+    @Getter
+    private LocalDateTime updated;
 
     @Column(name = "expires")
     @Getter
@@ -56,21 +62,23 @@ public class ManagedDocumentData implements Serializable {
     @Setter
     private Boolean deleted = Boolean.FALSE;
 
-    public ManagedDocumentData(ManagedDocumentType type, String name) {
-        if (type == null || name == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot create ManagedDocumentData(%s, %s, %s).", type, name);
+    public ManagedDocumentData(UUID externalReferenceUUID, ManagedDocumentType type, String displayName) {
+        if (externalReferenceUUID == null || type == null || displayName == null) {
+            throw new ApplicationExceptions.EntityCreationException("Cannot create ManagedDocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName);
         }
         this.uuid = UUID.randomUUID();
         this.type = type.toString();
-        this.name = name;
+        this.displayName = displayName;
+        this.externalReferenceUUID = externalReferenceUUID;
     }
 
-    public void update(String fileLink, String pdfLink) {
+    public void update(String fileLink, ManagedDocumentStatus status) {
         if (fileLink == null || status == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot call ManagedDocumentData.update(%s, %s, %s).", fileLink, pdfLink, status);
+            throw new ApplicationExceptions.EntityCreationException("Cannot call ManagedDocumentData.update(%s, %s).", fileLink, status);
         }
         this.fileLink = fileLink;
-        this.pdfLink = pdfLink;
+        this.status = status.toString();
+        this.updated = LocalDateTime.now();
     }
 
     public ManagedDocumentType getType() {
@@ -78,7 +86,7 @@ public class ManagedDocumentData implements Serializable {
     }
 
     public ManagedDocumentStatus getStatus() {
-        return this.expires.isBefore(LocalDate.now()) ? ManagedDocumentStatus.ACTIVE : ManagedDocumentStatus.EXPIRED ;
+        return this.expires.isBefore(LocalDate.now()) ? ManagedDocumentStatus.valueOf(status) : ManagedDocumentStatus.EXPIRED ;
     }
 
 }

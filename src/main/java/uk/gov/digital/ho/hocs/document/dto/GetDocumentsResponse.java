@@ -17,11 +17,11 @@ public class GetDocumentsResponse {
     private Set<DocumentDto> documentDtos;
 
     public static GetDocumentsResponse from(Set<DocumentData> documents) {
-        Set<DocumentDto> documentDtoRespons = documents
+        Set<DocumentDto> documentDtoResponse = documents
                 .stream()
                 .map(DocumentDto::from)
                 .collect(Collectors.toSet());
 
-        return new GetDocumentsResponse(documentDtoRespons);
+        return new GetDocumentsResponse(documentDtoResponse);
     }
 }

@@ -22,14 +22,22 @@ public class DocumentData implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "uuid")
+    @Getter
+    private UUID uuid;
+
+    @Column(name = "external_reference_uuid")
+    @Getter
+    private UUID externalReferenceUUID;
+
     @Column(name = "type")
     private String type;
 
     @Column(name = "display_name")
     @Getter
-    private String name;
+    private String displayName;
 
-    @Column(name = "orig_link")
+    @Column(name = "file_link")
     @Getter
     private String fileLink;
 
@@ -40,31 +48,27 @@ public class DocumentData implements Serializable {
     @Column(name = "status")
     private String status = DocumentStatus.PENDING.toString();
 
-    @Column(name = "uuid")
-    @Getter
-    private UUID uuid;
-
-    @Column(name = "case_uuid")
-    @Getter
-    private UUID caseUUID;
-
     @Column(name = "created")
     @Getter
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime created = LocalDateTime.now();
+
+    @Column(name = "updated")
+    @Getter
+    private LocalDateTime updated;
 
     @Column(name = "deleted")
     @Getter
     @Setter
     private Boolean deleted = Boolean.FALSE;
 
-    public DocumentData(UUID caseUUID, DocumentType type, String name) {
-        if (caseUUID == null || type == null || name == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot create DocumentData(%s, %s, %s).", caseUUID, type, name);
+    public DocumentData(UUID externalReferenceUUID, DocumentType type, String displayName) {
+        if (externalReferenceUUID == null || type == null || displayName == null) {
+            throw new ApplicationExceptions.EntityCreationException("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName);
         }
         this.uuid = UUID.randomUUID();
         this.type = type.toString();
-        this.name = name;
-        this.caseUUID = caseUUID;
+        this.displayName = displayName;
+        this.externalReferenceUUID = externalReferenceUUID;
     }
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
@@ -74,6 +78,7 @@ public class DocumentData implements Serializable {
         this.fileLink = fileLink;
         this.pdfLink = pdfLink;
         this.status = status.toString();
+        this.updated = LocalDateTime.now();
     }
 
     public DocumentType getType() {

@@ -27,25 +27,24 @@ public class DocumentDataService {
     public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
-
     }
 
     @Transactional
     public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
-        log.debug("Creating DocumentDto: {}, Case UUID: {}", displayName, caseUUID);
+        log.debug("Creating Document: {}, Case UUID: {}", displayName, caseUUID);
         DocumentData documentData = new DocumentData(caseUUID, type, displayName);
         documentRepository.save(documentData);
-        log.info("Created DocumentDto: {}, Case UUID: {}", documentData.getUuid(), documentData.getCaseUUID());
+        log.info("Created Document: {}, Case UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID());
         return documentData;
     }
 
     @Transactional
     public void updateDocument(UUID documentUUID, DocumentStatus status, String fileLink, String pdfLink) {
-        log.debug("Updating DocumentDto: {}", documentUUID);
+        log.debug("Updating Document: {}", documentUUID);
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
         documentRepository.save(documentData);
-        log.info("Updated DocumentDto: {}", documentData.getUuid());
+        log.info("Updated Document: {}", documentData.getUuid());
     }
 
     public DocumentData getDocumentData(UUID documentUUID) {
@@ -53,12 +52,12 @@ public class DocumentDataService {
         if (documentData != null) {
             return documentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException("DocumentDto UUID: %s not found!", documentUUID);
+            throw new ApplicationExceptions.EntityNotFoundException("Document UUID: %s not found!", documentUUID);
         }
     }
 
-    public Set<DocumentData> getDocumentsForCase(UUID caseUuid) {
-        Set<DocumentData> documents = documentRepository.findAllByCaseUUID(caseUuid);
+    public Set<DocumentData> getDocumentsByReference(UUID caseUuid) {
+        Set<DocumentData> documents = documentRepository.findAllByExternalReferenceUUID(caseUuid);
         return documents;
     }
 
@@ -66,10 +65,10 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
-        log.info("Set document to deleted: {}", documentUUID);
+        log.info("Set Document to deleted: {}", documentUUID);
     }
 
-    public S3Document getDocumentOriginal(UUID documentUUID) {
+    public S3Document getDocumentFile(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try {
             return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());

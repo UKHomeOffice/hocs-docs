@@ -30,34 +30,33 @@ class DocumentDataResource {
         this.documentDataService = documentDataService;
     }
 
-    @PostMapping(value = "/case/{caseUUID}/document", consumes = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<CreateDocumentResponse> createDocument(@PathVariable UUID caseUUID,
-                                                                 @RequestBody CreateDocumentRequest request) {
-        DocumentData documentData = documentDataService.createDocument(caseUUID, request.getName(), request.getType());
+    @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
+        DocumentData documentData = documentDataService.createDocument(request.getCaseUUID(),request.getName(), request.getType());
         return ResponseEntity.ok(CreateDocumentResponse.from(documentData));
     }
 
-    @GetMapping(value = "/case/{caseUUID}/document", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/case/{caseUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<GetDocumentsResponse> getDocumentsForCase(@PathVariable UUID caseUUID) {
-        Set<DocumentData> documents = documentDataService.getDocumentsForCase(caseUUID);
+        Set<DocumentData> documents = documentDataService.getDocumentsByReference(caseUUID);
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
-    @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
         DocumentData document = documentDataService.getDocumentData(documentUUID);
         return ResponseEntity.ok(DocumentDto.from(document));
     }
 
-    @DeleteMapping(value = "/case/{caseUUID}/document/{documentUUID}")
-    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    @DeleteMapping(value = "/document/{documentUUID}")
+    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID documentUUID) {
         documentDataService.deleteDocument(documentUUID);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/original", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<ByteArrayResource> getDocumentOriginal(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
-        S3Document document = documentDataService.getDocumentOriginal(documentUUID);
+    @GetMapping(value = "/document/{documentUUID}/file", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<ByteArrayResource> getDocumentFile(@PathVariable UUID documentUUID) {
+        S3Document document = documentDataService.getDocumentFile(documentUUID);
 
         ByteArrayResource resource = new ByteArrayResource(document.getData());
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
@@ -69,9 +68,10 @@ class DocumentDataResource {
                 .body(resource);
     }
 
-    @GetMapping(value = "/case/{caseUUID}/document/{documentUUID}/pdf", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID caseUUID, @PathVariable UUID documentUUID) {
+    @GetMapping(value = "/document/{documentUUID}/pdf", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID documentUUID) {
         S3Document document = documentDataService.getDocumentPdf(documentUUID);
+
         ByteArrayResource resource = new ByteArrayResource(document.getData());
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
 

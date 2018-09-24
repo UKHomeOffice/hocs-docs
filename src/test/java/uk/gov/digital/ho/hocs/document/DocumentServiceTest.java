@@ -26,12 +26,7 @@ public class DocumentServiceTest {
     @Mock
     private S3DocumentService s3DocumentService;
 
-    @Mock
-    //private AuditService auditService;
-
     private DocumentDataService documentService;
-
-
 
     @Before
     public void setUp() {
@@ -49,10 +44,8 @@ public class DocumentServiceTest {
         documentService.createDocument(uuid, displayName, documentType);
 
         verify(documentRepository, times(1)).save(any(DocumentData.class));
-        //verify(auditService, times(1)).createDocumentEvent(any(DocumentData.class));
-
         verifyNoMoreInteractions(documentRepository);
-        //verifyNoMoreInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -77,7 +70,7 @@ public class DocumentServiceTest {
         }
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -102,7 +95,8 @@ public class DocumentServiceTest {
         }
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
+
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -127,7 +121,7 @@ public class DocumentServiceTest {
         }
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
     }
 
     @Test
@@ -146,10 +140,9 @@ public class DocumentServiceTest {
 
         verify(documentRepository, times(1)).findByUuid(uuid);
         verify(documentRepository, times(1)).save(documentData);
-        //verify(auditService, times(1)).updateDocumentEvent(documentData);
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityNotFoundException.class)
@@ -188,7 +181,8 @@ public class DocumentServiceTest {
         verify(documentRepository, times(1)).findByUuid(null);
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
+
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -225,7 +219,8 @@ public class DocumentServiceTest {
         verify(documentRepository, times(1)).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
+
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -264,7 +259,6 @@ public class DocumentServiceTest {
         verify(documentRepository, times(1)).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        //verifyZeroInteractions(auditService);
+        verifyZeroInteractions(s3DocumentService);
     }
-
 }

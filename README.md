@@ -2,6 +2,7 @@
 
 ## Dependencies
  - AWS SQS queues (document input and case output) or localstack
+ - AWS S3 buckets (untrusted and trusted)
  - HOCS Converter service 
  - ClamAV REST service
  - Postgres 
@@ -12,3 +13,5 @@
  
    
  To start local instances run `./docker/docker-compose up`.
+ 
+ 

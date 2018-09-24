@@ -41,9 +41,9 @@ public class DocumentResourceTest {
 
         when(documentService.createDocument(uuid, displayName, documentType)).thenReturn(documentData);
 
-        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType);
+        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, uuid);
 
-        ResponseEntity response = documentResource.createDocument(uuid, request);
+        ResponseEntity response = documentResource.createDocument(request);
 
         verify(documentService, times(1)).createDocument(uuid, displayName, documentType);
 
