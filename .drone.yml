@@ -28,6 +28,7 @@ pipeline:
     - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
     - docker tag hocs-docs quay.io/ukhomeofficedigital/hocs-docs:latest
     - docker push quay.io/ukhomeofficedigital/hocs-docs:build-$${DRONE_BUILD_NUMBER}
+    - docker push quay.io/ukhomeofficedigital/hocs-docs:latest  
     when:
       branch: master
       event: push
