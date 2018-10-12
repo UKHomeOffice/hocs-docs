@@ -12,6 +12,7 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -260,5 +261,18 @@ public class DocumentServiceTest {
 
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
+    }
+
+    @Test
+    public void shouldReturnDocumentListForCaseAndForType() {
+
+        UUID uuid = UUID.randomUUID();
+
+        when(documentRepository.findAllByExternalReferenceUUIDAndType(uuid,"DRAFT" )).thenReturn(new HashSet<>());
+
+        documentService.getDocumentsByReferenceForType(uuid, "DRAFT");
+
+        verify(documentRepository, times(1)).findAllByExternalReferenceUUIDAndType(uuid, "DRAFT");
+        verifyNoMoreInteractions(documentRepository);
     }
 }

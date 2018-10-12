@@ -8,11 +8,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
+import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,20 +22,23 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentResourceTest {
 
+    public static final java.util.UUID UUID = java.util.UUID.randomUUID();
     @Mock
     private DocumentDataService documentService;
 
     private DocumentDataResource documentResource;
 
+    private UUID uuid = UUID.randomUUID();
+
     @Before
-    public void setUp(){
+    public void setUp() {
         documentResource = new DocumentDataResource(documentService);
     }
 
     @Test
     public void shouldCreateDocumentWithValidParams() throws ApplicationExceptions.EntityCreationException {
 
-        UUID uuid = UUID.randomUUID();
+
         String displayName = "name";
         DocumentType documentType = DocumentType.ORIGINAL;
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
@@ -52,5 +56,19 @@ public class DocumentResourceTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
+
+    @Test
+    public void shouldReturnListOfDocumentsForAType() {
+        when(documentService.getDocumentsByReferenceForType(uuid, "DRAFT")).thenReturn(new HashSet<>());
+
+        ResponseEntity<GetDocumentsResponse> response = documentResource.getDocumentsForCaseForType(uuid, "DRAFT");
+
+        verify(documentService, times(1)).getDocumentsByReferenceForType(uuid, "DRAFT");
+        verifyNoMoreInteractions(documentService);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
 
 }

@@ -42,6 +42,12 @@ class DocumentDataResource {
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
+    @GetMapping(value = "/document/case/{caseUUID}/{type}", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID caseUUID, @PathVariable String type) {
+        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceForType(caseUUID,type);
+        return ResponseEntity.ok(GetDocumentsResponse.from(documents));
+    }
+
     @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
         DocumentData document = documentDataService.getDocumentData(documentUUID);

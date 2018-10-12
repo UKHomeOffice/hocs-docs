@@ -63,6 +63,10 @@ public class DocumentDataService {
         return documents;
     }
 
+    public Set<DocumentData> getDocumentsByReferenceForType(UUID caseUuid, String type) {
+        return documentRepository.findAllByExternalReferenceUUIDAndType(caseUuid,type);
+    }
+
     public void deleteDocument(UUID documentUUID) {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
