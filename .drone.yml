@@ -3,7 +3,18 @@ pipeline:
   build-project:
     image: quay.io/ukhomeofficedigital/openjdk8
     commands:
-    - ./gradlew build
+      - export SPRING_PROFILES_ACTIVE='development, local, postgres'
+      - export SERVER_PORT='8080'
+      - export DOCS_QUEUE_NAME='document-queue'
+      - export DOCS_QUEUE_DLQ_NAME='document-queue-dlq'
+      - export CASE_QUEUE_NAME='case-queue'
+      - export DOCS_TRUSTEDS3BUCKETNAME='trusted-bucket'
+      - export DOCS_UNTRUSTEDS3BUCKETNAME='untrusted-bucket'
+      - export HOCSCONVERTER_ROOT='http4://converter:8080'
+      - export CLAMAV_ROOT='http4://clamav:8080'
+      - export DB_HOST='postgres'
+      - export AWS_LOCAL_HOST='localstack'
+      - ./gradlew build
     when:
       event: [push, pull_request, tag]
 
@@ -100,3 +111,42 @@ pipeline:
     when:
       event: deployment
       environment: prod
+
+services:
+  postgres:
+    image: quay.io/ukhomeofficedigital/postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      HOSTNAME_EXTERNAL: localstack
+      DEFAULT_REGION: eu-west-2
+      SERVICES: sqs,s3
+  aws_cli:
+    image: garland/aws-cli-docker
+    command:
+      - /bin/sh
+      - -c
+      - |
+          aws --endpoint-url=http://localstack:4572 s3 mb s3://untrusted-bucket
+          aws --endpoint-url=http://localstack:4572 s3 mb s3://trusted-bucket
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name case-queue
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name case-queue-dlq
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name document-queue
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name document-queue-dlq
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name reporting-queue
+          aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name reporting-queue-dlq
+    environment:
+      AWS_ACCESS_KEY_ID: UNSET
+      AWS_SECRET_ACCESS_KEY: UNSET
+      AWS_DEFAULT_REGION: 'eu-west-2'
+  converter:
+    image: quay.io/ukhomeofficedigital/hocs-docs-converter
+  clamav:
+    image: lokori/clamav-rest
+    environment:
+      CLAMD_HOST: clamd
+  clamd:
+    image: quay.io/ukhomeofficedigital/clamav:v1.4.0
