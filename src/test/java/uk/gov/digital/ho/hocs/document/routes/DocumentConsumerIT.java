@@ -69,19 +69,31 @@ public class DocumentConsumerIT {
 
     private static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().port(9002));
 
-    private final String caseUUID = UUID.randomUUID().toString();
+    private final String externalReferenceUUID = UUID.randomUUID().toString();
     private String documentUUID;
+    private String documentStandardLineUUID;
+    private String documentTemplateUUID;
     private final String filename = "someUUID.docx";
     private final String originalFilename = "sample.docx";
 
     private DocumentData document;
+    private DocumentData documentStandardLine;
+    private DocumentData documentTemplate;
     private ProcessDocumentRequest request ;
+    private ProcessDocumentRequest requestStandardLine ;
+    private ProcessDocumentRequest requestTemplate ;
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(caseUUID), "some document", DocumentType.ORIGINAL);
+        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", DocumentType.ORIGINAL);
+        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", DocumentType.STANDARD_LINE);
+        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", DocumentType.TEMPLATE);
         documentUUID = document.getUuid().toString();
+        documentStandardLineUUID = documentStandardLine.getUuid().toString();
+        documentTemplateUUID = documentTemplate.getUuid().toString();
         request = new ProcessDocumentRequest(documentUUID, filename);
+        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename);
+        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename);
 
         if(!setUpIsDone) {
             configureFor("localhost", 9002);
@@ -103,6 +115,16 @@ public class DocumentConsumerIT {
     }
 
     @Test
+    public void shouldCallMalwareForStandardLineAndNotConverterService() throws Exception {
+        runSuccessfulConversionForStandardLine();
+    }
+
+    @Test
+    public void shouldCallMalwareForTemplateAndNotConverterService() throws Exception {
+        runSuccessfulConversionForTemplate();
+    }
+
+    @Test
     public void shouldNotCallConversionServiceWhenMalwareCheckFails() throws Exception {
         wireMockServer.resetAll();
 
@@ -120,6 +142,16 @@ public class DocumentConsumerIT {
         wireMockServer.resetAll();
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
+        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+    }
+
+    @Test
+    public void shouldNotCallConversionServiceIfDocumentTypeIsStandardLine() throws Exception {
+        wireMockServer.resetAll();
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : True")));
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
@@ -168,11 +200,11 @@ public class DocumentConsumerIT {
 
        ObjectMetadata pdfMetadata = trustedClient.getObjectMetadata(trustedBucketName, pdfKey);
        assertThat(pdfMetadata.getContentType()).isEqualTo("application/pdf");
-       assertThat(pdfMetadata.getUserMetaDataOf("caseUUID")).isEqualTo(caseUUID);
+       assertThat(pdfMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(externalReferenceUUID);
        assertThat(pdfMetadata.getUserMetaDataOf("originalName")).isEqualTo("sample.pdf");
 
         ObjectMetadata docxMetadata = trustedClient.getObjectMetadata(trustedBucketName, docxKey);
-        assertThat(docxMetadata.getUserMetaDataOf("caseUUID")).isEqualTo(caseUUID);
+        assertThat(docxMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(externalReferenceUUID);
         assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
     }
 
@@ -231,7 +263,7 @@ public class DocumentConsumerIT {
 
     private String getKeyFromExtension(String extension) {
         return trustedClient.listObjectsV2(trustedBucketName)
-                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(caseUUID))))
+                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(externalReferenceUUID))))
                 .findFirst().get().getKey();
     }
 
@@ -247,6 +279,28 @@ public class DocumentConsumerIT {
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(1, postRequestedFor(urlEqualTo("/uploadFile")));
+    }
+
+    private void runSuccessfulConversionForStandardLine() throws IOException, URISyntaxException {
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(requestStandardLine));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+    }
+
+    private void runSuccessfulConversionForTemplate() throws IOException, URISyntaxException {
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        template.sendBody(endpoint, mapper.writeValueAsString(requestTemplate));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
 
 

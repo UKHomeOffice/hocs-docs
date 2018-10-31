@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
@@ -16,8 +15,6 @@ import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,14 +51,14 @@ public class S3DocumentService {
     }
 
     public S3Document copyToTrustedBucket(DocumentCopyRequest copyRequest) throws IOException {
-            String destinationKey = String.format("%s/%s.%s", copyRequest.getCaseUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
+            String destinationKey = String.format("%s/%s.%s", copyRequest.getExternalReferenceUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
             log.info("Copying {} from untrusted {} to {} trusted bucket {}", copyRequest.getFileLink(), untrustedS3BucketName, destinationKey, trustedS3BucketName);
 
            S3Document copyDocument = getFileFromUntrustedS3(copyRequest.getFileLink());
 
             ObjectMetadata metaData = new ObjectMetadata();
             metaData.setContentType(copyDocument.getMimeType());
-            metaData.addUserMetadata("caseUUID", copyRequest.getCaseUUID());
+            metaData.addUserMetadata("externalReferenceUUID", copyRequest.getExternalReferenceUUID());
             metaData.addUserMetadata("filename", destinationKey);
             metaData.addUserMetadata("originalName", copyDocument.getOriginalFilename());
 
@@ -80,8 +77,8 @@ public class S3DocumentService {
         ObjectMetadata metaData = new ObjectMetadata();
 
         metaData.setContentType("application/pdf");
-        String destinationKey = String.format("%s/%s.%s", document.getCaseUUID(), UUID.randomUUID().toString(),CONVERTED_DOCUMENT_EXTENSION);
-        metaData.addUserMetadata("caseUUID", document.getCaseUUID());
+        String destinationKey = String.format("%s/%s.%s", document.getExternalReferenceUUID(), UUID.randomUUID().toString(),CONVERTED_DOCUMENT_EXTENSION);
+        metaData.addUserMetadata("externalReferenceUUID", document.getExternalReferenceUUID());
         metaData.addUserMetadata("originalName", getPDFFilename(document.getOriginalFileName()));
 
 

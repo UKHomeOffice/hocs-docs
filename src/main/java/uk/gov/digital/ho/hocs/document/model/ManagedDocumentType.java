@@ -2,10 +2,12 @@ package uk.gov.digital.ho.hocs.document.model;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+
 public enum ManagedDocumentType {
 
-    TEMPLATE("Template"),
-    STANDARD_LINE("Standard Line");
+    TEMPLATE("TEMPLATE"),
+    STANDARD_LINE("STANDARD_LINE");
 
     @Getter
     private String displayValue;
@@ -13,4 +15,5 @@ public enum ManagedDocumentType {
     ManagedDocumentType(String value) {
         displayValue = value;
     }
+
 }

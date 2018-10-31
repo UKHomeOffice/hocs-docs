@@ -74,7 +74,9 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
-                .setProperty("caseUUID", simple("${body.externalReferenceUUID}"))
+                .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
+                .setProperty("documentType", simple("${body.type}") )
+                .log(LoggingLevel.INFO, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
                 .to(toQueue);
     }
@@ -83,9 +85,9 @@ public class DocumentConsumer extends RouteBuilder {
     private Processor generateMalwareCheck() {
         return exchange -> {
             UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
-            UUID caseUUID = UUID.fromString(exchange.getProperty("caseUUID").toString());
+            UUID externalReferenceUUID = UUID.fromString(exchange.getProperty("externalReferenceUUID").toString());
             String fileLink = exchange.getProperty("fileLink").toString();
-            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, caseUUID));
+            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID));
         };
     }
 
