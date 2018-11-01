@@ -10,6 +10,7 @@ public class ProcessDocumentRequest {
 
     @JsonProperty("uuid")
     private final String uuid;
+
     @JsonProperty("fileLink")
     private final String fileLink;
 

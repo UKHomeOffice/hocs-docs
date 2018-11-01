@@ -34,7 +34,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     private final String toEndpoint = "mock:updaterecord";
     private final String conversionService = "mock:conversion-service";
     private UUID documentUUID = UUID.randomUUID();
-    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "caseUUID", "docx");
+    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx");
 
 
     @Override
@@ -80,7 +80,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldAddPropertiesToExchange() throws Exception {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedPropertyReceived("caseUUID", "caseUUID");
+        mockEndpoint.expectedPropertyReceived("externalReferenceUUID", "externalReferenceUUID");
         template.sendBody(endpoint,request);
         mockEndpoint.assertIsSatisfied();
     }
@@ -107,7 +107,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     private S3Document getTestDocument() throws URISyntaxException, IOException {
         byte[] data = Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
-        return new S3Document("somecaseUUID/UUID.pdf", "sample.docx", data, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        return new S3Document("someexternalReferenceUUID/UUID.pdf", "sample.docx", data, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {

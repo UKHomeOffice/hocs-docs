@@ -10,19 +10,19 @@ aws --endpoint-url=http://localhost:4572 s3 cp ./sample.test s3://cs-dev-untrust
 sleep 2
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
- --message-body '{"caseUUID":"4321","documentDisplayName":"sample.txt","documentUUID":"txt.dummyId","fileLink":"sample.txt"}'
+ --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.txt","documentUUID":"txt.dummyId","fileLink":"sample.txt"}'
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
- --message-body '{"caseUUID":"4321","documentDisplayName":"sample.rtf","documentUUID":"rtf.dummyId","fileLink":"sample.rtf"}'
+ --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.rtf","documentUUID":"rtf.dummyId","fileLink":"sample.rtf"}'
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
- --message-body '{"caseUUID":"4321","documentDisplayName":"sample.doc","documentUUID":"doc.dummyId","fileLink":"sample.doc"}'
+ --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.doc","documentUUID":"doc.dummyId","fileLink":"sample.doc"}'
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
- --message-body '{"caseUUID":"4321","documentDisplayName":"sample.docx","documentUUID":"docx.dummyId","fileLink":"sample.docx"}'
+ --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.docx","documentUUID":"docx.dummyId","fileLink":"sample.docx"}'
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
- --message-body '{"caseUUID":"4321","documentDisplayName":"sample.html","documentUUID":"html.dummyId","fileLink":"sample.html"}'
+ --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.html","documentUUID":"html.dummyId","fileLink":"sample.html"}'
 
 #aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
-# --message-body '{"caseUUID":"1234","documentDisplayName":"sample.test","documentUUID":"test.dummyId","fileLink":"sample.test"}'
+# --message-body '{"externalReferenceUUID":"1234","documentDisplayName":"sample.test","documentUUID":"test.dummyId","fileLink":"sample.test"}'

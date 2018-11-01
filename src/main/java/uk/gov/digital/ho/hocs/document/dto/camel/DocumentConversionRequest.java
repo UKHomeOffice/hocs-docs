@@ -10,6 +10,6 @@ import java.util.UUID;
 public class DocumentConversionRequest {
     private UUID documentUUID;
     private final String fileLink;
-    private final String caseUUID;
+    private final String externalReferenceUUID;
     private final String fileType;
 }

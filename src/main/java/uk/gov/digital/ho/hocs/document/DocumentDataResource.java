@@ -32,19 +32,19 @@ class DocumentDataResource {
 
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
-        DocumentData documentData = documentDataService.createDocument(request.getCaseUUID(),request.getName(), request.getType());
+        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getType());
         return ResponseEntity.ok(CreateDocumentResponse.from(documentData));
     }
 
-    @GetMapping(value = "/document/case/{caseUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCase(@PathVariable UUID caseUUID) {
-        Set<DocumentData> documents = documentDataService.getDocumentsByReference(caseUUID);
+    @GetMapping(value = "/document/case/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCase(@PathVariable UUID externalReferenceUUID) {
+        Set<DocumentData> documents = documentDataService.getDocumentsByReference(externalReferenceUUID);
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
-    @GetMapping(value = "/document/case/{caseUUID}/{type}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID caseUUID, @PathVariable String type) {
-        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceForType(caseUUID,type);
+    @GetMapping(value = "/document/case/{externalReferenceUUID}/{type}", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @PathVariable String type) {
+        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceForType(externalReferenceUUID,type);
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 

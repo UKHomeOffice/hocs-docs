@@ -29,11 +29,11 @@ public class DocumentDataService {
         this.s3DocumentService = s3DocumentService;
     }
 
-    public DocumentData createDocument(UUID caseUUID, String displayName, DocumentType type) {
-        log.debug("Creating Document: {}, Case UUID: {}", displayName, caseUUID);
-        DocumentData documentData = new DocumentData(caseUUID, type, displayName);
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, DocumentType type) {
+        log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
+        DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        log.info("Created Document: {}, Case UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID());
+        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID());
         return documentData;
     }
 
@@ -58,13 +58,13 @@ public class DocumentDataService {
         }
     }
 
-    public Set<DocumentData> getDocumentsByReference(UUID caseUuid) {
-        Set<DocumentData> documents = documentRepository.findAllByExternalReferenceUUID(caseUuid);
+    public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
+        Set<DocumentData> documents = documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
         return documents;
     }
 
-    public Set<DocumentData> getDocumentsByReferenceForType(UUID caseUuid, String type) {
-        return documentRepository.findAllByExternalReferenceUUIDAndType(caseUuid,type);
+    public Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {
+        return documentRepository.findAllByExternalReferenceUUIDAndType(externalReferenceUUID,type);
     }
 
     public void deleteDocument(UUID documentUUID) {

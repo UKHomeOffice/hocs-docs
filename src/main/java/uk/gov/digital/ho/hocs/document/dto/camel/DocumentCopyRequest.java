@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class DocumentCopyRequest {
     private final String fileLink;
-    private final String caseUUID;
+    private final String externalReferenceUUID;
     private final String fileType;
 }

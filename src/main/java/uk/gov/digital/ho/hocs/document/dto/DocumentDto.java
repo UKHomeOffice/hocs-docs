@@ -20,7 +20,7 @@ public class DocumentDto {
     @JsonProperty("uuid")
     private UUID uuid;
 
-    @JsonProperty("caseUUID")
+    @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
 
     @JsonProperty("type")

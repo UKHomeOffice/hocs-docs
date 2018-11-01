@@ -8,6 +8,6 @@ import lombok.Getter;
 public class UploadDocument {
     private String filename;
     private byte[] data;
-    private String caseUUID;
+    private String externalReferenceUUID;
     private String OriginalFileName;
 }

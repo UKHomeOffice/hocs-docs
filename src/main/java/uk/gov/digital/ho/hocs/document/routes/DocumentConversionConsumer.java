@@ -2,6 +2,7 @@ package uk.gov.digital.ho.hocs.document.routes;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
@@ -15,9 +16,15 @@ import uk.gov.digital.ho.hocs.document.HttpProcessors;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
+import uk.gov.digital.ho.hocs.document.model.DocumentType;
+import uk.gov.digital.ho.hocs.document.model.ManagedDocumentType;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
@@ -75,15 +82,25 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(generateDocumentUpdateRequest())
                     .to(toQueue)
                 .end()
-                .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
-                .setProperty("uuid", simple("${body.documentUUID}"))
-                .setProperty("caseUUID", simple("${body.caseUUID}"))
-                .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
-                .setProperty("filename", simple("${body.filename}"))
-                .setProperty("originalFilename", simple("${body.originalFilename}"))
-                .log("Original Filename ${body.originalFilename}")
-                .process(HttpProcessors.buildMultipartEntity())
-                .to("direct:convert");
+                .log("Document type ${property.documentType}")
+                .log("Should convert "+ shouldConvertDocument)
+                .choice()
+                .when(shouldConvertDocument)
+                    .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
+                    .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                .otherwise()
+                    .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
+                    .setProperty("uuid", simple("${body.documentUUID}"))
+                    .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
+                    .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
+                    .setProperty("filename", simple("${body.filename}"))
+                    .setProperty("originalFilename", simple("${body.originalFilename}"))
+                    .log("Original Filename ${body.originalFilename}")
+                    .process(HttpProcessors.buildMultipartEntity())
+                    .to("direct:convert")
+                .endChoice();
+
 
 
         from("direct:convert").routeId("conversion-convert-queue")
@@ -110,9 +127,9 @@ public class DocumentConversionConsumer extends RouteBuilder {
         return exchange -> {
             byte[] content =  exchange.getIn().getBody(byte[].class);
             String filename = exchange.getProperty("filename").toString();
-            String caseUUID = exchange.getProperty("caseUUID").toString();
+            String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
-            exchange.getOut().setBody(new UploadDocument(filename, content, caseUUID, originalFilename));
+            exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
         };
     }
 
@@ -127,5 +144,5 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-
+    private Predicate shouldConvertDocument = exchangeProperty("documentType").in(Arrays.stream(ManagedDocumentType.values()).map(ManagedDocumentType::getDisplayValue).toArray(String[]::new));
 }
