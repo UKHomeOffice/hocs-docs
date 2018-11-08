@@ -68,7 +68,7 @@ class DocumentDataResource {
         MediaType mediaType = MediaType.valueOf(document.getMimeType());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getFilename())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename())
                 .contentType(mediaType)
                 .contentLength(document.getData().length)
                 .body(resource);

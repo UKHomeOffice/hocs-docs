@@ -87,6 +87,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .choice()
                 .when(shouldConvertDocument)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
+                    .setProperty("filename", simple("${body.fileLink}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                 .otherwise()
