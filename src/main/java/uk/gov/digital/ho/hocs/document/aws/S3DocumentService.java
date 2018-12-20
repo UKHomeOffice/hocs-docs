@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
@@ -11,12 +12,16 @@ import org.springframework.stereotype.Service;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 
 @Service
 @Slf4j
@@ -52,7 +57,8 @@ public class S3DocumentService {
 
     public S3Document copyToTrustedBucket(DocumentCopyRequest copyRequest) throws IOException {
             String destinationKey = String.format("%s/%s.%s", copyRequest.getExternalReferenceUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
-            log.info("Copying {} from untrusted {} to {} trusted bucket {}", copyRequest.getFileLink(), untrustedS3BucketName, destinationKey, trustedS3BucketName);
+            log.info(String.format("Copying {} from untrusted {} to {} trusted bucket {}", copyRequest.getFileLink(),
+                    untrustedS3BucketName, destinationKey, trustedS3BucketName),value(EVENT, S3_TRUSTED_COPY_REQUEST));
 
            S3Document copyDocument = getFileFromUntrustedS3(copyRequest.getFileLink());
 
@@ -67,7 +73,13 @@ public class S3DocumentService {
             if(StringUtils.hasValue(trustedBucketKMSkeyId)) {
                 uploadRequest = uploadRequest.withSSEAwsKeyManagementParams(new SSEAwsKeyManagementParams(trustedBucketKMSkeyId));
             }
-            trustedS3Client.putObject(uploadRequest);
+
+            try {
+                trustedS3Client.putObject(uploadRequest);
+            }
+            catch(AmazonServiceException e) {
+                    throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file {} to S3 bucket {}",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
+            }
 
             return new S3Document(destinationKey,copyDocument.getOriginalFilename(),null, copyDocument.getFileType(),copyDocument.getMimeType());
     }
@@ -75,19 +87,24 @@ public class S3DocumentService {
     public S3Document uploadFile(UploadDocument document) {
 
         ObjectMetadata metaData = new ObjectMetadata();
-
         metaData.setContentType("application/pdf");
         String destinationKey = String.format("%s/%s.%s", document.getExternalReferenceUUID(), UUID.randomUUID().toString(),CONVERTED_DOCUMENT_EXTENSION);
         metaData.addUserMetadata("externalReferenceUUID", document.getExternalReferenceUUID());
         metaData.addUserMetadata("originalName", getPDFFilename(document.getOriginalFileName()));
-
 
         PutObjectRequest uploadRequest = new PutObjectRequest(trustedS3BucketName, destinationKey, new ByteArrayInputStream(document.getData()), metaData);
         if(StringUtils.hasValue(trustedBucketKMSkeyId)) {
             uploadRequest = uploadRequest.withSSEAwsKeyManagementParams(new SSEAwsKeyManagementParams(trustedBucketKMSkeyId));
         }
 
-        PutObjectResult response = trustedS3Client.putObject(uploadRequest);
+        PutObjectResult response;
+        try {
+            response = trustedS3Client.putObject(uploadRequest);
+        }
+        catch(AmazonServiceException e) {
+            throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file {} to S3 bucket {}",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
+        }
+
         return new S3Document(destinationKey, document.getFilename(),null,  response.getContentMd5(), "application/pdf");
 
     }
@@ -110,10 +127,10 @@ public class S3DocumentService {
 
         } catch (AmazonS3Exception ex) {
             if (ex.getStatusCode() == 404) {
-                throw new FileNotFoundException("File not found in S3 bucket");
+                throw new ApplicationExceptions.S3Exception("File not found in S3 bucket", S3_FILE_NOT_FOUND,ex);
             }
             else {
-                throw new IOException("Error retrieving document from S3");
+                throw new ApplicationExceptions.S3Exception("Error retrieving document from S3", S3_DOWNLOAD_FAILURE,ex);
             }
         }
     }

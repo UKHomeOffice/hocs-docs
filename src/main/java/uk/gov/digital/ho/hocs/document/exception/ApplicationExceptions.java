@@ -1,28 +1,65 @@
 package uk.gov.digital.ho.hocs.document.exception;
 
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
+
 public interface ApplicationExceptions {
 
     class DocumentConversionException extends Exception {
-        public DocumentConversionException(String message) {
+        private LogEvent event;
+        public DocumentConversionException(String message, LogEvent event) {
+            super(message);
+            this.event = event;
+        }
+        public LogEvent getEvent() {
+            return event;
         }
     }
 
     class MalwareCheckException extends Exception {
-        public MalwareCheckException(String message) {
+        private final LogEvent event;
+
+        public MalwareCheckException(String message, LogEvent event) {
+            super(message);
+            this.event = event;
+        }
+        public LogEvent getEvent() {
+            return event;
         }
     }
 
     class EntityCreationException extends RuntimeException {
-
-        public EntityCreationException(String msg, Object... args) {
-            super(String.format(msg, args));
+        private LogEvent event;
+        public EntityCreationException(String msg, LogEvent event, Object... args) {
+            super(msg);
+            this.event = event;
+        }
+        public LogEvent getEvent() {
+            return event;
         }
     }
 
     class EntityNotFoundException extends RuntimeException {
 
-        public EntityNotFoundException(String msg, Object... args) {
-            super(String.format(msg, args));
+        private LogEvent event;
+        public EntityNotFoundException(String msg, LogEvent event, Object... args) {
+            super(msg);
+            this.event = event;
+        }
+        public LogEvent getEvent() {
+            return event;
         }
     }
+
+    class S3Exception extends RuntimeException {
+
+        private LogEvent event;
+        public S3Exception(String msg, LogEvent event, Exception cause, Object... args) {
+            super(msg, cause);
+            this.event = event;
+        }
+        public LogEvent getEvent() {
+            return event;
+        }
+    }
+
 }

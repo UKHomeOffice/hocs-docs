@@ -1,15 +1,20 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
 import com.adobe.testing.s3mock.junit4.S3MockRule;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.Mockito;
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -20,6 +25,8 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 public class S3DocumentServiceTest {
@@ -58,15 +65,29 @@ public class S3DocumentServiceTest {
     @Test
     public void shouldThrowNotFoundExceptionWhenFileNotInUntrustedBucket() {
         assertThatThrownBy(() -> service.getFileFromUntrustedS3("a missing file.ext"))
-                .isInstanceOf(FileNotFoundException.class)
-                .hasMessage("File not found in S3 bucket");
+                .isInstanceOf(ApplicationExceptions.S3Exception.class)
+                .hasMessage("File not found in S3 bucket")
+                .hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenAnyOtherErrorOccurs() {
+        AmazonS3 failingClient = Mockito.mock(AmazonS3.class);
+        AmazonS3Exception S3500Exception = new AmazonS3Exception("something went wrong");
+        S3500Exception.setStatusCode(500);
+        when(failingClient.getObject(any())).thenThrow(S3500Exception);
+        S3DocumentService badService = new S3DocumentService(untrustedBucketName, trustedBucketName, failingClient, failingClient, "");
+        assertThatThrownBy(() -> badService.getFileFromUntrustedS3("a bad file"))
+                .isInstanceOf(ApplicationExceptions.S3Exception.class)
+                .hasFieldOrPropertyWithValue("event", LogEvent.S3_DOWNLOAD_FAILURE);
     }
 
     @Test
     public void shouldThrowNotFoundExceptionWhenFileNotInTrustedBucket() {
         assertThatThrownBy(() -> service.getFileFromTrustedS3("a missing file.ext"))
-                .isInstanceOf(FileNotFoundException.class)
-                .hasMessage("File not found in S3 bucket");
+                .isInstanceOf(ApplicationExceptions.S3Exception.class)
+                .hasMessage("File not found in S3 bucket")
+                .hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
     }
 
     @Test

@@ -23,6 +23,3 @@ aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://loc
 
 aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
  --message-body '{"externalReferenceUUID":"4321","documentDisplayName":"sample.html","documentUUID":"html.dummyId","fileLink":"sample.html"}'
-
-#aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://localhost:4576/queue/cs-dev-document-sqs \
-# --message-body '{"externalReferenceUUID":"1234","documentDisplayName":"sample.test","documentUUID":"test.dummyId","fileLink":"sample.test"}'
