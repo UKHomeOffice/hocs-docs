@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class ProcessDocumentRequest {
 
-    @JsonProperty("uuid")
+    @JsonProperty(value = "uuid", required = true)
     private final String uuid;
 
     @JsonProperty("fileLink")

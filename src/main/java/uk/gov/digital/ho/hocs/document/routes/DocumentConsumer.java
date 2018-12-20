@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
+
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
@@ -63,20 +64,18 @@ public class DocumentConsumer extends RouteBuilder {
                             Exception.class).getMessage());
                 }));
 
-        this.getContext().setStreamCaching(true);
-
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
                 .log(LoggingLevel.INFO, "Reading document request for case")
-                .log("Received process document request ${body}")
+                .log(LoggingLevel.DEBUG,"Received process document request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
-                .log(LoggingLevel.INFO, "Doc type - ${body.type}")
+                .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
                 .to(toQueue);
     }

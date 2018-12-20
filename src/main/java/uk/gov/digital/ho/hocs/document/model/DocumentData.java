@@ -4,12 +4,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Where;
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_CREATION_FAILURE;
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UDPATE_FAILURE;
 
 @Entity
 @Table(name = "document_data")
@@ -63,7 +67,8 @@ public class DocumentData implements Serializable {
 
     public DocumentData(UUID externalReferenceUUID, DocumentType type, String displayName) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName)
+                    , DOCUMENT_CREATION_FAILURE);
         }
         this.uuid = UUID.randomUUID();
         this.type = type.toString();
@@ -73,7 +78,8 @@ public class DocumentData implements Serializable {
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
         if (fileLink == null || status == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status)
+                    ,DOCUMENT_UDPATE_FAILURE);
         }
         this.fileLink = fileLink;
         this.pdfLink = pdfLink;

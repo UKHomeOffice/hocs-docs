@@ -3,7 +3,7 @@ package uk.gov.digital.ho.hocs.document;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
@@ -15,6 +15,9 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
+
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 
 @Service
 @Slf4j
@@ -33,7 +36,7 @@ public class DocumentDataService {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID());
+        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
         return documentData;
     }
 
@@ -42,7 +45,7 @@ public class DocumentDataService {
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
         documentRepository.save(documentData);
-        log.info("Updated Document: {}", documentData.getUuid());
+        log.info("Updated Document: {}", documentData.getUuid(), value(EVENT, DOCUMENT_UPDATED));
     }
 
     public DocumentData getDocumentData(String documentUUID) {
@@ -54,7 +57,7 @@ public class DocumentDataService {
         if (documentData != null) {
             return documentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException("Document UUID: %s not found!", documentUUID);
+            throw new ApplicationExceptions.EntityNotFoundException(String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
         }
     }
 
@@ -71,7 +74,7 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
-        log.info("Set Document to deleted: {}", documentUUID);
+        log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 
     public S3Document getDocumentFile(UUID documentUUID) {
@@ -79,7 +82,7 @@ public class DocumentDataService {
         try {
             return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
         } catch (IOException e) {
-            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage());
+            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(),DOCUMENT_NOT_FOUND);
         }
     }
 
@@ -88,7 +91,7 @@ public class DocumentDataService {
         try{
             return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
         } catch (IOException e) {
-            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage());
+            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }
     }
 }

@@ -9,22 +9,18 @@ import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.dto.camel.UpdateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.HttpProcessors;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
-import uk.gov.digital.ho.hocs.document.model.ManagedDocumentType;
+import uk.gov.digital.ho.hocs.document.model.DocumentConversionExemptTypes;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
@@ -72,18 +68,14 @@ public class DocumentConversionConsumer extends RouteBuilder {
                             Exception.class).getMessage());
                 }));
 
-
-
-        this.getContext().setStreamCaching(true);
-
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()
                     .onWhen(exchangeProperty("status").isNotNull())
                     .process(generateDocumentUpdateRequest())
                     .to(toQueue)
                 .end()
-                .log("Document type ${property.documentType}")
-                .log("Should convert "+ shouldConvertDocument)
+                .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
+                .log(LoggingLevel.DEBUG,"Should convert "+ shouldConvertDocument)
                 .choice()
                 .when(shouldConvertDocument)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
@@ -97,7 +89,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
                     .setProperty("filename", simple("${body.filename}"))
                     .setProperty("originalFilename", simple("${body.originalFilename}"))
-                    .log("Original Filename ${body.originalFilename}")
+                    .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
                     .to("direct:convert")
                 .endChoice();
@@ -106,21 +98,22 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         from("direct:convert").routeId("conversion-convert-queue")
                 .errorHandler(noErrorHandler())
-                .log("Calling document converter service")
+                .log(LoggingLevel.INFO, "Calling document converter service")
                 .to(hocsConverterPath)
                 .choice()
                 .when(HttpProcessors.validateHttpResponse)
                     .log(LoggingLevel.INFO, "Document conversion successful")
                     .process(generateUploadDocument())
-                    .log(LoggingLevel.INFO, "Uploading file to trusted bucket")
+                    .log(LoggingLevel.DEBUG, "Uploading file to trusted bucket")
                     .bean(s3BucketService, "uploadFile")
-                    .log("PDF Filename: ${body.filename}")
+                    .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filename}")
                     .setProperty("pdfFilename", simple("${body.filename}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document" + simple("${property.originalFilename}")))
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document"
+                            + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
 
@@ -134,7 +127,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-
     private Processor generateDocumentUpdateRequest() {
         return exchange -> {
             UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
@@ -145,5 +137,5 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-    private Predicate shouldConvertDocument = exchangeProperty("documentType").in(Arrays.stream(ManagedDocumentType.values()).map(ManagedDocumentType::getDisplayValue).toArray(String[]::new));
+    private Predicate shouldConvertDocument = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
 }
