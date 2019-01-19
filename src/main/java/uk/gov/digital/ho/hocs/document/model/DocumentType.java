@@ -6,6 +6,7 @@ public enum DocumentType {
 
     ORIGINAL("Original"),
     DRAFT("Draft"),
+    FINAL("Final"),
 
     TEMPLATE("TEMPLATE"),
     STANDARD_LINE("STANDARD_LINE");
