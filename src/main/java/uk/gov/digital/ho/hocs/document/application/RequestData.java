@@ -14,11 +14,10 @@ import java.util.UUID;
 public class RequestData implements HandlerInterceptor {
 
 
-    private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
-    private static final String USER_ID_HEADER = "X-Auth-Userid";
-    private static final String USERNAME_HEADER = "X-Auth-Username";
-
-    private static final String ANONYMOUS = "anonymous";
+     static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
+     static final String USER_ID_HEADER = "X-Auth-Userid";
+     private static final String USERNAME_HEADER = "X-Auth-Username";
+     private static final String ANONYMOUS = "anonymous";
 
 
     @Override

@@ -45,5 +45,8 @@ public class SpringConfiguration implements WebMvcConfigurer {
         return org.slf4j.LoggerFactory.getLogger("uk.gov.homeoffice.hocs.docs");
     }
 
-
+    @Bean
+    public RestTemplate createRestTemplate() {
+        return new RestTemplate();
+    }
 }

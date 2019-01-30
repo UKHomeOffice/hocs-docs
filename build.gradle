@@ -33,7 +33,7 @@ dependencies {
     }
 
     compile('org.springframework.boot:spring-boot-starter-undertow')
-    compile('net.logstash.logback:logstash-logback-encoder:5.1')
+    compile('net.logstash.logback:logstash-logback-encoder:5.2')
     compile('org.springframework.boot:spring-boot-starter-json')
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
@@ -43,7 +43,7 @@ dependencies {
 	  compile group: 'org.apache.camel', name: 'camel-aws', version: camelVersion
 	  compile group: 'org.apache.camel', name: 'camel-http4', version: camelVersion
 	  compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
-	  compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.380'
+      compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.446'
 
     compile('org.flywaydb:flyway-core')
     compile 'org.hsqldb:hsqldb'
@@ -57,4 +57,17 @@ dependencies {
     testCompile('org.assertj:assertj-core')
     testCompile group: 'com.adobe.testing', name: 's3mock-junit4', version: '2.0.9'
     testCompile group: 'com.adobe.testing', name: 's3mock', version: '2.0.9'
+
+    
+    compile "javax.json:javax.json-api:1.1"
+    compile "org.glassfish:javax.json:1.1"
+
+
+
+    
+    
+
+
+
+
 }
