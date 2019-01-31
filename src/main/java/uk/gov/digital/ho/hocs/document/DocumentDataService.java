@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
+import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -25,11 +26,13 @@ public class DocumentDataService {
 
     private final DocumentRepository documentRepository;
     private final S3DocumentService s3DocumentService;
+    private final AuditClient auditClient;
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
+        this.auditClient = auditClient;
     }
 
     public DocumentData createDocument(UUID externalReferenceUUID, String displayName, DocumentType type) {
@@ -37,6 +40,7 @@ public class DocumentDataService {
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
+        auditClient.createDocumentAudit(documentData);
         return documentData;
     }
 
@@ -74,13 +78,17 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
+        auditClient.deleteDocumentAudit(documentData);
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 
     public S3Document getDocumentFile(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try {
-            return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
+            log.debug("Getting Document File: {}", documentUUID);
+            S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
+            auditClient.downloadDocumentAudit(documentData);
+            return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(),DOCUMENT_NOT_FOUND);
         }
@@ -89,7 +97,10 @@ public class DocumentDataService {
     public S3Document getDocumentPdf(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try{
-            return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+            log.debug("Getting Document PDF: {}", documentUUID);
+            S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+            auditClient.downloadDocumentAudit(documentData);
+            return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }
