@@ -57,7 +57,7 @@ public class S3DocumentService {
 
     public S3Document copyToTrustedBucket(DocumentCopyRequest copyRequest) throws IOException {
             String destinationKey = String.format("%s/%s.%s", copyRequest.getExternalReferenceUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
-            log.info(String.format("Copying {} from untrusted {} to {} trusted bucket {}", copyRequest.getFileLink(),
+            log.info(String.format("Copying %s from untrusted %s to %s trusted bucket %s", copyRequest.getFileLink(),
                     untrustedS3BucketName, destinationKey, trustedS3BucketName),value(EVENT, S3_TRUSTED_COPY_REQUEST));
 
            S3Document copyDocument = getFileFromUntrustedS3(copyRequest.getFileLink());
@@ -78,7 +78,7 @@ public class S3DocumentService {
                 trustedS3Client.putObject(uploadRequest);
             }
             catch(AmazonServiceException e) {
-                    throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file {} to S3 bucket {}",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
+                    throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file %s to S3 bucket %s",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
             }
 
             return new S3Document(destinationKey,copyDocument.getOriginalFilename(),null, copyDocument.getFileType(),copyDocument.getMimeType());
@@ -102,7 +102,7 @@ public class S3DocumentService {
             response = trustedS3Client.putObject(uploadRequest);
         }
         catch(AmazonServiceException e) {
-            throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file {} to S3 bucket {}",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
+            throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file %s to %s bucket %s",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
         }
 
         return new S3Document(destinationKey, document.getFilename(),null,  response.getContentMd5(), "application/pdf");

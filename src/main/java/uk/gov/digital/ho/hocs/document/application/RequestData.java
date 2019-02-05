@@ -14,11 +14,11 @@ import java.util.UUID;
 public class RequestData implements HandlerInterceptor {
 
 
-    private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
-    private static final String USER_ID_HEADER = "X-Auth-Userid";
-    private static final String USERNAME_HEADER = "X-Auth-Username";
-
-    private static final String ANONYMOUS = "anonymous";
+    public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
+    public static final String USER_ID_HEADER = "X-Auth-Userid";
+    public static final String USERNAME_HEADER = "X-Auth-Username";
+    public static final String CAMEL_CORRELATION_ID_HEADER = "correlationId";
+    public static final String ANONYMOUS = "anonymous";
 
 
     @Override
@@ -71,6 +71,7 @@ public class RequestData implements HandlerInterceptor {
     public static Processor transferHeadersToMDC() {
         return ex -> {
             MDC.put(CORRELATION_ID_HEADER, ex.getIn().getHeader(CORRELATION_ID_HEADER, String.class));
+            MDC.put(CAMEL_CORRELATION_ID_HEADER, ex.getIn().getHeader(CORRELATION_ID_HEADER, String.class));
             MDC.put(USER_ID_HEADER, ex.getIn().getHeader(USER_ID_HEADER, String.class));
             MDC.put(USERNAME_HEADER, ex.getIn().getHeader(USERNAME_HEADER, String.class));
         };

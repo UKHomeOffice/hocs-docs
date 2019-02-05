@@ -44,7 +44,7 @@ public class UpdateDocumentConsumer extends RouteBuilder {
                 .redeliveryDelay(redeliveryDelay)
                 .backOffMultiplier(backOffMultiplier)
                 .asyncDelayedRedelivery()
-                .logRetryStackTrace(true)
+                .logRetryStackTrace(false)
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
