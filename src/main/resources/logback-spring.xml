@@ -4,7 +4,6 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <springProperty scope="context" name="appName" source="info.app.name"/>
-    <springProperty scope="context" name="appVersion" source="info.app.version"/>
 
     <springProfile name="development">
         <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
@@ -12,9 +11,6 @@
                 <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
             </layout>
         </appender>
-        <logger name="uk.gov" additivity="false" level="INFO">
-            <appender-ref ref="consoleAppender"/>
-        </logger>
     </springProfile>
 
     <springProfile name="!development">
@@ -36,6 +32,10 @@
         </appender>
     </springProfile>
 
+    <logger name="uk.gov" additivity="false" level="INFO">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
     <logger name="org.eclipse.jetty" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
@@ -48,7 +48,7 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <logger name="org.apache.camel" additivity="false" level="INFO">
+    <logger name="org.apache.camel" additivity="false" level="ERROR">
         <appender-ref ref="consoleAppender"/>
     </logger>
 
@@ -60,8 +60,12 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <root level="INFO">
+    <logger name="c.amazonaws.services" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <root level="WARN">
+        <appender-ref ref="consoleAppender" />
     </root>
 
 </configuration>

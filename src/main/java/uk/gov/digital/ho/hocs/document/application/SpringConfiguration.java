@@ -31,6 +31,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
             public void beforeApplicationStart(CamelContext context) {
                 context.setUseMDCLogging(true);
                 context.setStreamCaching(true);
+  
             }
 
             @Override

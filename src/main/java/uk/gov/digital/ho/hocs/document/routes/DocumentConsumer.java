@@ -49,6 +49,8 @@ public class DocumentConsumer extends RouteBuilder {
 
     @Override
     public void configure() {
+
+
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
@@ -58,11 +60,12 @@ public class DocumentConsumer extends RouteBuilder {
                 .redeliveryDelay(redeliveryDelay)
                 .backOffMultiplier(backOffMultiplier)
                 .asyncDelayedRedelivery()
-                .logRetryStackTrace(true)
+                .logRetryStackTrace(false)
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
                 }));
+
 
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))

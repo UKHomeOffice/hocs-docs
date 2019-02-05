@@ -10,6 +10,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.DisableJmx;
 import org.junit.*;
+import org.junit.runner.Request;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -131,7 +133,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
 
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
@@ -142,7 +144,7 @@ public class DocumentConsumerIT {
         wireMockServer.resetAll();
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -152,7 +154,7 @@ public class DocumentConsumerIT {
         wireMockServer.resetAll();
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : True")));
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -164,7 +166,7 @@ public class DocumentConsumerIT {
 
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(3, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -181,7 +183,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/uploadFile"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(6, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -231,7 +233,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
 
         DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
@@ -252,7 +254,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/uploadFile"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/uploadFile")));
 
@@ -276,7 +278,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/uploadFile"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(request));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(1, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -287,7 +289,7 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
 
-        template.sendBody(endpoint, mapper.writeValueAsString(requestStandardLine));
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(requestStandardLine), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
     }
@@ -328,4 +330,13 @@ public class DocumentConsumerIT {
         metaData.addUserMetadata("filename", filename);
         untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, filename, new ByteArrayInputStream(getDocumentByteArray()), metaData));
     }
+
+    Map<String, Object> getHeaders() {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(RequestData.CORRELATION_ID_HEADER, UUID.randomUUID());
+        headers.put(RequestData.USER_ID_HEADER, UUID.randomUUID());
+        headers.put(RequestData.USERNAME_HEADER, "some user");
+        return headers;
+    }
+
 }

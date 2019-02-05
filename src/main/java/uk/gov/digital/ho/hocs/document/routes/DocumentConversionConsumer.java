@@ -56,13 +56,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .log("Failed to convert document")
                 .useOriginalMessage()
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)
                 .backOffMultiplier(backOffMultiplier)
                 .asyncDelayedRedelivery()
-                .logRetryStackTrace(true)
+                .logRetryStackTrace(false)
+
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
@@ -81,7 +81,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
                     .setProperty("filename", simple("${body.fileLink}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
-                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+
                 .otherwise()
                     .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
                     .setProperty("uuid", simple("${body.documentUUID}"))
@@ -112,7 +112,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document"
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document "
                             + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
