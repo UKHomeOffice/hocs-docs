@@ -67,6 +67,7 @@ public class S3DocumentService {
             metaData.addUserMetadata("externalReferenceUUID", copyRequest.getExternalReferenceUUID());
             metaData.addUserMetadata("filename", destinationKey);
             metaData.addUserMetadata("originalName", copyDocument.getOriginalFilename());
+            metaData.setContentLength(copyDocument.getData().length);
 
             PutObjectRequest uploadRequest = new PutObjectRequest(trustedS3BucketName, destinationKey, new ByteArrayInputStream(copyDocument.getData()), metaData);
 
