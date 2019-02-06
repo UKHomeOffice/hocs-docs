@@ -48,6 +48,7 @@ public class UpdateDocumentConsumer extends RouteBuilder {
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
+                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
                 }));
 
         from("direct:updaterecord")

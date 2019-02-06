@@ -66,12 +66,14 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());
+                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
                 }));
 
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()
                     .onWhen(exchangeProperty("status").isNotNull())
                     .process(generateDocumentUpdateRequest())
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .to(toQueue)
                 .end()
                 .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
@@ -91,6 +93,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .setProperty("originalFilename", simple("${body.originalFilename}"))
                     .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .to("direct:convert")
                 .endChoice();
 
@@ -109,12 +112,14 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filename}")
                     .setProperty("pdfFilename", simple("${body.filename}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
+                .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
                     .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document "
                             + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
+
     }
 
     private Processor generateUploadDocument() {
