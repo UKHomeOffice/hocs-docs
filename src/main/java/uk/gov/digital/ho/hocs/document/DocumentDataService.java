@@ -87,7 +87,6 @@ public class DocumentDataService {
         try {
             log.debug("Getting Document File: {}", documentUUID);
             S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
-            auditClient.downloadDocumentAudit(documentData);
             return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(),DOCUMENT_NOT_FOUND);
@@ -99,7 +98,6 @@ public class DocumentDataService {
         try{
             log.debug("Getting Document PDF: {}", documentUUID);
             S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
-            auditClient.downloadDocumentAudit(documentData);
             return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);

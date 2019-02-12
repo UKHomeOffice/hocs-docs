@@ -13,6 +13,8 @@ import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import javax.json.Json;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 
@@ -45,9 +47,8 @@ public class AuditClient {
 
     public void createDocumentAudit(DocumentData documentData) {
         String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .add("caseUUID", documentData.getExternalReferenceUUID().toString())
                 .build().toString();
-        CreateAuditRequest request = generateAuditRequest(auditPayload, EventType.DOCUMENT_CREATED.toString());
+        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(), auditPayload, EventType.DOCUMENT_CREATED.toString());
 
         try {
             producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
@@ -58,43 +59,10 @@ public class AuditClient {
         }
     }
 
-
-    public void updateDocumentAudit(DocumentData documentData) {
-        String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .add("caseUUID", documentData.getExternalReferenceUUID().toString())
-                .build().toString();
-        CreateAuditRequest request = generateAuditRequest(auditPayload, EventType.DOCUMENT_UPDATED.toString());
-
-        try {
-            producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
-            log.info("Create audit for Update Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(), requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
-        } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
-        }
-    }
-
-    public void downloadDocumentAudit(DocumentData documentData) {
-        String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .add("caseUUID", documentData.getExternalReferenceUUID().toString())
-                .build().toString();
-        CreateAuditRequest request = generateAuditRequest(auditPayload, EventType.DOCUMENT_DOWNLOADED.toString());
-
-        try {
-            producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
-            log.info("Create audit for Download Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(), requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
-        } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
-        }
-    }
-
-
     public void deleteDocumentAudit(DocumentData documentData) {
         String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .add("caseUUID", documentData.getExternalReferenceUUID().toString())
                 .build().toString();
-        CreateAuditRequest request = generateAuditRequest(auditPayload, EventType.DOCUMENT_DELETED.toString());
+        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(), auditPayload, EventType.DOCUMENT_DELETED.toString());
 
         try {
             producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
@@ -105,9 +73,10 @@ public class AuditClient {
         }
     }
 
-    private CreateAuditRequest generateAuditRequest(String auditPayload, String eventType) {
+    private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType) {
         return new CreateAuditRequest(
                 requestData.correlationId(),
+                caseUUID,
                 raisingService,
                 auditPayload,
                 namespace,
@@ -115,5 +84,4 @@ public class AuditClient {
                 eventType,
                 requestData.userId());
     }
-
 }
