@@ -60,7 +60,7 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <logger name="c.amazonaws.services" additivity="false" level="WARN">
+    <logger name="com.amazonaws.services" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
 

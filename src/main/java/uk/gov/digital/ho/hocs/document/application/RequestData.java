@@ -77,7 +77,14 @@ public class RequestData implements HandlerInterceptor {
         };
     }
 
-    private static boolean isNullOrEmpty(String value) {
+    public static Processor transferHeadersToQueue() {
+        return ex -> {
+            ex.getIn().setHeader(CORRELATION_ID_HEADER, MDC.get(CORRELATION_ID_HEADER));
+            ex.getIn().setHeader(USER_ID_HEADER, MDC.get(USER_ID_HEADER));
+        };
+    }
+
+        private static boolean isNullOrEmpty(String value) {
         return value == null || value.equals("");
     }
 

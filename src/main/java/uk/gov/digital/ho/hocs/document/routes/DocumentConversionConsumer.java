@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.UpdateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.HttpProcessors;
@@ -74,6 +75,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .onWhen(exchangeProperty("status").isNotNull())
                     .process(generateDocumentUpdateRequest())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .process(RequestData.transferHeadersToQueue())
                     .to(toQueue)
                 .end()
                 .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
@@ -94,6 +96,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .process(RequestData.transferHeadersToQueue())
                     .to("direct:convert")
                     .endChoice();
 
