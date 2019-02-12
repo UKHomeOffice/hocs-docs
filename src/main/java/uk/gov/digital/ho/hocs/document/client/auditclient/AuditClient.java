@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.hocs.document.client.auditclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-
-import javax.json.Json;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -46,28 +45,38 @@ public class AuditClient {
     }
 
     public void createDocumentAudit(DocumentData documentData) {
-        String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .build().toString();
-        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(), auditPayload, EventType.DOCUMENT_CREATED.toString());
-
+        JsonObject auditPayload = new JsonObject();
+        auditPayload.addProperty("documentUUID", documentData.getUuid().toString());
+        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
+                auditPayload.toString(),
+                EventType.DOCUMENT_CREATED.toString());
         try {
             producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
             log.info("Create audit for Create Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(), requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
+                    documentData.getUuid(),
+                    documentData.getExternalReferenceUUID(),
+                    requestData.correlationId(),
+                    requestData.userId(),
+                    value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
             log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
         }
     }
 
     public void deleteDocumentAudit(DocumentData documentData) {
-        String auditPayload = Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString())
-                .build().toString();
-        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(), auditPayload, EventType.DOCUMENT_DELETED.toString());
-
+        JsonObject auditPayload = new JsonObject();
+        auditPayload.addProperty("documentUUID", documentData.getUuid().toString());
+        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
+                auditPayload.toString(),
+                EventType.DOCUMENT_DELETED.toString());
         try {
             producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
             log.info("Create audit for Delete Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(), requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
+                    documentData.getUuid(),
+                    documentData.getExternalReferenceUUID(),
+                    requestData.correlationId(),
+                    requestData.userId(),
+                    value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
             log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
         }
