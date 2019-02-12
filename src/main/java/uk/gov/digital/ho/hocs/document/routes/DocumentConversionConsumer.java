@@ -77,13 +77,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .to(toQueue)
                 .end()
                 .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
-                .log(LoggingLevel.DEBUG,"Should convert "+ shouldConvertDocument)
+                .log(LoggingLevel.DEBUG,"Should convert "+ skipDocumentConversion)
                 .choice()
-                .when(shouldConvertDocument)
+                .when(skipDocumentConversion)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
                     .setProperty("filename", simple("${body.fileLink}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
-
+                    .endChoice()
                 .otherwise()
                     .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
                     .setProperty("uuid", simple("${body.documentUUID}"))
@@ -95,7 +95,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .to("direct:convert")
-                .endChoice();
+                    .endChoice();
 
 
 
@@ -112,13 +112,15 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filename}")
                     .setProperty("pdfFilename", simple("${body.filename}"))
                     .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
-                .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .endChoice()
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
                     .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document "
                             + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
-                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .endChoice();
 
     }
 
@@ -142,5 +144,5 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-    private Predicate shouldConvertDocument = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipDocumentConversion = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
 }

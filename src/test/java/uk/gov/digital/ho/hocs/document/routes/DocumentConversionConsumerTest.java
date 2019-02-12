@@ -7,6 +7,7 @@ import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.verification.NoMoreInteractions;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentConversionConsumerTest extends CamelTestSupport {
@@ -33,7 +35,6 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     private final String dlq = "mock:cs-dev-document-sqs-dlq";
     private final String toEndpoint = "mock:updaterecord";
     private final String conversionService = "mock:conversion-service";
-    private UUID documentUUID = UUID.randomUUID();
     private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx");
 
 
@@ -56,7 +57,34 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     @Test
-    public void shouldAddMessagetoDLQAndNotCallConverstionServiceOnS3Error() throws Exception {
+    public void shouldSetStatusToConvertedOnSuccess() throws Exception {
+        MockEndpoint mockConversionService = mockConversionService();
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
+        when(s3BucketService.uploadFile(any())).thenReturn(getTestDocument());
+        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
+        mockEndpoint.expectedMessageCount(1);
+        mockEndpoint.expectedPropertyReceived("status", DocumentStatus.UPLOADED.toString());
+        template.sendBody(endpoint,request);
+        mockEndpoint.assertIsSatisfied();
+        mockConversionService.assertIsSatisfied();
+        verify(s3BucketService).uploadFile(any());
+    }
+
+    @Test
+    public void shouldSetStatusToFailedOnConversionError() throws Exception {
+        MockEndpoint mockConversionService = mockFailedConversionService();
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
+        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
+        mockEndpoint.expectedMessageCount(1);
+        mockEndpoint.expectedPropertyReceived("status", DocumentStatus.FAILED_CONVERSION.toString());
+        template.sendBody(endpoint,request);
+        mockEndpoint.assertIsSatisfied();
+        mockConversionService.assertIsSatisfied();
+        verify(s3BucketService, times(0)).uploadFile(any());
+    }
+
+    @Test
+    public void shouldAddMessageToDLQAndNotCallConversionServiceOnS3Error() throws Exception {
 
         MockEndpoint mockConversionService = mockConversionService();
         when(s3BucketService.getFileFromTrustedS3(any())).thenThrow(new IOException());
