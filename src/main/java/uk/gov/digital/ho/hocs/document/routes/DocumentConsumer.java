@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 
@@ -81,6 +82,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty("documentType", simple("${body.type}") )
                 .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
+                .process(RequestData.transferHeadersToQueue())
                 .to(toQueue);
     }
 
