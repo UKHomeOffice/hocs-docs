@@ -45,7 +45,7 @@ public class DocumentDataService {
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
         documentRepository.save(documentData);
-        log.info("Updated Document: {}", documentData.getUuid(), value(EVENT, DOCUMENT_UPDATED));
+        log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
     }
 
     public DocumentData getDocumentData(String documentUUID) {
