@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
+import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -29,10 +30,13 @@ public class DocumentServiceTest {
 
     private DocumentDataService documentService;
 
+    @Mock
+    private AuditClient auditClient;
+
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService);
+                documentRepository, s3DocumentService, auditClient);
     }
 
     @Test
@@ -274,5 +278,59 @@ public class DocumentServiceTest {
 
         verify(documentRepository, times(1)).findAllByExternalReferenceUUIDAndType(uuid, "DRAFT");
         verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
+    public void shouldAuditSuccessfulCreateDocument() {
+
+        UUID uuid = UUID.randomUUID();
+        String displayName = "name";
+        DocumentType documentType = DocumentType.ORIGINAL;
+
+        documentService.createDocument(uuid, displayName, documentType);
+
+        verify(auditClient, times(1)).createDocumentAudit(any());
+        verifyNoMoreInteractions(auditClient);
+
+    }
+
+    @Test
+    public void shouldAuditSuccessfulDeleteDocument() {
+
+        UUID uuid = UUID.randomUUID();
+        String displayName = "name";
+        DocumentType documentType = DocumentType.ORIGINAL;
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+
+        documentService.deleteDocument(uuid);
+
+        verify(auditClient, times(1)).deleteDocumentAudit(any());
+        verifyNoMoreInteractions(auditClient);
+
+    }
+
+    @Test(expected = ApplicationExceptions.EntityCreationException.class)
+    public void shouldNotAuditWhenCreateDocumentFails() {
+
+        String displayName = "name";
+        DocumentType documentType = DocumentType.ORIGINAL;
+
+        documentService.createDocument(null, displayName, documentType);
+
+        verifyZeroInteractions(auditClient);
+
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldNotAuditWhenDeleteDocumentFails() {
+
+        UUID uuid = UUID.randomUUID();
+        when(documentRepository.findByUuid(uuid)).thenReturn(null);
+
+        documentService.deleteDocument(uuid);
+
+        verifyNoMoreInteractions(auditClient);
+
     }
 }
