@@ -33,10 +33,12 @@ public class DocumentServiceTest {
     @Mock
     private AuditClient auditClient;
 
+    private boolean auditActive = true;
+
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService, auditClient);
+                documentRepository, s3DocumentService, auditClient, auditActive);
     }
 
     @Test

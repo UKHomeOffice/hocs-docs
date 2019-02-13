@@ -2,6 +2,7 @@ package uk.gov.digital.ho.hocs.document;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
@@ -26,12 +27,15 @@ public class DocumentDataService {
     private final DocumentRepository documentRepository;
     private final S3DocumentService s3DocumentService;
     private final AuditClient auditClient;
+    private boolean auditActive;
+
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, @Value("${audit.active:true}") boolean auditActive){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
+        this.auditActive = auditActive;
     }
 
     public DocumentData createDocument(UUID externalReferenceUUID, String displayName, DocumentType type) {
@@ -39,7 +43,8 @@ public class DocumentDataService {
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
-        auditClient.createDocumentAudit(documentData);
+
+        if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;
     }
 
@@ -77,7 +82,7 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
-        auditClient.deleteDocumentAudit(documentData);
+        if(auditActive) {auditClient.deleteDocumentAudit(documentData);}
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 
