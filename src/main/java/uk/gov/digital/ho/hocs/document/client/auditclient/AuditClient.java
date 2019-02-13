@@ -93,5 +93,4 @@ public class AuditClient {
                 eventType,
                 requestData.userId());
     }
-
 }
