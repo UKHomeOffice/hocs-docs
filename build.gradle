@@ -28,22 +28,25 @@ bootRun {
     args = ["--spring.profiles.active=local, development"]
 }
 dependencies {
+
     compile("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
 
-    compile('org.springframework.boot:spring-boot-starter-undertow')
-    compile('net.logstash.logback:logstash-logback-encoder:5.1')
-    compile('org.springframework.boot:spring-boot-starter-json')
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('org.springframework.boot:spring-boot-starter-json')
+    compile('org.springframework.boot:spring-boot-starter-undertow')
 
-	  compile group: 'org.apache.camel', name: 'camel-spring-boot', version: camelVersion
-	  compile group: 'org.apache.camel', name: 'camel-jackson', version: camelVersion
-	  compile group: 'org.apache.camel', name: 'camel-aws', version: camelVersion
-	  compile group: 'org.apache.camel', name: 'camel-http4', version: camelVersion
-	  compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
-	  compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.380'
+    compile('net.logstash.logback:logstash-logback-encoder:5.1')
+
+    compile group: 'org.apache.camel', name: 'camel-spring-boot', version: camelVersion
+    compile group: 'org.apache.camel', name: 'camel-jackson', version: camelVersion
+    compile group: 'org.apache.camel', name: 'camel-aws', version: camelVersion
+    compile group: 'org.apache.camel', name: 'camel-http4', version: camelVersion
+    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.380'
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
 
     compile('org.flywaydb:flyway-core')
     compile 'org.hsqldb:hsqldb'
@@ -57,6 +60,4 @@ dependencies {
     testCompile('org.assertj:assertj-core')
     testCompile group: 'com.adobe.testing', name: 's3mock-junit4', version: '2.0.9'
     testCompile group: 'com.adobe.testing', name: 's3mock', version: '2.0.9'
-
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
 }
