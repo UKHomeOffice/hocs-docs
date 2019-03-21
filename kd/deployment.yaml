@@ -150,7 +150,7 @@ spec:
             - name: ENDPOINTS_INFO_ENABLED
               value: 'false'
             - name: SPRING_PROFILES_ACTIVE
-              value: 'sqs, s3, postgres'
+              value: 'sns, s3, postgres'
             - name: CLAMAV_ROOT
               value: 'https4://clamav.{{.KUBE_NAMESPACE}}.svc.cluster.local'
             - name: HOCSCONVERTER_ROOT
@@ -230,6 +230,26 @@ spec:
                 secretKeyRef:
                   name: {{.KUBE_NAMESPACE}}-untrusted-s3
                   key: secret_access_key
+            - name: AUDIT_TOPIC_NAME
+              value: {{.KUBE_NAMESPACE}}-sns
+            - name: AUDIT_AWS_SNS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-audit-sqs
+                  key: access_key_id
+            - name: AUDIT_AWS_SNS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{.KUBE_NAMESPACE}}-audit-sqs
+                  key: secret_access_key
+            - name: AUDITING_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AUDITING_DEPLOYMENT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           resources:
             limits:
               cpu: 850m
