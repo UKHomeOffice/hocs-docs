@@ -16,7 +16,8 @@ import java.text.SimpleDateFormat;
 public class HocsDocumentServiceConfiguration {
 
 
-    public static ObjectMapper initialiseObjectMapper(ObjectMapper m) {
+    public static ObjectMapper initialiseObjectMapper() {
+        ObjectMapper m = new ObjectMapper();
         m.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
         m.registerModule(new JavaTimeModule());
         m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

@@ -12,6 +12,8 @@ import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -26,7 +28,7 @@ public class AuditClient {
     private final String namespace;
     private final ProducerTemplate producerTemplate;
     private final ObjectMapper objectMapper;
-
+    private final String EVENT_TYPE_HEADER ="event_type";
     private final RequestData requestData;
 
     @Autowired
@@ -51,7 +53,7 @@ public class AuditClient {
                 auditPayload.toString(),
                 EventType.DOCUMENT_CREATED.toString());
         try {
-            producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Create audit for Create Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
@@ -70,7 +72,7 @@ public class AuditClient {
                 auditPayload.toString(),
                 EventType.DOCUMENT_DELETED.toString());
         try {
-            producerTemplate.sendBody(auditQueue, objectMapper.writeValueAsString(request));
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Create audit for Delete Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
@@ -92,5 +94,15 @@ public class AuditClient {
                 LocalDateTime.now(),
                 eventType,
                 requestData.userId());
+    }
+
+    private Map<String, Object> getQueueHeaders(String eventType) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(EVENT_TYPE_HEADER, eventType);
+        headers.put(RequestData.CORRELATION_ID_HEADER, requestData.correlationId());
+        headers.put(RequestData.USER_ID_HEADER, requestData.userId());
+        headers.put(RequestData.USERNAME_HEADER, requestData.username());
+        headers.put(RequestData.GROUP_HEADER, requestData.groups());
+        return headers;
     }
 }
