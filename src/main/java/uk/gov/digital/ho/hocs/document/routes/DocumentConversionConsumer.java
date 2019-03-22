@@ -63,7 +63,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .backOffMultiplier(backOffMultiplier)
                 .asyncDelayedRedelivery()
                 .logRetryStackTrace(false)
-
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
                             Exception.class).getMessage());

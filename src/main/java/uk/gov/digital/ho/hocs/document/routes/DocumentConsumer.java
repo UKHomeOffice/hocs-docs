@@ -55,7 +55,6 @@ public class DocumentConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel(dlq)
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .log("Failed to process document")
                 .useOriginalMessage()
                 .maximumRedeliveries(maximumRedeliveries)
                 .redeliveryDelay(redeliveryDelay)

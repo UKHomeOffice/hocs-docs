@@ -21,11 +21,16 @@ services:
           - -c
           - |
               sleep 2
-              aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-case-sqs
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-document-sqs
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-document-sqs-dlq
               aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-untrusted-s3
               aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-trusted-s3
+              aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name audit-queue
+              aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name audit-queue-dlq
+              aws --endpoint-url=http://localstack:4575 sns create-topic --name hocs-audit-topic
+              aws --endpoint-url=http://localstack:4575 sns subscribe --topic-arn arn:aws:sns:eu-west-2:123456789012:hocs-audit-topic --protocol sqs --notification-endpoint arn:aws:sns:eu-west-2:123456789012:audit-queue
+              aws --endpoint-url=http://localstack:4575 sns subscribe --topic-arn arn:aws:sns:eu-west-2:123456789012:hocs-audit-topic --protocol sqs --notification-endpoint arn:aws:sns:eu-west-2:123456789012:search-queue
+              aws --endpoint-url=http://localstack:4575 sns list-subscriptions
     environment:
       AWS_ACCESS_KEY_ID: UNSET
       AWS_SECRET_ACCESS_KEY: UNSET
@@ -37,10 +42,11 @@ services:
     image: localstack/localstack:latest
     ports:
       - 8088:8080
+      - 4575:4575
       - 4567-4583:4567-4583
     environment:
       DEFAULT_REGION: eu-west-2
-      SERVICES: sqs,s3
+      SERVICES: sqs,s3, sns
 
   postgres:
     image: postgres

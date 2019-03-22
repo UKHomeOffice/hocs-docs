@@ -18,6 +18,7 @@ public class RequestData implements HandlerInterceptor {
     public static final String USER_ID_HEADER = "X-Auth-Userid";
     public static final String USERNAME_HEADER = "X-Auth-Username";
     public static final String CAMEL_CORRELATION_ID_HEADER = "correlationId";
+    public static final String GROUP_HEADER = "X-Auth-Groups";
     public static final String ANONYMOUS = "anonymous";
 
 
@@ -27,6 +28,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
         MDC.put(USER_ID_HEADER, initialiseUserId(request));
         MDC.put(USERNAME_HEADER, initialiseUserName(request));
+        MDC.put(GROUP_HEADER, initialiseGroups(request));
         return true;
     }
 
@@ -84,8 +86,17 @@ public class RequestData implements HandlerInterceptor {
         };
     }
 
-        private static boolean isNullOrEmpty(String value) {
+    private static boolean isNullOrEmpty(String value) {
         return value == null || value.equals("");
+    }
+
+    private String initialiseGroups(HttpServletRequest request) {
+        String groups = request.getHeader(GROUP_HEADER);
+        return !isNullOrEmpty(groups) ? groups : "/QU5PTllNT1VTCg==";
+    }
+
+    public String groups() {
+        return MDC.get(GROUP_HEADER);
     }
 
 }
