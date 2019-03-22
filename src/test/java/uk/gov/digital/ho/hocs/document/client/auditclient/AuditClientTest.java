@@ -9,8 +9,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.digital.ho.hocs.document.application.HocsDocumentServiceConfiguration;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
+import uk.gov.digital.ho.hocs.document.application.SpringConfiguration;
 import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentType;
@@ -43,7 +43,7 @@ public class AuditClientTest {
     @Captor
     ArgumentCaptor<HashMap<String,Object>> headerCaptor;
 
-    private HocsDocumentServiceConfiguration configuration = new HocsDocumentServiceConfiguration();
+    private SpringConfiguration configuration = new SpringConfiguration();
     private ObjectMapper mapper;
 
     private AuditClient auditClient;
