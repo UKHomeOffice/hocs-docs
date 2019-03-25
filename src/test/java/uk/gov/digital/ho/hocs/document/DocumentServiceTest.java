@@ -297,6 +297,21 @@ public class DocumentServiceTest {
     }
 
     @Test
+    public void shouldAuditSuccessfulUpdateDocument() {
+
+        UUID uuid = UUID.randomUUID();
+        String displayName = "name";
+        DocumentType documentType = DocumentType.ORIGINAL;
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+
+        documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
+
+        verify(auditClient, times(1)).updateDocumentAudit(documentData);
+        verifyNoMoreInteractions(auditClient);
+    }
+
+    @Test
     public void shouldAuditSuccessfulDeleteDocument() {
 
         UUID uuid = UUID.randomUUID();
@@ -322,6 +337,17 @@ public class DocumentServiceTest {
 
         verifyZeroInteractions(auditClient);
 
+    }
+
+    @Test(expected = ApplicationExceptions.EntityNotFoundException.class)
+    public void shouldNotAuditWhenUpdateDocumentFails() {
+
+        UUID uuid = UUID.randomUUID();
+        when(documentRepository.findByUuid(uuid)).thenReturn(null);
+
+        documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
+
+        verifyZeroInteractions(auditClient);
     }
 
     @Test(expected = NullPointerException.class)
