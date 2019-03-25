@@ -52,6 +52,7 @@ public class DocumentDataService {
         log.debug("Updating Document: {}", documentUUID);
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
+        auditClient.updateDocumentAudit(documentData);
         documentRepository.save(documentData);
         log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
     }

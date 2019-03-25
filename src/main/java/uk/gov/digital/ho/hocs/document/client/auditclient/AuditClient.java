@@ -63,6 +63,23 @@ public class AuditClient {
         }
     }
 
+    public void updateDocumentAudit(DocumentData documentData) {
+        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
+                createAuditPayload(documentData),
+                EventType.DOCUMENT_UPDATED.toString());
+        try {
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
+            log.info("Create audit for Update Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+                    documentData.getUuid(),
+                    documentData.getExternalReferenceUUID(),
+                    requestData.correlationId(),
+                    requestData.userId(),
+                    value(EVENT, AUDIT_EVENT_CREATED));
+        } catch (Exception e) {
+            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
+        }
+    }
+
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
