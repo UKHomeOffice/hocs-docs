@@ -23,8 +23,8 @@ services:
               sleep 2
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-document-sqs
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name cs-dev-document-sqs-dlq
-              aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-untrusted-s3
-              aws --endpoint-url=http://localstack:4572 s3 mb s3://cs-dev-trusted-s3
+              aws --endpoint-url=http://localstack:4572 s3 mb s3://untrusted-bucket
+              aws --endpoint-url=http://localstack:4572 s3 mb s3://trusted-bucket
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name audit-queue
               aws --endpoint-url=http://localstack:4576 sqs create-queue --queue-name audit-queue-dlq
               aws --endpoint-url=http://localstack:4575 sns create-topic --name hocs-audit-topic
@@ -42,7 +42,6 @@ services:
     image: localstack/localstack:latest
     ports:
       - 8088:8080
-      - 4575:4575
       - 4567-4583:4567-4583
     environment:
       DEFAULT_REGION: eu-west-2
@@ -50,8 +49,11 @@ services:
 
   postgres:
     image: postgres
+    restart: always
     ports:
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: postgres
-      SERVICES: sqs,s3
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+    tmpfs:
+      - /var/lib/postgresql
