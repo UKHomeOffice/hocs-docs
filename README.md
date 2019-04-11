@@ -29,6 +29,7 @@ The source for this service can be found on [GitHub](https://github.com/UKHomeOf
 * ```Java 8```
 * ```Docker```
 * ```AWS SQS queues``` (document input and case output) or localstack
+* ```AWS SNS ``` localstack for audit
 * ```AWS S3 buckets``` (untrusted and trusted)
 * HOCS Converter service 
 * ```ClamAV REST``` service
