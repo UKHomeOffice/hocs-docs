@@ -8,9 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.dto.camel.UpdateDocumentRequest;
-import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import java.util.Properties;
 import java.util.UUID;
 import static org.mockito.Mockito.*;
 
