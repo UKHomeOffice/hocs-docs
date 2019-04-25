@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import javax.json.Json;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
@@ -46,47 +49,30 @@ public class AuditClient {
         this.requestData = requestData;
     }
 
+    @Async
     public void createDocumentAudit(DocumentData documentData) {
-        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-                createAuditPayload(documentData),
-                EventType.DOCUMENT_CREATED.toString());
-        try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Create Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(),
-                    documentData.getExternalReferenceUUID(),
-                    requestData.correlationId(),
-                    requestData.userId(),
-                    value(EVENT, AUDIT_EVENT_CREATED));
-        } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
-        }
+        sendAuditMessage(documentData, EventType.DOCUMENT_CREATED);
     }
 
+    @Async
     public void updateDocumentAudit(DocumentData documentData) {
-        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-                createAuditPayload(documentData),
-                EventType.DOCUMENT_UPDATED.toString());
-        try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Update Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(),
-                    documentData.getExternalReferenceUUID(),
-                    requestData.correlationId(),
-                    requestData.userId(),
-                    value(EVENT, AUDIT_EVENT_CREATED));
-        } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
-        }
+        sendAuditMessage(documentData, EventType.DOCUMENT_UPDATED);
     }
 
+    @Async
     public void deleteDocumentAudit(DocumentData documentData) {
+        sendAuditMessage(documentData, EventType.DOCUMENT_DELETED);
+    }
+
+    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.delay}"))
+    private void sendAuditMessage(DocumentData documentData, EventType eventType) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_DELETED.toString());
+                eventType.toString());
         try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
-            log.info("Create audit for Delete Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(eventType.toString()));
+            log.info("Create audit of type {}, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+                    eventType,
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),

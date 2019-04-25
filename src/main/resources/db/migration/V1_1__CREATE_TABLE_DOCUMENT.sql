@@ -18,10 +18,7 @@ CREATE TABLE IF NOT EXISTS document_data
 );
 
 CREATE INDEX  idx_document_data_uuid
-  ON document_data (uuid);
+  ON document_data (uuid, deleted);
 
 CREATE INDEX  idx_document_data_external_reference_uuid
-  ON document_data (external_reference_uuid);
-
-CREATE INDEX  idx_document_data_deleted
-  ON document_data (deleted);
+  ON document_data (external_reference_uuid, deleted);

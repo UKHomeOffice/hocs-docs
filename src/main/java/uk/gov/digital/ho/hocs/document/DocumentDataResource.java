@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.hocs.document;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -8,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
-import uk.gov.digital.ho.hocs.document.dto.CreateDocumentResponse;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
@@ -19,7 +17,6 @@ import java.util.UUID;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
-@Slf4j
 @RestController
 class DocumentDataResource {
 
@@ -31,9 +28,9 @@ class DocumentDataResource {
     }
 
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
+    public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
         DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getType());
-        return ResponseEntity.ok(CreateDocumentResponse.from(documentData));
+        return ResponseEntity.ok(documentData.getUuid());
     }
 
     @GetMapping(value = "/document/case/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
@@ -55,7 +52,7 @@ class DocumentDataResource {
     }
 
     @DeleteMapping(value = "/document/{documentUUID}")
-    public ResponseEntity<DocumentDto> deleteDocument(@PathVariable UUID documentUUID) {
+    public ResponseEntity deleteDocument(@PathVariable UUID documentUUID) {
         documentDataService.deleteDocument(documentUUID);
         return ResponseEntity.ok().build();
     }

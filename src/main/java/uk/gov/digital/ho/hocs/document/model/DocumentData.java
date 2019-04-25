@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Where;
-import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import javax.persistence.*;

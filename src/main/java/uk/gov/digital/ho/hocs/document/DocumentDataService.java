@@ -70,16 +70,16 @@ public class DocumentDataService {
         }
     }
 
-    public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
+    Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
         Set<DocumentData> documents = documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
         return documents;
     }
 
-    public Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {
+    Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {
         return documentRepository.findAllByExternalReferenceUUIDAndType(externalReferenceUUID,type);
     }
 
-    public void deleteDocument(UUID documentUUID) {
+    void deleteDocument(UUID documentUUID) {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
@@ -87,22 +87,24 @@ public class DocumentDataService {
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 
-    public S3Document getDocumentFile(UUID documentUUID) {
+    S3Document getDocumentFile(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try {
             log.debug("Getting Document File: {}", documentUUID);
             S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
+            log.info("Retrieved document {}", documentUUID, value(EVENT, GET_DOCUMENT_SUCCESS));
             return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(),DOCUMENT_NOT_FOUND);
         }
     }
 
-    public S3Document getDocumentPdf(UUID documentUUID) {
+    S3Document getDocumentPdf(UUID documentUUID) {
         DocumentData documentData = getDocumentData(documentUUID);
         try{
             log.debug("Getting Document PDF: {}", documentUUID);
             S3Document s3Document = s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+            log.info("Retrieved PDF document {}", documentUUID, value(EVENT, GET_DOCUMENT_SUCCESS));
             return s3Document;
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
