@@ -88,8 +88,6 @@ and there will be a new instance of postgres.
 
 ## Tests
 
-<!--- describe tests here --->
-
 The suite of tests includes unit tests for the resource and services classes, and integration tests. In order to run the integration tests, an instance of postgres must be running.
 
 
