@@ -91,6 +91,16 @@ spec:
                 secretKeyRef:
                   name: hocs-docs
                   key: rds_password
+            - name: DB_READONLY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: hocs-db-readonly
+                  key: rds_user
+            - name: DB_READONLY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hocs-db-readonly
+                  key: rds_password     
       containers:
         - name: certs
           image: quay.io/ukhomeofficedigital/cfssl-sidekick:v0.0.6
