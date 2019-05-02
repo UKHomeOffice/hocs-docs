@@ -8,7 +8,7 @@ pipeline:
       event: [push, pull_request, tag]
 
   sonar-scanner:
-    image: quay.io/ukhomeofficedigital/sonar-scanner:v3.0.1
+    image: quay.io/ukhomeofficedigital/sonar-scanner:v3.0.2
     when:
       event: [push, pull_request, tag]
 
@@ -60,25 +60,8 @@ pipeline:
     when:
       event: [push, tag, deployment]
 
-  deploy-to-qa:
-    image: quay.io/ukhomeofficedigital/kd:v1.12.1
-    environment:
-      - KUBE_NAMESPACE=cs-qa
-      - ENVIRONMENT=qa
-      - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
-    secrets:
-      - hocs_docs_qa
-    commands:
-      - source version.txt
-      - echo $VERSION
-      - cd kube-hocs-docs
-      - ./deploy.sh
-    when:
-      event: deployment
-      environment: qa
-
   deploy-to-dev-from-build-number:
-    image: quay.io/ukhomeofficedigital/kd:v1.12.1
+    image: quay.io/ukhomeofficedigital/kd:v1.12.2
     environment:
     - KUBE_NAMESPACE=cs-dev
     - ENVIRONMENT=dev
@@ -94,7 +77,7 @@ pipeline:
       event: [push, tag]
 
   deployment:
-    image: quay.io/ukhomeofficedigital/kd:v1.12.1
+    image: quay.io/ukhomeofficedigital/kd:v1.12.2
     environment:
     - KUBE_NAMESPACE=cs-${DRONE_DEPLOY_TO}
     - ENVIRONMENT=${DRONE_DEPLOY_TO}
@@ -109,11 +92,27 @@ pipeline:
       event: deployment
       environment: [dev, demo]
 
+  deploy-to-qa:
+    image: quay.io/ukhomeofficedigital/kd:v1.12.2
+    environment:
+      - KUBE_NAMESPACE=cs-qa
+      - ENVIRONMENT=qa
+      - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
+    secrets:
+      - hocs_docs_qa
+    commands:
+      - source version.txt
+      - echo $VERSION
+      - cd kube-hocs-docs
+      - ./deploy.sh
+    when:
+      event: deployment
+      environment: qa
+
   deploy-to-prod:
-    image: quay.io/ukhomeofficedigital/kd:v1.12.1
+    image: quay.io/ukhomeofficedigital/kd:v1.12.2
     environment:
     - KUBE_NAMESPACE=cs-prod
-    - ENVIRONMENT=prod
     - VERSION=${IMAGE_VERSION}
     - KUBE_SERVER=https://kube-api-prod.prod.acp.homeoffice.gov.uk
     secrets:

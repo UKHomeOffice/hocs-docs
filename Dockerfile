@@ -1,6 +1,5 @@
 FROM quay.io/ukhomeofficedigital/openjdk8
 
-
 ENV USER user_hocs_docs
 ENV USER_ID 1000
 ENV GROUP group_hocs_docs
@@ -24,7 +23,7 @@ ADD scripts /app/scripts
 
 RUN chmod a+x /app/scripts/*
 
-EXPOSE 8000
+EXPOSE 8080
 
 USER ${USER_ID}
 
