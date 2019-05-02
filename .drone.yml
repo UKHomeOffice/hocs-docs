@@ -113,7 +113,7 @@ pipeline:
     image: quay.io/ukhomeofficedigital/kd:v1.12.2
     environment:
     - KUBE_NAMESPACE=cs-prod
-    - VERSION=${IMAGE_VERSION}
+    - ENVIRONMENT=prod
     - KUBE_SERVER=https://kube-api-prod.prod.acp.homeoffice.gov.uk
     secrets:
     - hocs_docs_prod
