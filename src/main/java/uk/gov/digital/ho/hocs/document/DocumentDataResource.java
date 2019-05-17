@@ -8,12 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
-import uk.gov.digital.ho.hocs.document.dto.CreateDocumentResponse;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,20 +31,19 @@ class DocumentDataResource {
     }
 
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
-        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getType());
-        return ResponseEntity.ok(CreateDocumentResponse.from(documentData));
+    public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
+        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType());
+        return ResponseEntity.ok(documentData.getUuid());
     }
 
-    @GetMapping(value = "/document/case/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCase(@PathVariable UUID externalReferenceUUID) {
-        Set<DocumentData> documents = documentDataService.getDocumentsByReference(externalReferenceUUID);
-        return ResponseEntity.ok(GetDocumentsResponse.from(documents));
-    }
-
-    @GetMapping(value = "/document/case/{externalReferenceUUID}/{type}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @PathVariable String type) {
-        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceForType(externalReferenceUUID,type);
+    @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
+        Set<DocumentData> documents = new HashSet<>();
+        if(type == null) {
+            documents.addAll(documentDataService.getDocumentsByReference(externalReferenceUUID));
+        } else {
+           documents.addAll(documentDataService.getDocumentsByReferenceForType(externalReferenceUUID, type));
+        }
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 

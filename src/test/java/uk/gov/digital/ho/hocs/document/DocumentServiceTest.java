@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
+import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -31,6 +32,9 @@ public class DocumentServiceTest {
     private DocumentDataService documentService;
 
     @Mock
+    private DocumentClient documentClient;
+
+    @Mock
     private AuditClient auditClient;
 
     private boolean auditActive = true;
@@ -38,7 +42,7 @@ public class DocumentServiceTest {
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService, auditClient, auditActive);
+                documentRepository, s3DocumentService, auditClient, documentClient, auditActive);
     }
 
     @Test
@@ -46,11 +50,13 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
+        String fileName = "fileName";
         DocumentType documentType = DocumentType.ORIGINAL;
 
-        documentService.createDocument(uuid, displayName, documentType);
+        UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType).getUuid();
 
         verify(documentRepository, times(1)).save(any(DocumentData.class));
+        verify(documentClient, times(1)).processDocument(documentUUID, fileName);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -59,9 +65,10 @@ public class DocumentServiceTest {
     public void shouldNotCreateDocumentWhenDocumentUUIDIsNullException() {
 
         String displayName = "name";
+        String fileName = "fileName";
         DocumentType documentType = DocumentType.ORIGINAL;
 
-        documentService.createDocument(null, displayName, documentType);
+        documentService.createDocument(null, displayName, fileName, documentType);
     }
 
     @Test()
@@ -69,13 +76,15 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         DocumentType documentType = DocumentType.ORIGINAL;
+        String fileName = "fileName";
 
         try {
-            documentService.createDocument(uuid, null, documentType);
+            documentService.createDocument(uuid, null, fileName, documentType);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
 
+        verifyZeroInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -85,8 +94,9 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
+        String fileName = "fileName";
 
-        documentService.createDocument(uuid, displayName, null);
+        documentService.createDocument(uuid, displayName,  fileName,null);
     }
 
     @Test()
@@ -94,13 +104,16 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
+        String fileName = "fileName";
+
 
         try {
-            documentService.createDocument(uuid, displayName, null);
+            documentService.createDocument(uuid, displayName, fileName, null);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
 
+        verifyZeroInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
 
@@ -111,8 +124,9 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         DocumentType documentType = DocumentType.ORIGINAL;
+        String fileName = "fileName";
 
-        documentService.createDocument(uuid, null, documentType);
+        documentService.createDocument(uuid, null, fileName, documentType);
     }
 
     @Test()
@@ -120,13 +134,15 @@ public class DocumentServiceTest {
 
         String displayName = "name";
         DocumentType documentType = DocumentType.ORIGINAL;
+        String fileName = "fileName";
 
         try {
-            documentService.createDocument(null, displayName, documentType);
+            documentService.createDocument(null, displayName, fileName, documentType);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
 
+        verifyZeroInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -148,6 +164,7 @@ public class DocumentServiceTest {
         verify(documentRepository, times(1)).findByUuid(uuid);
         verify(documentRepository, times(1)).save(documentData);
 
+        verifyZeroInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -288,8 +305,9 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         DocumentType documentType = DocumentType.ORIGINAL;
+        String fileName = "fileName";
 
-        documentService.createDocument(uuid, displayName, documentType);
+        documentService.createDocument(uuid, displayName, fileName, documentType);
 
         verify(auditClient, times(1)).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
@@ -332,8 +350,9 @@ public class DocumentServiceTest {
 
         String displayName = "name";
         DocumentType documentType = DocumentType.ORIGINAL;
+        String fileName = "fileName";
 
-        documentService.createDocument(null, displayName, documentType);
+        documentService.createDocument(null, displayName, fileName, documentType);
 
         verifyZeroInteractions(auditClient);
 

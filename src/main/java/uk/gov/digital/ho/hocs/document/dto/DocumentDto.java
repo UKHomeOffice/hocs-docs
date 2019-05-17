@@ -43,7 +43,6 @@ public class DocumentDto {
 
     public static DocumentDto from(DocumentData documentData) {
 
-
         return new DocumentDto(
                 documentData.getUuid(),
                 documentData.getExternalReferenceUUID(),
