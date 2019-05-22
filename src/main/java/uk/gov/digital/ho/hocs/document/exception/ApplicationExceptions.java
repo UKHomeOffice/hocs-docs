@@ -75,20 +75,4 @@ public interface ApplicationExceptions {
         }
     }
 
-    class ResourceNotFoundException extends ResourceException {
-
-        public ResourceNotFoundException(String msg, LogEvent event, Object... args) {
-            super(msg, event, args);
-        }
-
-    }
-
-    class ResourceServerException extends ResourceException {
-
-        public ResourceServerException(String msg, LogEvent event, Object... args) {
-            super(msg, event, args);
-        }
-
-    }
-
 }
