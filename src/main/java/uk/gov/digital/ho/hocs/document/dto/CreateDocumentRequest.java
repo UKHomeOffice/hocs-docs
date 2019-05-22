@@ -11,13 +11,16 @@ import java.util.UUID;
 @Getter
 public class CreateDocumentRequest {
 
-    @JsonProperty(value="name", required=true)
+    @JsonProperty("name")
     private String name;
 
-    @JsonProperty(value="type", required=true)
+    @JsonProperty("type")
     private DocumentType type;
 
-    @JsonProperty(value="externalReferenceUUID", required=true)
+    @JsonProperty("fileLink")
+    private String fileLink;
+
+    @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
 
 }
