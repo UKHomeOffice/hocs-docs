@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.client.documentclient.dto.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
@@ -34,6 +35,7 @@ public class DocumentClient {
         this.objectMapper = objectMapper;
     }
 
+    @Async
     public void processDocument(UUID documentUUID, String fileLocation) {
         ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation);
         try {

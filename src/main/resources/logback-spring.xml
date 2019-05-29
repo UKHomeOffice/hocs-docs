@@ -15,6 +15,21 @@
         <logger name="uk.gov" additivity="false" level="DEBUG">
             <appender-ref ref="consoleAppender"/>
         </logger>
+        <logger name="document-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="malware-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="malware-scan-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="conversion-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="conversion-convert-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
     </springProfile>
 
     <springProfile name="!development">
@@ -34,16 +49,31 @@
                 </provider>
             </encoder>
         </appender>
-        <logger name="uk.gov" additivity="false" level="DEBUG">
+        <logger name="uk.gov" additivity="false" level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="document-queue" additivity="false" level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="malware-queue" additivity="false" level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="malware-scan-queue" additivity="false" level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="conversion-queue" additivity="false" level="INFO">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+        <logger name="conversion-convert-queue" additivity="false" level="INFO">
             <appender-ref ref="consoleAppender"/>
         </logger>
     </springProfile>
 
-    <logger name="org.apache.camel" additivity="false" level="INFO">
+    <logger name="org.apache.camel" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <logger name="com.amazonaws" additivity="false" level="iNFO">
+    <logger name="com.amazonaws" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
 

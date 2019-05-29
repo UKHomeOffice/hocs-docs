@@ -9,7 +9,6 @@ import java.util.concurrent.Executor;
 @Configuration
 public class SpringAsyncConfig implements AsyncConfigurer {
 
-
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -17,7 +16,5 @@ public class SpringAsyncConfig implements AsyncConfigurer {
         executor.initialize();
         return new ContextAwareExecutorDecorator(executor);
     }
-
-
      
 }
