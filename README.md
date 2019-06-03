@@ -4,8 +4,7 @@
  
  The service will run against localstack using the `local` Spring profile and the docker-compose services in `docker/docker-compose.yml`
  
- To start local instances run `./docker/docker-compose up`.
- 
+To start local instances run `./docker/docker-compose up`.
 
 This is the Home Office Correspondence Service (HOCS) document service.
 
@@ -115,8 +114,6 @@ To stop and clear the service containers run
 ./scripts/clean.sh
 ```
 ## Using the Service
-
-
 
 ### Versioning
 
