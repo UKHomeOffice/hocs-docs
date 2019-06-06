@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.hocs.document.client.auditclient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -10,13 +9,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
-import uk.gov.digital.ho.hocs.document.application.RestHelper;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -26,9 +21,6 @@ public class AuditClientIntegrationTest extends CamelTestSupport {
 
     @Mock
     RequestData requestData;
-
-    @Mock
-    RestHelper restHelper;
 
     private final String toEndpoint = "mock:audit-queue";
 

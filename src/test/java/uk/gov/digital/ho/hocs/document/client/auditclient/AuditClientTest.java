@@ -13,7 +13,6 @@ import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.application.SpringConfiguration;
 import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.io.IOException;
 import java.util.HashMap;

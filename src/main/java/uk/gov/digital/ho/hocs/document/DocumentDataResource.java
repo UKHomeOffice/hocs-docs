@@ -9,13 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
-import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
@@ -32,19 +32,19 @@ class DocumentDataResource {
 
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
-        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType());
+        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType(), request.isConvertToPdf());
         return ResponseEntity.ok(documentData.getUuid());
     }
 
     @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
+    public ResponseEntity<Set<DocumentDto>> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
         Set<DocumentData> documents = new HashSet<>();
         if(type == null) {
             documents.addAll(documentDataService.getDocumentsByReference(externalReferenceUUID));
         } else {
            documents.addAll(documentDataService.getDocumentsByReferenceForType(externalReferenceUUID, type));
         }
-        return ResponseEntity.ok(GetDocumentsResponse.from(documents));
+        return ResponseEntity.ok(documents.stream().map(DocumentDto::from).collect(Collectors.toSet()));
     }
 
     @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)

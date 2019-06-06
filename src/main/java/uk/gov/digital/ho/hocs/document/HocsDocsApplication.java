@@ -13,10 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class HocsDocsApplication {
 
 	public static void main(String[] args) {
-		try {
-			SpringApplication.run(HocsDocsApplication.class, args);
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
+		SpringApplication.run(HocsDocsApplication.class, args);
 	}
 }
