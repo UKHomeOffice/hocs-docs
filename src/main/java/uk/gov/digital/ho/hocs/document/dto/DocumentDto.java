@@ -23,7 +23,7 @@ public class DocumentDto {
     private UUID externalReferenceUUID;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private String type;
 
     @JsonProperty("displayName")
     private String displayName;

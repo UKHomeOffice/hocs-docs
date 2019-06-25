@@ -40,17 +40,17 @@ public class DocumentResourceTest {
 
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String fileName = "fileName";
 
-        when(documentService.createDocument(uuid, displayName, fileName, documentType)).thenReturn(documentData);
+        when(documentService.createDocument(uuid, displayName, fileName, documentType, true)).thenReturn(documentData);
 
-        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid);
+        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid, true);
 
         ResponseEntity response = documentResource.createDocument(request);
 
-        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType);
+        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType, true);
 
         verifyNoMoreInteractions(documentService);
 

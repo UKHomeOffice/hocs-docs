@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.e;
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 
@@ -40,7 +41,11 @@ public class DocumentDataService {
         this.auditActive = auditActive;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, DocumentType type, boolean convertToPdf) {
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type) {
+        return createDocument(externalReferenceUUID, displayName, fileName, type, true);
+    }
+
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, boolean convertToPdf) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);

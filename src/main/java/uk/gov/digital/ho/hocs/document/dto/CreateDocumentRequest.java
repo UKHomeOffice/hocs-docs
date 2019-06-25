@@ -14,7 +14,7 @@ public class CreateDocumentRequest {
     private String name;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private String type;
 
     @JsonProperty("fileLink")
     private String fileLink;
