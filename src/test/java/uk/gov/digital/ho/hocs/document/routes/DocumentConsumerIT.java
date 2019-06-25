@@ -134,7 +134,7 @@ public class DocumentConsumerIT {
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
 
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class DocumentConsumerIT {
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class DocumentConsumerIT {
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : True")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class DocumentConsumerIT {
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(3, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
 
@@ -178,12 +178,12 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/uploadFile"))
+        stubFor(post(urlEqualTo("/convert"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(6, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(6, postRequestedFor(urlEqualTo("/convert")));
     }
 
     @Test
@@ -249,12 +249,12 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/uploadFile"))
+        stubFor(post(urlEqualTo("/convert"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/convert")));
 
         DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
@@ -273,12 +273,12 @@ public class DocumentConsumerIT {
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/uploadFile"))
+        stubFor(post(urlEqualTo("/convert"))
                 .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(1, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(1, postRequestedFor(urlEqualTo("/convert")));
     }
 
     private void runSuccessfulConversionForStandardLine() throws IOException, URISyntaxException {
@@ -289,7 +289,7 @@ public class DocumentConsumerIT {
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(requestStandardLine), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
     private void runSuccessfulConversionForTemplate() throws IOException, URISyntaxException {
@@ -300,7 +300,7 @@ public class DocumentConsumerIT {
 
         template.sendBody(endpoint, mapper.writeValueAsString(requestTemplate));
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(0, postRequestedFor(urlEqualTo("/uploadFile")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
 
