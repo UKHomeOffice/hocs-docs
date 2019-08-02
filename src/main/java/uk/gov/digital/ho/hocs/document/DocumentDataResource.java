@@ -87,4 +87,11 @@ class DocumentDataResource {
                 .body(resource);
     }
 
+    @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> getDocumentName(@PathVariable UUID documentUUID) {
+        DocumentData documentData = documentDataService.getDocumentData(documentUUID);
+        // 'ApplicationExceptions.EntityNotFoundException' thrown in getDocumentData if null
+        return ResponseEntity.ok(documentData.getDisplayName());
+    }
+
 }
