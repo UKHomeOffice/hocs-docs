@@ -21,7 +21,6 @@ import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -85,9 +84,9 @@ public class DocumentConsumerIT {
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.ORIGINAL);
-        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.STANDARD_LINE);
-        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.TEMPLATE);
+        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL");
+        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE");
+        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE");
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();

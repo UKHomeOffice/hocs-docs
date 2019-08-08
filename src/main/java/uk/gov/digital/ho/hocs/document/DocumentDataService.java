@@ -11,7 +11,6 @@ import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
@@ -41,7 +40,7 @@ public class DocumentDataService {
         this.auditActive = auditActive;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, DocumentType type) {
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);

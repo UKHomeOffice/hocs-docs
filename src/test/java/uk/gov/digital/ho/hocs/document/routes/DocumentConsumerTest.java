@@ -11,7 +11,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.util.UUID;
 
@@ -43,7 +42,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
     public void shouldAddDocumentToMalwareQueueOnSuccess() throws Exception {
         UUID externalReferenceUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, DocumentType.ORIGINAL, "SomeDisplayName"));
+        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName"));
 
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedMessageCount(1);
@@ -63,7 +62,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
         UUID externalReferenceUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, DocumentType.ORIGINAL, "SomeDisplayName"));
+        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName"));
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("externalReferenceUUID", externalReferenceUUID.toString());
         mockEndpoint.expectedPropertyReceived("uuid", documentUUID.toString());

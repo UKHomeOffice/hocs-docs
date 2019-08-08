@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 
 import java.util.UUID;
@@ -40,7 +39,7 @@ public class AuditClientIntegrationTest extends CamelTestSupport {
     @Test
     public void shouldPutMessageOnAuditQueue() throws InterruptedException {
         UUID caseUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, DocumentType.ORIGINAL, "a document");
+        DocumentData docData = new DocumentData(caseUUID, "ORIGINAL", "a document");
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         auditClient.createDocumentAudit(docData);
         mockEndpoint.assertIsSatisfied();

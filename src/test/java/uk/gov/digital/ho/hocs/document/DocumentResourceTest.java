@@ -11,7 +11,6 @@ import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -40,7 +39,7 @@ public class DocumentResourceTest {
 
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String fileName = "fileName";
 
