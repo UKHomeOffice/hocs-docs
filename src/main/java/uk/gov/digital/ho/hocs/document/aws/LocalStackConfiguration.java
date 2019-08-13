@@ -75,6 +75,7 @@ public class LocalStackConfiguration {
                 .withCredentials(awsCredentialsProvider)
                 .withPathStyleAccessEnabled(true)
                 .withEndpointConfiguration(endpoint)
+                .disableChunkedEncoding()
                 .build();
     }
 
