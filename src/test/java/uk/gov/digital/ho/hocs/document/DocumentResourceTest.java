@@ -8,12 +8,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
-import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
+import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,17 +40,17 @@ public class DocumentResourceTest {
 
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String fileName = "fileName";
 
-        when(documentService.createDocument(uuid, displayName, fileName, documentType)).thenReturn(documentData);
+        when(documentService.createDocument(uuid, displayName, fileName, documentType, true)).thenReturn(documentData);
 
-        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid);
+        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid, true);
 
         ResponseEntity response = documentResource.createDocument(request);
 
-        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType);
+        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType, true);
 
         verifyNoMoreInteractions(documentService);
 
@@ -62,7 +62,7 @@ public class DocumentResourceTest {
     public void shouldReturnListOfDocumentsForAType() {
         when(documentService.getDocumentsByReferenceForType(uuid, "DRAFT")).thenReturn(new HashSet<>());
 
-        ResponseEntity<GetDocumentsResponse> response = documentResource.getDocumentsForCaseForType(uuid, "DRAFT");
+        ResponseEntity<Set<DocumentDto>> response = documentResource.getDocumentsForCaseForType(uuid, "DRAFT");
 
         verify(documentService, times(1)).getDocumentsByReferenceForType(uuid, "DRAFT");
         verifyNoMoreInteractions(documentService);

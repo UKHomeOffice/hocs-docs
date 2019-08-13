@@ -52,8 +52,7 @@ public class UpdateDocumentConsumer extends RouteBuilder {
 
         from("direct:updaterecord")
                 .log(LoggingLevel.DEBUG, "Updating document record")
-                .bean(documentDataService, "updateDocument(${body.uuid},${body.status}," +
-                        "${body.fileLink},${body.pdfLink})")
+                .bean(documentDataService, "updateDocument(${body.uuid},${body.status},${body.fileLink},${body.pdfLink})")
                 .log(LoggingLevel.DEBUG, "Updated document record")
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }

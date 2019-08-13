@@ -11,13 +11,13 @@ import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+import static net.logstash.logback.argument.StructuredArguments.e;
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 
@@ -41,11 +41,15 @@ public class DocumentDataService {
         this.auditActive = auditActive;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, DocumentType type) {
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type) {
+        return createDocument(externalReferenceUUID, displayName, fileName, type, true);
+    }
+
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, boolean convertToPdf) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        documentClient.processDocument(documentData.getUuid(), fileName);
+        documentClient.processDocument(documentData.getUuid(), fileName, convertToPdf, externalReferenceUUID);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
         if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;

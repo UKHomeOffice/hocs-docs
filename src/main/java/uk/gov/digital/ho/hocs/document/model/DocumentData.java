@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_CREATION_FAILURE;
-import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UDPATE_FAILURE;
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UPDATE_FAILURE;
 
 @Entity
 @Table(name = "document_data")
@@ -34,6 +34,7 @@ public class DocumentData implements Serializable {
     private UUID externalReferenceUUID;
 
     @Column(name = "type")
+    @Getter
     private String type;
 
     @Column(name = "display_name")
@@ -64,28 +65,24 @@ public class DocumentData implements Serializable {
     @Setter
     private Boolean deleted = Boolean.FALSE;
 
-    public DocumentData(UUID externalReferenceUUID, DocumentType type, String displayName) {
+    public DocumentData(UUID externalReferenceUUID, String type, String displayName) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
             throw new ApplicationExceptions.EntityCreationException(String.format("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName), DOCUMENT_CREATION_FAILURE);
         }
         this.uuid = UUID.randomUUID();
-        this.type = type.toString();
+        this.type = type;
         this.displayName = displayName;
         this.externalReferenceUUID = externalReferenceUUID;
     }
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
         if (fileLink == null || status == null) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status), DOCUMENT_UDPATE_FAILURE);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status), DOCUMENT_UPDATE_FAILURE);
         }
         this.fileLink = fileLink;
         this.pdfLink = pdfLink;
         this.status = status.toString();
         this.updated = LocalDateTime.now();
-    }
-
-    public DocumentType getType() {
-        return DocumentType.valueOf(this.type);
     }
 
     public DocumentStatus getStatus() {

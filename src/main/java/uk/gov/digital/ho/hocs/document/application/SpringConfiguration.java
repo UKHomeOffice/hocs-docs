@@ -18,7 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.text.SimpleDateFormat;
 
 @Configuration
-
 public class SpringConfiguration implements WebMvcConfigurer {
 
     @Bean

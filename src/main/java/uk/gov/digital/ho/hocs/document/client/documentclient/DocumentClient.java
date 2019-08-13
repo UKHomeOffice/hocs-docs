@@ -10,7 +10,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.client.documentclient.dto.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import java.util.UUID;
@@ -36,8 +36,8 @@ public class DocumentClient {
     }
 
     @Async
-    public void processDocument(UUID documentUUID, String fileLocation) {
-        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation);
+    public void processDocument(UUID documentUUID, String fileLocation, boolean convertToPdf, UUID externalReferenceUUID) {
+        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertToPdf, externalReferenceUUID);
         try {
             sendMessage(objectMapper.writeValueAsString(request));
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));

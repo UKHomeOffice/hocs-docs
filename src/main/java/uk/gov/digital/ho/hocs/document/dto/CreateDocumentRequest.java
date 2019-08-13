@@ -3,7 +3,6 @@ package uk.gov.digital.ho.hocs.document.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.util.UUID;
 
@@ -15,12 +14,15 @@ public class CreateDocumentRequest {
     private String name;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private String type;
 
     @JsonProperty("fileLink")
     private String fileLink;
 
     @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
+
+    @JsonProperty("convertToPdf")
+    private boolean convertToPdf;
 
 }

@@ -11,7 +11,6 @@ import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.util.HashSet;
@@ -51,12 +50,12 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
 
         UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType).getUuid();
 
         verify(documentRepository, times(1)).save(any(DocumentData.class));
-        verify(documentClient, times(1)).processDocument(documentUUID, fileName);
+        verify(documentClient, times(1)).processDocument(documentUUID, fileName, true, uuid);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -66,7 +65,7 @@ public class DocumentServiceTest {
 
         String displayName = "name";
         String fileName = "fileName";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
 
         documentService.createDocument(null, displayName, fileName, documentType);
     }
@@ -75,7 +74,7 @@ public class DocumentServiceTest {
     public void shouldNotCreateDocumentWhenDocumentUUIDIsNull() {
 
         UUID uuid = UUID.randomUUID();
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         String fileName = "fileName";
 
         try {
@@ -123,7 +122,7 @@ public class DocumentServiceTest {
     public void shouldNotCreateDocumentWhenDocumentDisplayNameIsNullException() {
 
         UUID uuid = UUID.randomUUID();
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         String fileName = "fileName";
 
         documentService.createDocument(uuid, null, fileName, documentType);
@@ -133,7 +132,7 @@ public class DocumentServiceTest {
     public void shouldNotCreateDocumentWhenDocumentDisplayNameIsNull() {
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         String fileName = "fileName";
 
         try {
@@ -152,7 +151,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -214,7 +213,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String link = "";
 
@@ -228,7 +227,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String link = "";
 
@@ -252,7 +251,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -267,7 +266,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -304,7 +303,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         String fileName = "fileName";
 
         documentService.createDocument(uuid, displayName, fileName, documentType);
@@ -319,7 +318,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
@@ -334,7 +333,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
@@ -349,7 +348,7 @@ public class DocumentServiceTest {
     public void shouldNotAuditWhenCreateDocumentFails() {
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "Original";
         String fileName = "fileName";
 
         documentService.createDocument(null, displayName, fileName, documentType);

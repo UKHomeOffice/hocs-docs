@@ -11,17 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
-import uk.gov.digital.ho.hocs.document.dto.camel.UpdateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.HttpProcessors;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentConversionExemptTypes;
-
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
@@ -72,13 +66,12 @@ public class DocumentConversionConsumer extends RouteBuilder {
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()
                     .onWhen(exchangeProperty("status").isNotNull())
-                    .process(generateDocumentUpdateRequest())
+                    .process(HttpProcessors.generateDocumentUpdateRequest())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .process(RequestData.transferHeadersToQueue())
                     .to(toQueue)
                 .end()
-                .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
-                .log(LoggingLevel.DEBUG,"Should convert "+ skipDocumentConversion)
+                .log(LoggingLevel.DEBUG,"Convert to PDF ${property.convertToPdf}")
                 .choice()
                 .when(skipDocumentConversion)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
@@ -98,8 +91,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(RequestData.transferHeadersToQueue())
                     .to("direct:convert")
                     .endChoice();
-
-
 
         from("direct:convert").routeId("conversion-convert-queue")
                 .errorHandler(noErrorHandler())
@@ -136,15 +127,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-    private Processor generateDocumentUpdateRequest() {
-        return exchange -> {
-            UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
-            DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty("status").toString());
-            String pdfFileLink = Optional.ofNullable(exchange.getProperty("pdfFilename")).orElse("").toString();
-            String fileLink = Optional.ofNullable(exchange.getProperty("filename")).orElse("").toString();
-            exchange.getOut().setBody(new UpdateDocumentRequest(documentUUID, status, fileLink ,pdfFileLink));
-        };
-    }
 
-    private Predicate skipDocumentConversion = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipDocumentConversion = exchangeProperty("convertToPdf").isEqualTo("false");
 }
