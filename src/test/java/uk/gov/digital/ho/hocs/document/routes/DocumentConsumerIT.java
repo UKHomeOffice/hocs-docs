@@ -21,7 +21,6 @@ import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -85,15 +84,15 @@ public class DocumentConsumerIT {
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.ORIGINAL);
-        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.STANDARD_LINE);
-        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", DocumentType.TEMPLATE);
+        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL", "PDF");
+        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE", "PDF");
+        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE", "PDF");
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();
-        request = new ProcessDocumentRequest(documentUUID, filename);
-        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename);
-        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename);
+        request = new ProcessDocumentRequest(documentUUID, filename, "PDF");
+        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF");
+        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF");
 
         if(!setUpIsDone) {
             configureFor("localhost", 9002);

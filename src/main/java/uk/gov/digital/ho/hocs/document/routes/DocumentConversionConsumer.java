@@ -4,6 +4,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .to(toQueue)
                 .end()
                 .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
+                .log(LoggingLevel.DEBUG,"Value convertTo = ${body.convertTo}")
                 .log(LoggingLevel.DEBUG,"Should convert "+ skipDocumentConversion)
                 .choice()
                 .when(skipDocumentConversion)
@@ -146,5 +148,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-    private Predicate skipDocumentConversion = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipDocumentType = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipConvertToIsNone = exchangeProperty("convertTo").isEqualTo("NONE");
+    private Predicate skipDocumentConversion = PredicateBuilder.or(skipDocumentType, skipConvertToIsNone);
 }

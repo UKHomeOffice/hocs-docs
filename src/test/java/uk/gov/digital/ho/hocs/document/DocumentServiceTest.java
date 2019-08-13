@@ -11,9 +11,9 @@ import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -51,12 +51,13 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
+        String convertTo = "PDF";
 
-        UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType).getUuid();
+        UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType, convertTo).getUuid();
 
         verify(documentRepository, times(1)).save(any(DocumentData.class));
-        verify(documentClient, times(1)).processDocument(documentUUID, fileName);
+        verify(documentClient, times(1)).processDocument(documentUUID, fileName, "PDF");
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -66,20 +67,22 @@ public class DocumentServiceTest {
 
         String displayName = "name";
         String fileName = "fileName";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
+        String convertTo = "PDF";
 
-        documentService.createDocument(null, displayName, fileName, documentType);
+        documentService.createDocument(null, displayName, fileName, documentType, convertTo);
     }
 
     @Test()
     public void shouldNotCreateDocumentWhenDocumentUUIDIsNull() {
 
         UUID uuid = UUID.randomUUID();
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, null, fileName, documentType);
+            documentService.createDocument(uuid, null, fileName, documentType, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -95,8 +98,9 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
-        documentService.createDocument(uuid, displayName,  fileName,null);
+        documentService.createDocument(uuid, displayName,  fileName,null, convertTo);
     }
 
     @Test()
@@ -105,10 +109,10 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
-
+        String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, displayName, fileName, null);
+            documentService.createDocument(uuid, displayName, fileName, null, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -123,21 +127,23 @@ public class DocumentServiceTest {
     public void shouldNotCreateDocumentWhenDocumentDisplayNameIsNullException() {
 
         UUID uuid = UUID.randomUUID();
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
-        documentService.createDocument(uuid, null, fileName, documentType);
+        documentService.createDocument(uuid, null, fileName, documentType, convertTo);
     }
 
     @Test()
     public void shouldNotCreateDocumentWhenDocumentDisplayNameIsNull() {
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
         try {
-            documentService.createDocument(null, displayName, fileName, documentType);
+            documentService.createDocument(null, displayName, fileName, documentType, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -152,7 +158,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -214,7 +220,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String link = "";
 
@@ -228,7 +234,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String link = "";
 
@@ -252,7 +258,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -267,7 +273,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
@@ -304,10 +310,11 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
-        documentService.createDocument(uuid, displayName, fileName, documentType);
+        documentService.createDocument(uuid, displayName, fileName, documentType, convertTo);
 
         verify(auditClient, times(1)).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
@@ -319,7 +326,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
@@ -334,7 +341,7 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
@@ -349,10 +356,11 @@ public class DocumentServiceTest {
     public void shouldNotAuditWhenCreateDocumentFails() {
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         String fileName = "fileName";
+        String convertTo = "PDF";
 
-        documentService.createDocument(null, displayName, fileName, documentType);
+        documentService.createDocument(null, displayName, fileName, documentType,  convertTo);
 
         verifyZeroInteractions(auditClient);
 
@@ -378,6 +386,21 @@ public class DocumentServiceTest {
         documentService.deleteDocument(uuid);
 
         verifyNoMoreInteractions(auditClient);
+    }
 
+    @Test
+    public void shouldReturnDocumentByPdfUsesPdfLink() throws IOException {
+        DocumentData documentData = mock(DocumentData.class);
+        when(documentData.getPdfLink()).thenReturn("pdfLink");
+        when(s3DocumentService.getFileFromTrustedS3("pdfLink")).thenReturn(null);
+        UUID uuid = UUID.randomUUID();
+        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+
+        documentService.getDocumentPdf(uuid);
+
+        verify(s3DocumentService, times(1)).getFileFromTrustedS3("pdfLink");
+        verifyNoMoreInteractions((s3DocumentService));
+        verify(documentRepository, times(1)).findByUuid(uuid);
+        verifyNoMoreInteractions(documentRepository);
     }
 }
