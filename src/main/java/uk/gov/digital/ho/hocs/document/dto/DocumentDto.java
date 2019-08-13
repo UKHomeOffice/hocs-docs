@@ -40,6 +40,9 @@ public class DocumentDto {
     @JsonProperty("deleted")
     private Boolean deleted;
 
+    @JsonProperty("hasPdf")
+    private Boolean hasPdf;
+
     public static DocumentDto from(DocumentData documentData) {
 
         return new DocumentDto(
@@ -50,7 +53,8 @@ public class DocumentDto {
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),
-                documentData.getDeleted()
+                documentData.getDeleted(),
+                documentData.getPdfLink() != null && !documentData.getPdfLink().isEmpty()
         );
     }
 }

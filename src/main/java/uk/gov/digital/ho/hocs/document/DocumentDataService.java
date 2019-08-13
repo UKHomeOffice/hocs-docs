@@ -102,12 +102,7 @@ public class DocumentDataService {
         DocumentData documentData = getDocumentData(documentUUID);
         try{
             log.debug("Getting Document PDF: {}", documentUUID);
-            String pdfLink = documentData.getPdfLink();
-            if (pdfLink == null || pdfLink.isEmpty()){
-                // unconverted file, fall back to file link
-                pdfLink = documentData.getFileLink();
-            }
-            return s3DocumentService.getFileFromTrustedS3(pdfLink);
+            return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }

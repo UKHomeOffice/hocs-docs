@@ -389,17 +389,16 @@ public class DocumentServiceTest {
     }
 
     @Test
-    public void shouldReturnDocumentByFileLinkWhenPdfLinkIsEmpty() throws IOException {
+    public void shouldReturnDocumentByPdfUsesPdfLink() throws IOException {
         DocumentData documentData = mock(DocumentData.class);
-        when(documentData.getPdfLink()).thenReturn("");
-        when(documentData.getFileLink()).thenReturn("fileLink");
-        when(s3DocumentService.getFileFromTrustedS3("fileLink")).thenReturn(null);
+        when(documentData.getPdfLink()).thenReturn("pdfLink");
+        when(s3DocumentService.getFileFromTrustedS3("pdfLink")).thenReturn(null);
         UUID uuid = UUID.randomUUID();
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.getDocumentPdf(uuid);
 
-        verify(s3DocumentService, times(1)).getFileFromTrustedS3("fileLink");
+        verify(s3DocumentService, times(1)).getFileFromTrustedS3("pdfLink");
         verifyNoMoreInteractions((s3DocumentService));
         verify(documentRepository, times(1)).findByUuid(uuid);
         verifyNoMoreInteractions(documentRepository);
