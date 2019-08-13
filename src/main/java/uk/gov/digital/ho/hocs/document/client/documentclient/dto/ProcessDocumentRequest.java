@@ -13,4 +13,7 @@ public class ProcessDocumentRequest {
 
     @JsonProperty("fileLink")
     private String fileLink;
+
+    @JsonProperty("convertTo")
+    private String convertTo;
 }

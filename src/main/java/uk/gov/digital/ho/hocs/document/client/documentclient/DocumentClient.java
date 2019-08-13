@@ -36,8 +36,8 @@ public class DocumentClient {
     }
 
     @Async
-    public void processDocument(UUID documentUUID, String fileLocation) {
-        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation);
+    public void processDocument(UUID documentUUID, String fileLocation, String convertTo) {
+        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo);
         try {
             sendMessage(objectMapper.writeValueAsString(request));
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));

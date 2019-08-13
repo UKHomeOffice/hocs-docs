@@ -40,11 +40,11 @@ public class DocumentDataService {
         this.auditActive = auditActive;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type) {
+    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        documentClient.processDocument(documentData.getUuid(), fileName);
+        documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
         if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;
@@ -102,7 +102,12 @@ public class DocumentDataService {
         DocumentData documentData = getDocumentData(documentUUID);
         try{
             log.debug("Getting Document PDF: {}", documentUUID);
-            return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+            String pdfLink = documentData.getPdfLink();
+            if (pdfLink == null || pdfLink.isEmpty()){
+                // unconverted file, fall back to file link
+                pdfLink = documentData.getFileLink();
+            }
+            return s3DocumentService.getFileFromTrustedS3(pdfLink);
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }

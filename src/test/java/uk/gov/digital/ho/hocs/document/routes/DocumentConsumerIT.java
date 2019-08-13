@@ -84,15 +84,15 @@ public class DocumentConsumerIT {
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL");
-        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE");
-        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE");
+        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL", "PDF");
+        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE", "PDF");
+        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE", "PDF");
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();
-        request = new ProcessDocumentRequest(documentUUID, filename);
-        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename);
-        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename);
+        request = new ProcessDocumentRequest(documentUUID, filename, "PDF");
+        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF");
+        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF");
 
         if(!setUpIsDone) {
             configureFor("localhost", 9002);

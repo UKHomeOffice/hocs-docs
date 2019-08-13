@@ -31,7 +31,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
     @Mock
     DocumentDataService documentDataService;
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID.toString(), "someLink");
+    private ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID.toString(), "someLink", "PDF");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {

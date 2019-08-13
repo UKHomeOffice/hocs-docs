@@ -35,7 +35,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     private final String dlq = "mock:cs-dev-document-sqs-dlq";
     private final String toEndpoint = "mock:updaterecord";
     private final String conversionService = "mock:conversion-service";
-    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx");
+    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx", "PDF");
 
 
     @Override

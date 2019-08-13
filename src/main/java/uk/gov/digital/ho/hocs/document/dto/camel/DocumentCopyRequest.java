@@ -9,4 +9,5 @@ public class DocumentCopyRequest {
     private final String fileLink;
     private final String externalReferenceUUID;
     private final String fileType;
+    private final String convertTo;
 }

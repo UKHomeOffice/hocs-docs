@@ -42,14 +42,15 @@ public class DocumentResourceTest {
         String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String fileName = "fileName";
+        String convertTo = "convertTo";
 
-        when(documentService.createDocument(uuid, displayName, fileName, documentType)).thenReturn(documentData);
+        when(documentService.createDocument(uuid, displayName, fileName, documentType, convertTo)).thenReturn(documentData);
 
-        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid);
+        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid, convertTo);
 
         ResponseEntity response = documentResource.createDocument(request);
 
-        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType);
+        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType, convertTo);
 
         verifyNoMoreInteractions(documentService);
 
