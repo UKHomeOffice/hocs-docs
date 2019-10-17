@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -24,7 +23,7 @@ public class DocumentDto {
     private UUID externalReferenceUUID;
 
     @JsonProperty("type")
-    private DocumentType type;
+    private String type;
 
     @JsonProperty("displayName")
     private String displayName;
@@ -41,6 +40,9 @@ public class DocumentDto {
     @JsonProperty("deleted")
     private Boolean deleted;
 
+    @JsonProperty("hasPdf")
+    private Boolean hasPdf;
+
     public static DocumentDto from(DocumentData documentData) {
 
         return new DocumentDto(
@@ -51,7 +53,8 @@ public class DocumentDto {
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),
-                documentData.getDeleted()
+                documentData.getDeleted(),
+                documentData.getPdfLink() != null && !documentData.getPdfLink().isEmpty()
         );
     }
 }

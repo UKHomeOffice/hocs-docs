@@ -91,7 +91,7 @@ public class S3DocumentServiceTest {
     public void shouldCopyToTrustedBucket() throws IOException {
 
         assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
-        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx");
+        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx", "PDF");
         S3Document document = service.copyToTrustedBucket(copyRequest);
         assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
@@ -99,7 +99,7 @@ public class S3DocumentServiceTest {
     @Test
     public void shouldSetMetaDataWhenCopyToTrustedBucket() throws IOException {
 
-        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx");
+        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx", "PDF");
         S3Document document = service.copyToTrustedBucket(copyRequest);
 
         ObjectMetadata metadata = trustedClient.getObjectMetadata(trustedBucketName,document.getFilename());

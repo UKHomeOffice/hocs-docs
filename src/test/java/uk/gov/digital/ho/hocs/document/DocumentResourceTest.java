@@ -11,7 +11,6 @@ import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
-import uk.gov.digital.ho.hocs.document.model.DocumentType;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -40,17 +39,18 @@ public class DocumentResourceTest {
 
 
         String displayName = "name";
-        DocumentType documentType = DocumentType.ORIGINAL;
+        String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, documentType, displayName);
         String fileName = "fileName";
+        String convertTo = "convertTo";
 
-        when(documentService.createDocument(uuid, displayName, fileName, documentType)).thenReturn(documentData);
+        when(documentService.createDocument(uuid, displayName, fileName, documentType, convertTo)).thenReturn(documentData);
 
-        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid);
+        CreateDocumentRequest request = new CreateDocumentRequest(displayName, documentType, fileName, uuid, convertTo);
 
         ResponseEntity response = documentResource.createDocument(request);
 
-        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType);
+        verify(documentService, times(1)).createDocument(uuid, displayName, fileName, documentType, convertTo);
 
         verifyNoMoreInteractions(documentService);
 

@@ -76,6 +76,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
+                .setProperty("convertTo", simple("${body.convertTo}"))
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
@@ -91,7 +92,8 @@ public class DocumentConsumer extends RouteBuilder {
             UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
             UUID externalReferenceUUID = UUID.fromString(exchange.getProperty("externalReferenceUUID").toString());
             String fileLink = exchange.getProperty("fileLink").toString();
-            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID));
+            String convertTo = exchange.getProperty("convertTo").toString();
+            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID, convertTo));
         };
     }
 

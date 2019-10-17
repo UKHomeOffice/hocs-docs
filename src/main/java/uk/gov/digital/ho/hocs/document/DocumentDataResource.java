@@ -32,7 +32,8 @@ class DocumentDataResource {
 
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
-        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType());
+        String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
+        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType(), convertTo);
         return ResponseEntity.ok(documentData.getUuid());
     }
 
@@ -85,6 +86,13 @@ class DocumentDataResource {
                 .contentType(mediaType)
                 .contentLength(document.getData().length)
                 .body(resource);
+    }
+
+    @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> getDocumentName(@PathVariable UUID documentUUID) {
+        DocumentData documentData = documentDataService.getDocumentData(documentUUID);
+        // 'ApplicationExceptions.EntityNotFoundException' thrown in getDocumentData if null
+        return ResponseEntity.ok(documentData.getDisplayName());
     }
 
 }
