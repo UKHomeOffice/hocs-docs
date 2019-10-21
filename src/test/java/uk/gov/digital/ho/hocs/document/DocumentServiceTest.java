@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -36,13 +37,15 @@ public class DocumentServiceTest {
 
     @Mock
     private AuditClient auditClient;
+    @Mock
+    private RequestData requestData;
 
     private boolean auditActive = true;
 
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService, auditClient, documentClient, auditActive);
+                documentRepository, s3DocumentService, auditClient, documentClient, auditActive, requestData);
     }
 
     @Test
@@ -53,11 +56,17 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
+        String userId = "userId1234";
+        String correlationId = "correlationId4321";
 
+        when(requestData.userId()).thenReturn(userId);
+        when(requestData.correlationId()).thenReturn(correlationId);
         UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType, convertTo).getUuid();
 
-        verify(documentRepository, times(1)).save(any(DocumentData.class));
-        verify(documentClient, times(1)).processDocument(documentUUID, fileName, "PDF");
+        verify(requestData).userId();
+        verify(requestData).correlationId();
+        verify(documentRepository).save(any(DocumentData.class));
+        verify(documentClient).processDocument(documentUUID, fileName, "PDF", userId, correlationId);
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
@@ -167,8 +176,8 @@ public class DocumentServiceTest {
 
         documentService.updateDocument(uuid, documentStatus, link, null);
 
-        verify(documentRepository, times(1)).findByUuid(uuid);
-        verify(documentRepository, times(1)).save(documentData);
+        verify(documentRepository).findByUuid(uuid);
+        verify(documentRepository).save(documentData);
 
         verifyZeroInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
@@ -208,7 +217,7 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verify(documentRepository, times(1)).findByUuid(null);
+        verify(documentRepository).findByUuid(null);
 
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
@@ -246,7 +255,7 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verify(documentRepository, times(1)).findByUuid(uuid);
+        verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
@@ -286,7 +295,7 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verify(documentRepository, times(1)).findByUuid(uuid);
+        verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
@@ -301,7 +310,7 @@ public class DocumentServiceTest {
 
         documentService.getDocumentsByReferenceForType(uuid, "DRAFT");
 
-        verify(documentRepository, times(1)).findAllByExternalReferenceUUIDAndType(uuid, "DRAFT");
+        verify(documentRepository).findAllByExternalReferenceUUIDAndType(uuid, "DRAFT");
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -316,7 +325,7 @@ public class DocumentServiceTest {
 
         documentService.createDocument(uuid, displayName, fileName, documentType, convertTo);
 
-        verify(auditClient, times(1)).createDocumentAudit(any());
+        verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
 
     }
@@ -332,7 +341,7 @@ public class DocumentServiceTest {
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
 
-        verify(auditClient, times(1)).updateDocumentAudit(documentData);
+        verify(auditClient).updateDocumentAudit(documentData);
         verifyNoMoreInteractions(auditClient);
     }
 
@@ -347,7 +356,7 @@ public class DocumentServiceTest {
 
         documentService.deleteDocument(uuid);
 
-        verify(auditClient, times(1)).deleteDocumentAudit(any());
+        verify(auditClient).deleteDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
 
     }

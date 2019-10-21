@@ -74,6 +74,8 @@ public class DocumentConsumerIT {
     private String documentTemplateUUID;
     private final String filename = "someUUID.docx";
     private final String originalFilename = "sample.docx";
+    private String userId = "user123";
+    private String correlationID = "correlationId321";
 
     private DocumentData document;
     private DocumentData documentStandardLine;
@@ -90,9 +92,9 @@ public class DocumentConsumerIT {
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();
-        request = new ProcessDocumentRequest(documentUUID, filename, "PDF");
-        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF");
-        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF");
+        request = new ProcessDocumentRequest(documentUUID, filename, "PDF", userId, correlationID);
+        requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF", userId, correlationID);
+        requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF", userId, correlationID);
 
         if(!setUpIsDone) {
             configureFor("localhost", 9002);

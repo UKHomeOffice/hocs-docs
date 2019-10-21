@@ -16,4 +16,10 @@ public class ProcessDocumentRequest {
 
     @JsonProperty("convertTo")
     private final String convertTo;
+
+    @JsonProperty("userId")
+    private final String userId;
+
+    @JsonProperty("correlationId")
+    private final String correlationId;
 }
