@@ -92,9 +92,26 @@ pipeline:
       branch: master
       event: [push, tag]
 
-  deployment:
+  deployment-cs:
     image: quay.io/ukhomeofficedigital/kd:v1.12.2
     environment:
+    - KUBE_NAMESPACE=cs-dev
+    - ENVIRONMENT=${DRONE_DEPLOY_TO}
+    - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
+    secrets:
+    - hocs_docs_dev
+    - hocs_docs_demo
+    commands:
+    - cd kube-hocs-docs
+    - ./deploy.sh
+    when:
+      event: deployment
+      environment: [dev, demo]
+
+  deployment-wcs:
+    image: quay.io/ukhomeofficedigital/kd:v1.12.2
+    environment:
+    - KUBE_NAMESPACE=wcs-dev
     - ENVIRONMENT=${DRONE_DEPLOY_TO}
     - KUBE_SERVER=https://kube-api-notprod.notprod.acp.homeoffice.gov.uk
     secrets:
