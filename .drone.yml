@@ -149,7 +149,7 @@ pipeline:
     secrets:
     - hocs_docs_prod
     commands:
-      - echo $KUBE_NAMESPACE
+    - echo $KUBE_NAMESPACE
     - cd kube-hocs-docs
     - ./deploy.sh
     when:
