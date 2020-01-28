@@ -162,6 +162,8 @@ spec:
               value: /certs/tls-key.pem
             - name: ADD_NGINX_SERVER_CFG
               value: 'location = /reload { allow 127.0.0.1; deny all; content_by_lua_block { os.execute("touch /tmp/nginx-reload-triggered; /usr/local/openresty/nginx/sbin/nginx -s reload; touch /tmp/nginx-reload-complete;") } }'
+            - name: CLIENT_MAX_BODY_SIZE
+              value: '52'
           volumeMounts:
             - name: certs
               mountPath: /certs
