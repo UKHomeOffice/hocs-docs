@@ -37,7 +37,14 @@ fi
 
 cd kd
 
-kd --insecure-skip-tls-verify \
-   --timeout 10m \
-    -f deployment.yaml \
-    -f service.yaml
+if [[ ${KUBE_NAMESPACE} == "wcs-prod" ]] ; then
+    kd --insecure-skip-tls-verify \
+       --timeout 10m \
+        -f deployment-wcs-prod.yaml \
+        -f service.yaml
+else
+    kd --insecure-skip-tls-verify \
+       --timeout 10m \
+        -f deployment.yaml \
+        -f service.yaml
+fi
