@@ -35,6 +35,11 @@ public class DocumentConversionConsumer extends RouteBuilder {
     private final String hocsConverterPath;
     private final String toQueue;
 
+    private static final String STATUS = "status";
+    private static final String FILENAME = "filename";
+    private static final String PDF_FILENAME = "pdfFilename";
+    private static final String UUID_TEXT = "uuid";
+
     @Autowired
     public DocumentConversionConsumer(
             S3DocumentService s3BucketService,
@@ -72,7 +77,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()
-                    .onWhen(exchangeProperty("status").isNotNull())
+                    .onWhen(exchangeProperty(STATUS).isNotNull())
                     .process(generateDocumentUpdateRequest())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .process(RequestData.transferHeadersToQueue())
@@ -84,15 +89,15 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .choice()
                 .when(skipDocumentConversion)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
-                    .setProperty("filename", simple("${body.fileLink}"))
-                    .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
+                    .setProperty(FILENAME, simple("${body.fileLink}"))
+                    .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
                     .endChoice()
                 .otherwise()
                     .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
-                    .setProperty("uuid", simple("${body.documentUUID}"))
+                    .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
                     .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                     .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
-                    .setProperty("filename", simple("${body.filename}"))
+                    .setProperty(FILENAME, simple("${body.filename}"))
                     .setProperty("originalFilename", simple("${body.originalFilename}"))
                     .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
@@ -114,13 +119,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.DEBUG, "Uploading file to trusted bucket")
                     .bean(s3BucketService, "uploadFile")
                     .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filename}")
-                    .setProperty("pdfFilename", simple("${body.filename}"))
-                    .setProperty("status", simple(DocumentStatus.UPLOADED.toString()))
+                    .setProperty(PDF_FILENAME, simple("${body.filename}"))
+                    .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice()
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
-                    .setProperty("status", simple(DocumentStatus.FAILED_CONVERSION.toString()))
+                    .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
                     .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document "
                             + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
@@ -131,7 +136,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
     private Processor generateUploadDocument() {
         return exchange -> {
             byte[] content =  exchange.getIn().getBody(byte[].class);
-            String filename = exchange.getProperty("filename").toString();
+            String filename = exchange.getProperty(FILENAME).toString();
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
             exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
@@ -140,10 +145,10 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private Processor generateDocumentUpdateRequest() {
         return exchange -> {
-            UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
-            DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty("status").toString());
-            String pdfFileLink = Optional.ofNullable(exchange.getProperty("pdfFilename")).orElse("").toString();
-            String fileLink = Optional.ofNullable(exchange.getProperty("filename")).orElse("").toString();
+            UUID documentUUID = UUID.fromString(exchange.getProperty(UUID_TEXT).toString());
+            DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty(STATUS).toString());
+            String pdfFileLink = Optional.ofNullable(exchange.getProperty(PDF_FILENAME)).orElse("").toString();
+            String fileLink = Optional.ofNullable(exchange.getProperty(FILENAME)).orElse("").toString();
             exchange.getOut().setBody(new UpdateDocumentRequest(documentUUID, status, fileLink ,pdfFileLink));
         };
     }

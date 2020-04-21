@@ -29,7 +29,7 @@ public class AuditClient {
     private final String namespace;
     private final ProducerTemplate producerTemplate;
     private final ObjectMapper objectMapper;
-    private final String EVENT_TYPE_HEADER ="event_type";
+    private static final String EVENT_TYPE_HEADER ="event_type";
     private final RequestData requestData;
 
     @Autowired
@@ -61,7 +61,7 @@ public class AuditClient {
                     requestData.userId(),
                     value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
+            logError(e, documentData.getUuid());
         }
     }
 
@@ -79,7 +79,7 @@ public class AuditClient {
                     requestData.userId(),
                     value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
+            logError(e, documentData.getUuid());
         }
     }
 
@@ -97,7 +97,7 @@ public class AuditClient {
                     requestData.userId(),
                     value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
-            log.error("Failed to create audit event for document UUID {} for reason {}", documentData.getUuid(), e, value(EVENT, AUDIT_FAILED));
+            logError(e, documentData.getUuid());
         }
     }
 
@@ -131,5 +131,9 @@ public class AuditClient {
         headers.put(RequestData.USERNAME_HEADER, requestData.username());
         headers.put(RequestData.GROUP_HEADER, requestData.groups());
         return headers;
+    }
+
+    private void logError(Exception e, UUID documentUUID){
+        log.error("Failed to create audit event for document UUID {} for reason {}", documentUUID, e, value(EVENT, AUDIT_FAILED));
     }
 }

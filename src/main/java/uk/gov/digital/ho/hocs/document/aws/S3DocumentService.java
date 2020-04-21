@@ -30,7 +30,9 @@ public class S3DocumentService {
     private AmazonS3 trustedS3Client;
     private String untrustedS3BucketName;
     private AmazonS3 untrustedS3Client;
-    private final String CONVERTED_DOCUMENT_EXTENSION = "pdf";
+    private static final String CONVERTED_DOCUMENT_EXTENSION = "pdf";
+    private static final String ORIGINAL_NAME = "originalName";
+    private static final String FILENAME = "filename";
     private String trustedBucketKMSkeyId;
 
     public S3DocumentService( @Value("${docs.untrustedS3bucket}") String untrustedS3BucketName,
@@ -64,8 +66,8 @@ public class S3DocumentService {
             ObjectMetadata metaData = new ObjectMetadata();
             metaData.setContentType(copyDocument.getMimeType());
             metaData.addUserMetadata("externalReferenceUUID", copyRequest.getExternalReferenceUUID());
-            metaData.addUserMetadata("filename", destinationKey);
-            metaData.addUserMetadata("originalName", copyDocument.getOriginalFilename());
+            metaData.addUserMetadata(FILENAME, destinationKey);
+            metaData.addUserMetadata(ORIGINAL_NAME, copyDocument.getOriginalFilename());
             metaData.setContentLength(copyDocument.getData().length);
 
             PutObjectRequest uploadRequest = new PutObjectRequest(trustedS3BucketName, destinationKey, new ByteArrayInputStream(copyDocument.getData()), metaData);
@@ -90,7 +92,7 @@ public class S3DocumentService {
         metaData.setContentType("application/pdf");
         String destinationKey = String.format("%s/%s.%s", document.getExternalReferenceUUID(), UUID.randomUUID().toString(),CONVERTED_DOCUMENT_EXTENSION);
         metaData.addUserMetadata("externalReferenceUUID", document.getExternalReferenceUUID());
-        metaData.addUserMetadata("originalName", getPDFFilename(document.getOriginalFileName()));
+        metaData.addUserMetadata(ORIGINAL_NAME, getPDFFilename(document.getOriginalFileName()));
 
         PutObjectRequest uploadRequest = new PutObjectRequest(trustedS3BucketName, destinationKey, new ByteArrayInputStream(document.getData()), metaData);
         if(StringUtils.hasValue(trustedBucketKMSkeyId)) {
@@ -102,7 +104,7 @@ public class S3DocumentService {
             response = trustedS3Client.putObject(uploadRequest);
         }
         catch(AmazonServiceException e) {
-            throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file %s to %s bucket %s",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
+            throw new ApplicationExceptions.S3Exception(String.format("Unable to upload file %s to bucket %s",destinationKey,trustedS3BucketName), S3_UPLOAD_FAILURE, e);
         }
 
         return new S3Document(destinationKey, document.getFilename(),null,  response.getContentMd5(), "application/pdf");
@@ -114,10 +116,10 @@ public class S3DocumentService {
 
             S3Object s3File = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
-            String originalName = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf("originalName"))
+            String originalName = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf(ORIGINAL_NAME))
                     .orElse("");
 
-            String filename = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf("filename"))
+            String filename = Optional.ofNullable(s3File.getObjectMetadata().getUserMetaDataOf(FILENAME))
                     .orElse(key);
 
             String extension = getFileExtension(originalName);

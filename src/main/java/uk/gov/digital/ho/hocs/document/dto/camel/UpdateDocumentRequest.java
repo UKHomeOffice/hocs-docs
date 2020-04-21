@@ -4,7 +4,7 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.util.UUID;
 
-
+@java.lang.SuppressWarnings("squid:S1068")
 public class UpdateDocumentRequest {
     private UUID uuid;
     private DocumentStatus status;

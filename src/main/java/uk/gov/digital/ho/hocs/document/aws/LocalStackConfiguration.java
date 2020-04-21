@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Profile;
 @Profile({ "local"})
 public class LocalStackConfiguration {
 
+    private static final String EU_WEST_2 = "eu-west-2";
+
     @Value("${aws.local.host:localhost}")
     private String awsHost;
 
@@ -35,7 +37,7 @@ public class LocalStackConfiguration {
 
         String host = String.format("http://%s:4576/", awsHost);
 
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, "eu-west-2");
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
         return AmazonSQSClientBuilder.standard()
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
                 .withCredentials(awsCredentialsProvider)
@@ -46,7 +48,7 @@ public class LocalStackConfiguration {
     @Bean("auditSnsClient")
     public AmazonSNS auditSnsClient() {
         String host = String.format("http://%s:4575/", awsHost);
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, "eu-west-2");
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
         return AmazonSNSClientBuilder.standard()
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
                 .withCredentials(awsCredentialsProvider)
@@ -68,7 +70,7 @@ public class LocalStackConfiguration {
 
         String host = String.format("http://%s:4572/", awsHost);
 
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, "eu-west-2");
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
 
         return AmazonS3ClientBuilder.standard()
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
@@ -88,7 +90,7 @@ public class LocalStackConfiguration {
 
         @Override
         public void refresh() {
-
+            // not needed locally
         }
 
     };
