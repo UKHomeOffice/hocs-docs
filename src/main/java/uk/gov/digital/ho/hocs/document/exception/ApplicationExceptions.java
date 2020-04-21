@@ -5,11 +5,13 @@ import uk.gov.digital.ho.hocs.document.application.LogEvent;
 public interface ApplicationExceptions {
 
     class DocumentConversionException extends Exception {
-        private LogEvent event;
+        private final LogEvent event;
+
         public DocumentConversionException(String message, LogEvent event) {
             super(message);
             this.event = event;
         }
+
         public LogEvent getEvent() {
             return event;
         }
@@ -22,17 +24,20 @@ public interface ApplicationExceptions {
             super(message);
             this.event = event;
         }
+
         public LogEvent getEvent() {
             return event;
         }
     }
 
     class EntityCreationException extends RuntimeException {
-        private LogEvent event;
-        public EntityCreationException(String msg, LogEvent event, Object... args) {
+        private final LogEvent event;
+
+        public EntityCreationException(String msg, LogEvent event) {
             super(msg);
             this.event = event;
         }
+
         public LogEvent getEvent() {
             return event;
         }
@@ -40,11 +45,13 @@ public interface ApplicationExceptions {
 
     class EntityNotFoundException extends RuntimeException {
 
-        private LogEvent event;
-        public EntityNotFoundException(String msg, LogEvent event, Object... args) {
+        private final LogEvent event;
+
+        public EntityNotFoundException(String msg, LogEvent event) {
             super(msg);
             this.event = event;
         }
+
         public LogEvent getEvent() {
             return event;
         }
@@ -52,16 +59,19 @@ public interface ApplicationExceptions {
 
     class S3Exception extends RuntimeException {
 
-        private LogEvent event;
-        public S3Exception(String msg, LogEvent event, Exception cause, Object... args) {
+        private final LogEvent event;
+
+        public S3Exception(String msg, LogEvent event, Exception cause) {
             super(msg, cause);
             this.event = event;
         }
+
         public LogEvent getEvent() {
             return event;
         }
 
     }
+
     class ResourceException extends RuntimeException {
         private final LogEvent event;
 

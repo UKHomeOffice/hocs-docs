@@ -30,6 +30,6 @@ public class HttpProcessors {
         };
     }
 
-    public static Predicate validateHttpResponse = header(Exchange.HTTP_RESPONSE_CODE).isLessThan(300);
+    public static final Predicate validateHttpResponse = header(Exchange.HTTP_RESPONSE_CODE).isLessThan(300);
 
 }
