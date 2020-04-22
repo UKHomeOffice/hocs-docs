@@ -56,7 +56,7 @@ public class DocumentConsumerIT {
     @Autowired
     ObjectMapper mapper;
 
-    private int LOCAL_S3_PORT = 9001;
+    private int LOCAL_S3_PORT = 9003;
 
     @Autowired
     @Qualifier("UnTrusted")
