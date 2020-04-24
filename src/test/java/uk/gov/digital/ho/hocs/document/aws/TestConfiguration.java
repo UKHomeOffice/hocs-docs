@@ -27,7 +27,7 @@ public class TestConfiguration {
     }
 
     public AmazonS3 s3Client() {
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration("http://localhost:9001/", "eu-west-2");
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration("http://localhost:9003/", "eu-west-2");
 
         return AmazonS3ClientBuilder.standard()
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
