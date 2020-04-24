@@ -85,10 +85,6 @@ public class DocumentData implements Serializable {
         this.updated = LocalDateTime.now();
     }
 
-//    public DocumentType getType() {
-//        return DocumentType.valueOf(this.type);
-//    }
-
     public DocumentStatus getStatus() {
         return DocumentStatus.valueOf(this.status);
     }
