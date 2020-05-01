@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @RunWith(CamelSpringBootRunner.class)
 @DisableJmx
+@Ignore
 public class DocumentConsumerIT {
 
     private static boolean setUpIsDone = false;
