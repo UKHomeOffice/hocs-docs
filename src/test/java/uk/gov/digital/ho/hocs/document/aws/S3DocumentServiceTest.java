@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -33,15 +34,23 @@ public class S3DocumentServiceTest {
     @ClassRule
     public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
 
-    private AmazonS3 untrustedClient = S3_MOCK_RULE.createS3Client();
-    private AmazonS3 trustedClient = S3_MOCK_RULE.createS3Client();
-    private S3DocumentService service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient, "");
-
+    private AmazonS3 untrustedClient;
+    private AmazonS3 trustedClient;
+    private S3DocumentService service;
 
     @Before
     public void setUp() throws Exception {
+        untrustedClient = S3_MOCK_RULE.createS3Client();
+        trustedClient = S3_MOCK_RULE.createS3Client();
+        service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient, "");
         clearS3Buckets();
         uploadUntrustedFiles();
+    }
+
+    @After
+    public void takeDown() {
+        untrustedClient.shutdown();
+        trustedClient.shutdown();
     }
 
     @Test
