@@ -111,8 +111,8 @@ spec:
                   key: rds_password     
           resources:
             limits:
-              memory: 16Mi
-              cpu: 200m
+              memory: 32Mi
+              cpu: 400m
             requests:
               memory: 4Mi
               cpu: 100m
@@ -144,8 +144,8 @@ spec:
               readOnly: true
           resources:
             limits:
-              memory: 16Mi
-              cpu: 200m
+              memory: 32Mi
+              cpu: 400m
             requests:
               memory: 8Mi
               cpu: 100m
@@ -161,8 +161,8 @@ spec:
                 - SETGID
           resources:
             limits:
-              memory: 16Mi
-              cpu: 200m
+              memory: 32Mi
+              cpu: 400m
             requests:
               memory: 4Mi
               cpu: 100m
