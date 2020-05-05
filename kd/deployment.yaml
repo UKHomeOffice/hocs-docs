@@ -54,10 +54,10 @@ spec:
               readOnly: true
           resources:
             limits:
-              memory: 50Mi
+              memory: 48Mi
               cpu: 500m
             requests:
-              memory: 15Mi
+              memory: 16Mi
               cpu: 300m
 
         - name: db-initialise
@@ -145,7 +145,7 @@ spec:
           resources:
             limits:
               memory: 16Mi
-              cpu: 150m
+              cpu: 200m
             requests:
               memory: 8Mi
               cpu: 100m
@@ -337,7 +337,7 @@ spec:
                   fieldPath: metadata.namespace
           resources:
             limits:
-              cpu: 200m
+              cpu: 900m
               memory: 1536Mi
             requests:
               cpu: 100m
