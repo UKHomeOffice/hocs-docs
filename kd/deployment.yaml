@@ -276,10 +276,10 @@ spec:
                   key: secret_access_key
             - name: DOCS_TRUSTEDS3BUCKETNAME
               value:
-                'cs-{{.ENVIRONMENT}}-trusted-s3'
+                '{{.KUBE_NAMESPACE}}-trusted-s3'
             - name: DOCS_UNTRUSTEDS3BUCKETNAME
               value:
-                'cs-{{.ENVIRONMENT}}-untrusted-s3'
+                '{{.KUBE_NAMESPACE}}-untrusted-s3'
             - name: DOCS_AWS_SQS_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
