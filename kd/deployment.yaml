@@ -337,10 +337,10 @@ spec:
                   fieldPath: metadata.namespace
           resources:
             limits:
-              cpu: 900m
-              memory: 1536Mi
+              cpu: 1200m
+              memory: 2048Mi
             requests:
-              cpu: 100m
+              cpu: 200m
               memory: 1024Mi
           ports:
             - name: http
