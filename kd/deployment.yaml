@@ -337,8 +337,8 @@ spec:
                   fieldPath: metadata.namespace
           resources:
             limits:
-              cpu: 900m
-              memory: 1536Mi
+              cpu: 1200m
+              memory: 2024Mi
             requests:
               cpu: 100m
               memory: 1024Mi
