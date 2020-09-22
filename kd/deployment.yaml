@@ -338,9 +338,9 @@ spec:
           resources:
             limits:
               cpu: 1200m
-              memory: 2024Mi
+              memory: 2048Mi
             requests:
-              cpu: 100m
+              cpu: 200m
               memory: 1024Mi
           ports:
             - name: http
