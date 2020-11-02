@@ -5,8 +5,8 @@ metadata:
     app: hocs-docs
   name: hocs-docs
 spec:
-  maxReplicas: 4
-  minReplicas: {{.REPLICAS}}
+  maxReplicas: {{.MAX_REPLICAS}}
+  minReplicas: {{.MIN_REPLICAS}}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment

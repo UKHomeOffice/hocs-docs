@@ -6,7 +6,7 @@ metadata:
   labels:
     version: {{.VERSION}}
 spec:
-  replicas: {{.REPLICAS}}
+  replicas: {{.MIN_REPLICAS}}
   selector:
     matchLabels:
       name: hocs-docs
@@ -266,7 +266,7 @@ spec:
                 '{{.KUBE_NAMESPACE}}-document-sqs-dlq'	
             - name: DOCS_AWS_SQS_ACCESS_KEY	
               valueFrom:	
-                secretKeyRef:	
+                secretKeyRef:
                   name: '{{.KUBE_NAMESPACE}}-document-sqs'	
                   key: access_key_id	
             - name: DOCS_AWS_SQS_SECRET_KEY	
