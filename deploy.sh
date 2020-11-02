@@ -13,7 +13,7 @@ then
     export MAX_REPLICAS="6"
 else
     export MIN_REPLICAS="1"
-    export MAX_REPLICAS="3"
+    export MAX_REPLICAS="2"
 fi
 
 if [[ ${KUBE_NAMESPACE} == "cs-prod" ]] ; then
