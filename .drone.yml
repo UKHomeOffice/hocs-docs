@@ -19,7 +19,6 @@ pipeline:
     commands:
     - docker build -t hocs-docs .
     when:
-      branch: [master, refs/tags/*]
       event: [push, tag]
 
   install-docker-image:
