@@ -43,7 +43,7 @@ steps:
       DOCKER_USERNAME: ukhomeofficedigital+hocs_quay_robot
     when:
       branch:
-        - master
+        - main
     depends_on:
       - build project
 
@@ -93,7 +93,7 @@ steps:
       VERSION: build_${DRONE_BUILD_NUMBER}
     when:
       branch:
-        - master
+        - main
       event:
         - push
     depends_on:
@@ -112,7 +112,7 @@ steps:
       VERSION: build_${DRONE_BUILD_NUMBER}
     when:
       branch:
-        - master
+        - main
       event:
         - push
     depends_on:
