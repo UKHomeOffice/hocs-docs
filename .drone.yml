@@ -7,7 +7,14 @@ steps:
   - name: build project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
     commands:
-      - ./gradlew build
+      - ./gradlew assemble --no-daemon
+
+  - name: test project
+    image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
+    commands:
+      - ./gradlew check --no-daemon
+    depends_on:
+      - build project
 
   - name: sonar scanner
     image: quay.io/ukhomeofficedigital/sonar-scanner:v3.0.3
@@ -28,7 +35,7 @@ steps:
         from_secret: QUAY_ROBOT_TOKEN
       DOCKER_USERNAME: ukhomeofficedigital+hocs_quay_robot
     depends_on:
-      - build project
+      - test project
 
   - name: build & push latest
     image: plugins/docker
@@ -45,7 +52,7 @@ steps:
       branch:
         - main
     depends_on:
-      - build project
+      - test project
 
 trigger:
   event:
