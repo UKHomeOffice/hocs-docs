@@ -59,3 +59,4 @@ dependencies {
     testImplementation('com.adobe.testing:s3mock-junit4:2.1.8')
     testImplementation('com.adobe.testing:s3mock:2.1.8')
 }
+
