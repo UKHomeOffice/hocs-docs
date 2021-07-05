@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@Ignore
 public class S3DocumentServiceTest {
     private static String untrustedBucketName = "untrusted-bucked";
     private static String trustedBucketName = "trusted-bucked";
