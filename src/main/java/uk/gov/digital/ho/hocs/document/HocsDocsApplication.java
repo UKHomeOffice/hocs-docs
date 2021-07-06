@@ -20,7 +20,7 @@ public class HocsDocsApplication {
 
 	@PreDestroy
 	public void stop() {
-		log.info("hocs-docs stopping gracefully");
+		log.info("Stopping gracefully");
 	}
 
 }

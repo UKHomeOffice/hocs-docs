@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.3.0.RELEASE'
+    id 'org.springframework.boot' version '2.5.1'
     id 'java'
 }
 
@@ -60,3 +60,6 @@ dependencies {
     testImplementation('com.adobe.testing:s3mock:2.1.8')
 }
 
+jar {
+    enabled = false
+}
