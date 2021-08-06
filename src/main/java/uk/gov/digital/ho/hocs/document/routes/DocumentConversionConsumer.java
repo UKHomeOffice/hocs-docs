@@ -20,6 +20,7 @@ import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.model.DocumentConversionExemptTypes;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -123,11 +124,21 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice()
+                .when(HttpProcessors.badRequestResponse)
+                    .log(LoggingLevel.WARN, "Document conversion failed")
+                    .process(generateFailedDocument())
+                    .log(LoggingLevel.DEBUG, "Uploading file to trusted bucket")
+                    .bean(s3BucketService, "uploadFile")
+                    .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filename}")
+                    .setProperty(PDF_FILENAME, simple("${body.filename}"))
+                    .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                    .endChoice()
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Document conversion failed for document "
-                            + simple("${property.originalFilename}"), LogEvent.DOCUMENT_CONVERSION_FAILURE))
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document, response: ${body}", 
+                            LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice();
 
@@ -139,6 +150,16 @@ public class DocumentConversionConsumer extends RouteBuilder {
             String filename = exchange.getProperty(FILENAME).toString();
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
+            exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
+        };
+    }
+
+    private Processor generateFailedDocument() {
+        return exchange -> {
+            String filename = exchange.getProperty(FILENAME).toString();
+            String originalFilename = exchange.getProperty("originalFilename").toString();
+            byte[] content =  (originalFilename + " failed conversion").getBytes(StandardCharsets.UTF_8);
+            String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
         };
     }

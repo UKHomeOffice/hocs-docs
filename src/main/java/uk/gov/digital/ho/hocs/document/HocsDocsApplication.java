@@ -15,6 +15,7 @@ import javax.annotation.PreDestroy;
 public class HocsDocsApplication {
 
 	public static void main(String[] args) {
+		log.info("3508");
 		SpringApplication.run(HocsDocsApplication.class, args);
 	}
 
