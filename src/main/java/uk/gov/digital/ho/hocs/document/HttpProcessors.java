@@ -31,5 +31,6 @@ public class HttpProcessors {
     }
 
     public static final Predicate validateHttpResponse = header(Exchange.HTTP_RESPONSE_CODE).isLessThan(300);
+    public static final Predicate badRequestResponse = header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(400);
 
 }

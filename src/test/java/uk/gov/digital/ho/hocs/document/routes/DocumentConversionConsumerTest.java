@@ -72,7 +72,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Test
     public void shouldSetStatusToFailedOnConversionError() throws Exception {
-        MockEndpoint mockConversionService = mockFailedConversionService();
+        MockEndpoint mockConversionService = mockFailedConversionService(400);
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedMessageCount(1);
@@ -80,7 +80,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         template.sendBody(endpoint,request);
         mockEndpoint.assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
-        verify(s3BucketService, times(0)).uploadFile(any());
+        verify(s3BucketService).uploadFile(any());
     }
 
     @Test
@@ -95,9 +95,19 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     @Test
+    public void shouldNotAddMessagetoDLQWhenConversionServiceReturnsBadRequest() throws Exception {
+        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
+        MockEndpoint mockConversionService = mockFailedConversionService(400);
+        getMockEndpoint(dlq).expectedMessageCount(0);
+        template.sendBody(endpoint,request);
+        getMockEndpoint(dlq).assertIsSatisfied();
+        mockConversionService.assertIsSatisfied();
+    }
+
+    @Test
     public void shouldAddMessagetoDLQWhenConversionServiceFails() throws Exception {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
-        MockEndpoint mockConversionService = mockFailedConversionService();
+        MockEndpoint mockConversionService = mockFailedConversionService(500);
         getMockEndpoint(dlq).expectedMessageCount(1);
         template.sendBody(endpoint,request);
         getMockEndpoint(dlq).assertIsSatisfied();
@@ -123,11 +133,11 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         return mock;
     }
 
-    private MockEndpoint mockFailedConversionService() {
+    private MockEndpoint mockFailedConversionService(int responseCode) {
         MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
-            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, responseCode);
             exchange.getIn().setBody(null);
         });
         return mock;
