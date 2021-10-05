@@ -24,49 +24,20 @@ public class DocumentConsumer extends RouteBuilder {
 
     private final String fromQueue;
     private final String toQueue;
-    private String dlq;
-    private final int maximumRedeliveries;
-    private final int redeliveryDelay;
-    private final int backOffMultiplier;
     private final DocumentDataService documentDataService;
 
     @Autowired
     public DocumentConsumer(
             DocumentDataService documentDataService,
             @Value("${docs.queue}") String docsQueue,
-            @Value("${docs.queue.dlq}") String dlq,
-            @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
-            @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
-            @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
             @Value("${malwareQueueName}") String toQueue) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
-        this.dlq = dlq;
-        this.maximumRedeliveries = maximumRedeliveries;
-        this.redeliveryDelay = redeliveryDelay;
-        this.backOffMultiplier = backOffMultiplier;
     }
 
     @Override
     public void configure() {
-
-
-        errorHandler(deadLetterChannel(dlq)
-                .loggingLevel(LoggingLevel.ERROR)
-                .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .useOriginalMessage()
-                .maximumRedeliveries(maximumRedeliveries)
-                .redeliveryDelay(redeliveryDelay)
-                .backOffMultiplier(backOffMultiplier)
-                .asyncDelayedRedelivery()
-                .logRetryStackTrace(false)
-                .onPrepareFailure(exchange -> {
-                    exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            Exception.class).getMessage());
-                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-                }));
-
 
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
