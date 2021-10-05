@@ -1,7 +1,6 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
 
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
