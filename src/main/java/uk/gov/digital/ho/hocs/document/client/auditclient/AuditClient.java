@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import javax.json.Json;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
@@ -47,7 +46,6 @@ public class AuditClient {
         this.requestData = requestData;
     }
 
-    @Async
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
@@ -65,7 +63,6 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
@@ -83,7 +80,6 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
