@@ -13,24 +13,15 @@ import uk.gov.digital.ho.hocs.document.DocumentDataService;
 public class UpdateDocumentConsumer extends RouteBuilder {
 
     private String dlq;
-    private final int maximumRedeliveries;
-    private final int redeliveryDelay;
-    private final int backOffMultiplier;
 
     private DocumentDataService documentDataService;
 
     @Autowired
     public UpdateDocumentConsumer(
             DocumentDataService documentDataService,
-            @Value("${docs.queue.dlq}") String dlq,
-            @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
-            @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
-            @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier) {
+            @Value("${docs.queue.dlq}") String dlq) {
         this.documentDataService = documentDataService;
         this.dlq = dlq;
-        this.maximumRedeliveries = maximumRedeliveries;
-        this.redeliveryDelay = redeliveryDelay;
-        this.backOffMultiplier = backOffMultiplier;
     }
 
     @Override
@@ -39,10 +30,6 @@ public class UpdateDocumentConsumer extends RouteBuilder {
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
                 .useOriginalMessage()
-                .maximumRedeliveries(maximumRedeliveries)
-                .redeliveryDelay(redeliveryDelay)
-                .backOffMultiplier(backOffMultiplier)
-                .asyncDelayedRedelivery()
                 .logRetryStackTrace(false)
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,

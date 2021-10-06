@@ -29,9 +29,6 @@ import java.util.UUID;
 public class DocumentConversionConsumer extends RouteBuilder {
 
     private String dlq;
-    private final int maximumRedeliveries;
-    private final int redeliveryDelay;
-    private final int backOffMultiplier;
     private S3DocumentService s3BucketService;
     private final String hocsConverterPath;
     private final String toQueue;
@@ -46,16 +43,10 @@ public class DocumentConversionConsumer extends RouteBuilder {
             S3DocumentService s3BucketService,
             @Value("${hocsconverter.path}") String hocsConverterPath,
             @Value("${docs.queue.dlq}") String dlq,
-            @Value("${docs.queue.conversion.maximumRedeliveries}") int maximumRedeliveries,
-            @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
-            @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
             @Value("${documentServiceQueueName}") String toQueue) {
         this.s3BucketService = s3BucketService;
         this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true", hocsConverterPath);
         this.dlq = dlq;
-        this.maximumRedeliveries = maximumRedeliveries;
-        this.redeliveryDelay = redeliveryDelay;
-        this.backOffMultiplier = backOffMultiplier;
         this.toQueue = toQueue;
     }
 
@@ -65,10 +56,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
                 .useOriginalMessage()
-                .maximumRedeliveries(maximumRedeliveries)
-                .redeliveryDelay(redeliveryDelay)
-                .backOffMultiplier(backOffMultiplier)
-                .asyncDelayedRedelivery()
                 .logRetryStackTrace(false)
                 .onPrepareFailure(exchange -> {
                     exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,

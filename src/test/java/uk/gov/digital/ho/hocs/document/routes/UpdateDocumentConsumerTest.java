@@ -30,7 +30,7 @@ public class UpdateDocumentConsumerTest extends CamelTestSupport {
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
 
-        return new UpdateDocumentConsumer(documentDataService, dlq, 0,0,0);
+        return new UpdateDocumentConsumer(documentDataService, dlq);
     }
 
 

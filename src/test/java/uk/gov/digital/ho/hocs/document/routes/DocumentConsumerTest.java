@@ -38,7 +38,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(documentDataService, endpoint, dlq, 0,0,0,toEndpoint);
+      return new DocumentConsumer(documentDataService, endpoint, dlq, toEndpoint);
     }
 
     @Test
@@ -51,13 +51,6 @@ public class DocumentConsumerTest extends CamelTestSupport {
         mockEndpoint.expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         mockEndpoint.assertIsSatisfied();
-    }
-
-    @Test
-    public void shouldAddMessagetoDLQOnError() throws Exception {
-        getMockEndpoint(dlq).expectedMessageCount(1);
-        template.sendBody(endpoint, "BAD BODY");
-        getMockEndpoint(dlq).assertIsSatisfied();
     }
 
     @Test
