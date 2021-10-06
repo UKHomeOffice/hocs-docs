@@ -28,15 +28,13 @@ public class DocumentDataService {
     private final S3DocumentService s3DocumentService;
     private final AuditClient auditClient;
     private final DocumentClient documentClient;
-    private boolean auditActive;
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, @Value("${audit.active:true}") boolean auditActive){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
         this.documentClient = documentClient;
-        this.auditActive = auditActive;
     }
 
     public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
@@ -44,8 +42,8 @@ public class DocumentDataService {
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
         documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
+        auditClient.createDocumentAudit(documentData);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
-        if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;
     }
 
@@ -83,7 +81,7 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
-        if(auditActive) {auditClient.deleteDocumentAudit(documentData);}
+        auditClient.deleteDocumentAudit(documentData);
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 

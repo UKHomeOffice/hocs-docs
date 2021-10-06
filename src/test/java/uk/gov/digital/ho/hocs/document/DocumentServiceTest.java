@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,12 +38,15 @@ public class DocumentServiceTest {
     @Mock
     private AuditClient auditClient;
 
-    private boolean auditActive = true;
-
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService, auditClient, documentClient, auditActive);
+                documentRepository, s3DocumentService, auditClient, documentClient);
+    }
+
+    @After
+    public void afterAll() {
+        verifyNoMoreInteractions(auditClient);
     }
 
     @Test
@@ -58,8 +62,9 @@ public class DocumentServiceTest {
 
         verify(documentRepository).save(any(DocumentData.class));
         verify(documentClient).processDocument(documentUUID, fileName, "PDF");
+        verify(auditClient).createDocumentAudit(any(DocumentData.class));
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -87,9 +92,9 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -117,9 +122,9 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -148,9 +153,9 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test
@@ -169,10 +174,10 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(uuid);
         verify(documentRepository).save(documentData);
-
-        verifyZeroInteractions(documentClient);
+        verify(auditClient).updateDocumentAudit(documentData);
+        verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityNotFoundException.class)
@@ -211,7 +216,7 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(null);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -249,7 +254,7 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -289,7 +294,7 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test
@@ -362,7 +367,7 @@ public class DocumentServiceTest {
 
         documentService.createDocument(null, displayName, fileName, documentType,  convertTo);
 
-        verifyZeroInteractions(auditClient);
+        verifyNoInteractions(auditClient);
 
     }
 
@@ -374,7 +379,7 @@ public class DocumentServiceTest {
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
 
-        verifyZeroInteractions(auditClient);
+        verifyNoInteractions(auditClient);
     }
 
     @Test(expected = NullPointerException.class)
