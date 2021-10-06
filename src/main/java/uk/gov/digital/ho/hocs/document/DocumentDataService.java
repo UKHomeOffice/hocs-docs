@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -30,24 +29,21 @@ public class DocumentDataService {
     private final AuditClient auditClient;
     private final DocumentClient documentClient;
     private boolean auditActive;
-    private final RequestData requestData;
-
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, @Value("${audit.active:true}") boolean auditActive, RequestData requestData){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, @Value("${audit.active:true}") boolean auditActive){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
         this.documentClient = documentClient;
         this.auditActive = auditActive;
-        this.requestData = requestData;
     }
 
     public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        documentClient.processDocument(documentData.getUuid(), fileName, convertTo, requestData.userId(), requestData.correlationId());
+        documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
         if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;

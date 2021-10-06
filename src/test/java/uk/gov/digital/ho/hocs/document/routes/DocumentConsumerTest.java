@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
-import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
@@ -34,14 +33,12 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Mock
     DocumentDataService documentDataService;
-    @Mock
-    RequestData requestData;
 
-    private ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID.toString(), "someLink", "PDF", userId, correlationID);
+    private ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID.toString(), "someLink", "PDF");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(documentDataService, endpoint, dlq, 0,0,0,toEndpoint, requestData);
+      return new DocumentConsumer(documentDataService, endpoint, dlq, 0,0,0,toEndpoint);
     }
 
     @Test

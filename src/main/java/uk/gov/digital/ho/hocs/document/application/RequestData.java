@@ -86,16 +86,6 @@ public class RequestData implements HandlerInterceptor {
         };
     }
 
-    public static Processor transferAuthPropertiesToQueue() {
-        return ex -> {
-            String correlationId = ex.getProperty(CAMEL_CORRELATION_ID_HEADER).toString();
-            String userId = ex.getProperty("userId").toString();
-            MDC.put(CORRELATION_ID_HEADER, correlationId);
-            MDC.put(CAMEL_CORRELATION_ID_HEADER, correlationId);
-            MDC.put(USER_ID_HEADER, userId);
-        };
-    }
-
     private static boolean isNullOrEmpty(String value) {
         return value == null || value.equals("");
     }

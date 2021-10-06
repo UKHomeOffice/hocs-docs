@@ -29,7 +29,6 @@ public class DocumentConsumer extends RouteBuilder {
     private final int redeliveryDelay;
     private final int backOffMultiplier;
     private final DocumentDataService documentDataService;
-    private final RequestData requestData;
 
     @Autowired
     public DocumentConsumer(
@@ -39,8 +38,7 @@ public class DocumentConsumer extends RouteBuilder {
             @Value("${docs.queue.maximumRedeliveries}") int maximumRedeliveries,
             @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
             @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
-            @Value("${malwareQueueName}") String toQueue,
-            RequestData requestData) {
+            @Value("${malwareQueueName}") String toQueue) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
@@ -48,7 +46,6 @@ public class DocumentConsumer extends RouteBuilder {
         this.maximumRedeliveries = maximumRedeliveries;
         this.redeliveryDelay = redeliveryDelay;
         this.backOffMultiplier = backOffMultiplier;
-        this.requestData = requestData;
     }
 
     @Override
@@ -80,13 +77,10 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
                 .setProperty("convertTo", simple("${body.convertTo}"))
-                .setProperty("userId", simple("${body.userId}"))
-                .setProperty("correlationId", simple("${body.correlationId}"))
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
                 .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
-                .process(RequestData.transferAuthPropertiesToQueue())
                 .process(generateMalwareCheck())
                 .process(RequestData.transferHeadersToQueue())
                 .to(toQueue);
@@ -99,7 +93,7 @@ public class DocumentConsumer extends RouteBuilder {
             UUID externalReferenceUUID = UUID.fromString(exchange.getProperty("externalReferenceUUID").toString());
             String fileLink = exchange.getProperty("fileLink").toString();
             String convertTo = exchange.getProperty("convertTo").toString();
-            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID, convertTo, requestData.userId(), requestData.correlationId()));
+            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID, convertTo));
         };
     }
 

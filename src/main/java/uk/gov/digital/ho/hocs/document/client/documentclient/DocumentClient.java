@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.client.documentclient.dto.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
@@ -35,8 +34,8 @@ public class DocumentClient {
         this.objectMapper = objectMapper;
     }
 
-    public void processDocument(UUID documentUUID, String fileLocation, String convertTo, String userId, String correlationId) {
-        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo, userId, correlationId);
+    public void processDocument(UUID documentUUID, String fileLocation, String convertTo) {
+        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo);
         try {
             sendMessage(objectMapper.writeValueAsString(request));
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));
