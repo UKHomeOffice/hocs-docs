@@ -58,7 +58,7 @@ public class S3DocumentService {
 
     public S3Document copyToTrustedBucket(DocumentCopyRequest copyRequest) throws IOException {
             String destinationKey = String.format("%s/%s.%s", copyRequest.getExternalReferenceUUID(), UUID.randomUUID().toString(), copyRequest.getFileType());
-            log.info(String.format("Copying %s from untrusted %s to %s trusted bucket %s", copyRequest.getFileLink(),
+            log.debug(String.format("Copying %s from untrusted %s to %s trusted bucket %s", copyRequest.getFileLink(),
                     untrustedS3BucketName, destinationKey, trustedS3BucketName),value(EVENT, S3_TRUSTED_COPY_REQUEST));
 
            S3Document copyDocument = getFileFromUntrustedS3(copyRequest.getFileLink());

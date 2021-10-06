@@ -36,9 +36,9 @@ public class DocumentClient {
         ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo);
         try {
             producerTemplate.sendBody(documentQueue, objectMapper.writeValueAsString(request));
-            log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));
+            log.info("Requested processing for document: {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_REQUEST_SUCCESS));
         } catch (JsonProcessingException e) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e.toString()), DOCUMENT_CLIENT_FAILURE);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e), DOCUMENT_CLIENT_FAILURE);
         }
     }
 }

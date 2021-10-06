@@ -42,9 +42,7 @@ public class DocumentConsumer extends RouteBuilder {
     @Override
     public void configure() {
 
-
         errorHandler(deadLetterChannel(dlq)
-                .loggingLevel(LoggingLevel.ERROR)
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
                 .useOriginalMessage()
                 .logRetryStackTrace(false)
@@ -58,16 +56,14 @@ public class DocumentConsumer extends RouteBuilder {
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
-                .log(LoggingLevel.INFO, "Reading document request for case")
-                .log(LoggingLevel.DEBUG,"Received process document request ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
+                .log(LoggingLevel.INFO,"Received process document request ${body.uuid}")
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
                 .setProperty("convertTo", simple("${body.convertTo}"))
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
-                .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
                 .process(RequestData.transferHeadersToQueue())
                 .to(toQueue);
