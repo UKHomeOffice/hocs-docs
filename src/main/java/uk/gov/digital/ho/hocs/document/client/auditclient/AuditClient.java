@@ -47,7 +47,6 @@ public class AuditClient {
         this.requestData = requestData;
     }
 
-    @Async
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
@@ -65,7 +64,6 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
@@ -83,7 +81,6 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),

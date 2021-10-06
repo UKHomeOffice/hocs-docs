@@ -11,7 +11,6 @@ import javax.annotation.PreDestroy;
 @SpringBootApplication
 @Slf4j
 @EnableRetry
-@EnableAsync
 public class HocsDocsApplication {
 
 	public static void main(String[] args) {

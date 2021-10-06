@@ -35,7 +35,6 @@ public class DocumentClient {
         this.objectMapper = objectMapper;
     }
 
-    @Async
     public void processDocument(UUID documentUUID, String fileLocation, String convertTo, String userId, String correlationId) {
         ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo, userId, correlationId);
         try {
