@@ -109,7 +109,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice()
                 .when(HttpProcessors.badRequestResponse)
-                    .log(LoggingLevel.WARN, "Document conversion failed for ${body.filename}")
+                    .log(LoggingLevel.WARN, "Document conversion failed")
                     .process(generateFailedDocument())
                     .log(LoggingLevel.DEBUG, "Uploading file to trusted bucket")
                     .bean(s3BucketService, "uploadFile")
