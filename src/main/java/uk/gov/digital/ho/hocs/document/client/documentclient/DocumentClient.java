@@ -32,17 +32,13 @@ public class DocumentClient {
         this.objectMapper = objectMapper;
     }
 
-    public void processDocument(UUID documentUUID, String fileLocation, String convertTo, String userId, String correlationId) {
-        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo, userId, correlationId);
+    public void processDocument(UUID documentUUID, String fileLocation, String convertTo) {
+        ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo);
         try {
-            sendMessage(objectMapper.writeValueAsString(request));
+            producerTemplate.sendBody(documentQueue, objectMapper.writeValueAsString(request));
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));
         } catch (JsonProcessingException e) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e.toString()), DOCUMENT_CLIENT_FAILURE);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e), DOCUMENT_CLIENT_FAILURE);
         }
-    }
-
-    private void sendMessage(String message) {
-        producerTemplate.sendBody(documentQueue, message);
     }
 }

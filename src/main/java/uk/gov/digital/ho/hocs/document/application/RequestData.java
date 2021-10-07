@@ -13,14 +13,12 @@ import java.util.UUID;
 @Component
 public class RequestData implements HandlerInterceptor {
 
-
     public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
     public static final String USER_ID_HEADER = "X-Auth-UserId";
     public static final String USERNAME_HEADER = "X-Auth-Username";
     public static final String CAMEL_CORRELATION_ID_HEADER = "correlationId";
     public static final String GROUP_HEADER = "X-Auth-Groups";
     public static final String ANONYMOUS = "anonymous";
-
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -60,7 +58,6 @@ public class RequestData implements HandlerInterceptor {
         return !isNullOrEmpty(username) ? username : ANONYMOUS;
     }
 
-
     public String correlationId() {
         return MDC.get(CORRELATION_ID_HEADER);
     }
@@ -68,7 +65,6 @@ public class RequestData implements HandlerInterceptor {
     public String userId() { return MDC.get(USER_ID_HEADER); }
 
     public String username() { return MDC.get(USERNAME_HEADER); }
-
 
     public static Processor transferHeadersToMDC() {
         return ex -> {
@@ -83,16 +79,6 @@ public class RequestData implements HandlerInterceptor {
         return ex -> {
             ex.getIn().setHeader(CORRELATION_ID_HEADER, MDC.get(CORRELATION_ID_HEADER));
             ex.getIn().setHeader(USER_ID_HEADER, MDC.get(USER_ID_HEADER));
-        };
-    }
-
-    public static Processor transferAuthPropertiesToQueue() {
-        return ex -> {
-            String correlationId = ex.getProperty(CAMEL_CORRELATION_ID_HEADER).toString();
-            String userId = ex.getProperty("userId").toString();
-            MDC.put(CORRELATION_ID_HEADER, correlationId);
-            MDC.put(CAMEL_CORRELATION_ID_HEADER, correlationId);
-            MDC.put(USER_ID_HEADER, userId);
         };
     }
 

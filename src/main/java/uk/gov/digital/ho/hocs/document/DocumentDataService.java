@@ -2,9 +2,7 @@ package uk.gov.digital.ho.hocs.document;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -29,27 +27,23 @@ public class DocumentDataService {
     private final S3DocumentService s3DocumentService;
     private final AuditClient auditClient;
     private final DocumentClient documentClient;
-    private boolean auditActive;
-    private final RequestData requestData;
 
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, @Value("${audit.active:true}") boolean auditActive, RequestData requestData){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient ){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
         this.documentClient = documentClient;
-        this.auditActive = auditActive;
-        this.requestData = requestData;
     }
 
     public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
         DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
         documentRepository.save(documentData);
-        documentClient.processDocument(documentData.getUuid(), fileName, convertTo, requestData.userId(), requestData.correlationId());
+        documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
+        auditClient.createDocumentAudit(documentData);
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
-        if(auditActive) {auditClient.createDocumentAudit(documentData);}
         return documentData;
     }
 
@@ -57,8 +51,8 @@ public class DocumentDataService {
         log.debug("Updating Document: {}", documentUUID);
         DocumentData documentData = getDocumentData(documentUUID);
         documentData.update(fileLink, pdfLink, status);
-        auditClient.updateDocumentAudit(documentData);
         documentRepository.save(documentData);
+        auditClient.updateDocumentAudit(documentData);
         log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
     }
 
@@ -87,7 +81,7 @@ public class DocumentDataService {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         documentData.setDeleted(true);
         documentRepository.save(documentData);
-        if(auditActive) {auditClient.deleteDocumentAudit(documentData);}
+        auditClient.deleteDocumentAudit(documentData);
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 

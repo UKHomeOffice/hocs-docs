@@ -52,7 +52,7 @@ public class AuditClient {
                 EventType.DOCUMENT_CREATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Create Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Create Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
@@ -69,7 +69,7 @@ public class AuditClient {
                 EventType.DOCUMENT_UPDATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Update Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
@@ -86,7 +86,7 @@ public class AuditClient {
                 EventType.DOCUMENT_DELETED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
-            log.info("Create audit for Delete Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Delete Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
