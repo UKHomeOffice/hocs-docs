@@ -28,7 +28,6 @@ import java.util.UUID;
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
 
-    private String dlq;
     private S3DocumentService s3BucketService;
     private final String hocsConverterPath;
     private final String toQueue;
@@ -42,26 +41,16 @@ public class DocumentConversionConsumer extends RouteBuilder {
     public DocumentConversionConsumer(
             S3DocumentService s3BucketService,
             @Value("${hocsconverter.path}") String hocsConverterPath,
-            @Value("${docs.queue.dlq}") String dlq,
             @Value("${documentServiceQueueName}") String toQueue) {
         this.s3BucketService = s3BucketService;
         this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true", hocsConverterPath);
-        this.dlq = dlq;
         this.toQueue = toQueue;
     }
 
     @Override
     public void configure() {
 
-        errorHandler(deadLetterChannel(dlq)
-                .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .useOriginalMessage()
-                .logRetryStackTrace(false)
-                .onPrepareFailure(exchange -> {
-                    exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            Exception.class).getMessage());
-                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-                }));
+        errorHandler(deadLetterChannel("log:DocumentConversionConsumer"));
 
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()

@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 public class DocumentConsumerTest extends CamelTestSupport {
 
     private String endpoint = "direct://cs-dev-document-sqs";
-    private String dlq = "mock:cs-dev-document-sqs-dlq";
     private String toEndpoint = "mock:malwarecheck";
     private UUID documentUUID = UUID.randomUUID();
     private String userId = "user123";
@@ -38,7 +37,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(documentDataService, endpoint, dlq, toEndpoint);
+      return new DocumentConsumer(documentDataService, endpoint, toEndpoint);
     }
 
     @Test

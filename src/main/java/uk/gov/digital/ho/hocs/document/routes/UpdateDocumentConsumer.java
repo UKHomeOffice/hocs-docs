@@ -18,25 +18,16 @@ public class UpdateDocumentConsumer extends RouteBuilder {
 
     @Autowired
     public UpdateDocumentConsumer(
-            DocumentDataService documentDataService,
-            @Value("${docs.queue.dlq}") String dlq) {
+            DocumentDataService documentDataService) {
         this.documentDataService = documentDataService;
-        this.dlq = dlq;
     }
 
     @Override
     public void configure()  {
-        errorHandler(deadLetterChannel(dlq)
-                .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .useOriginalMessage()
-                .logRetryStackTrace(false)
-                .onPrepareFailure(exchange -> {
-                    exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            Exception.class).getMessage());
-                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-                }));
 
-        from("direct:updaterecord")
+        errorHandler(deadLetterChannel("log:document-update-queue"));
+
+        from("direct:updaterecord").routeId("document-update-queue")
                 .bean(documentDataService, "updateDocument(${body.uuid},${body.status}, ${body.fileLink},${body.pdfLink})")
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }

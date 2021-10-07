@@ -24,34 +24,22 @@ public class DocumentConsumer extends RouteBuilder {
 
     private final String fromQueue;
     private final String toQueue;
-    private String dlq;
     private final DocumentDataService documentDataService;
 
     @Autowired
     public DocumentConsumer(
             DocumentDataService documentDataService,
             @Value("${docs.queue}") String docsQueue,
-            @Value("${docs.queue.dlq}") String dlq,
             @Value("${malwareQueueName}") String toQueue) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
-        this.dlq = dlq;
     }
 
     @Override
     public void configure() {
 
-        errorHandler(deadLetterChannel(dlq)
-                .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .useOriginalMessage()
-                .logRetryStackTrace(false)
-                .onPrepareFailure(exchange -> {
-                    exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            Exception.class).getMessage());
-                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-                }));
-
+        errorHandler(deadLetterChannel("log:document-queue"));
 
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
