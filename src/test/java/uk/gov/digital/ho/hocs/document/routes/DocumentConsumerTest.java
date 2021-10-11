@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 public class DocumentConsumerTest extends CamelTestSupport {
 
     private String endpoint = "direct://cs-dev-document-sqs";
-    private String dlq = "mock:cs-dev-document-sqs-dlq";
     private String toEndpoint = "mock:malwarecheck";
     private UUID documentUUID = UUID.randomUUID();
 
@@ -36,7 +35,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(documentDataService, endpoint, dlq, 0,0,0,toEndpoint);
+      return new DocumentConsumer(documentDataService, endpoint, toEndpoint);
     }
 
     @Test
@@ -45,17 +44,16 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
         when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName"));
 
-        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedMessageCount(1);
+        getMockEndpoint(toEndpoint).expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
-        mockEndpoint.assertIsSatisfied();
+        getMockEndpoint(toEndpoint).assertIsSatisfied();
     }
 
     @Test
-    public void shouldAddMessagetoDLQOnError() throws Exception {
-        getMockEndpoint(dlq).expectedMessageCount(1);
+    public void shouldNotAddDocumentToMalwareQueueOnError() throws Exception {
+        getMockEndpoint(toEndpoint).expectedMessageCount(0);
         template.sendBody(endpoint, "BAD BODY");
-        getMockEndpoint(dlq).assertIsSatisfied();
+        getMockEndpoint(toEndpoint).assertIsSatisfied();
     }
 
     @Test

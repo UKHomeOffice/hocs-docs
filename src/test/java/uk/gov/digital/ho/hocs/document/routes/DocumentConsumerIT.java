@@ -157,20 +157,19 @@ public class DocumentConsumerIT {
     }
 
     @Test
-    public void shouldRetryWhenMalwareCheckFails() throws Exception {
-
+    public void shouldNotRetryWhenMalwareCheckFails() throws Exception {
         wireMockServer.resetAll();
 
         stubFor(post(urlEqualTo("/scan"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
-        verify(3, postRequestedFor(urlEqualTo("/scan")));
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
 
     @Test
-    public void shouldRetryWhenConversionFails() throws Exception {
+    public void shouldNotRetryWhenConversionFails() throws Exception {
 
         wireMockServer.resetAll();
 
@@ -182,7 +181,7 @@ public class DocumentConsumerIT {
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
-        verify(6, postRequestedFor(urlEqualTo("/convert")));
+        verify(1, postRequestedFor(urlEqualTo("/convert")));
     }
 
     @Test
@@ -238,7 +237,7 @@ public class DocumentConsumerIT {
     }
 
     @Test
-    public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure() throws Exception {
+    public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure500() throws Exception {
         wireMockServer.resetAll();
 
         assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
@@ -250,6 +249,28 @@ public class DocumentConsumerIT {
 
         stubFor(post(urlEqualTo("/convert"))
                 .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+
+        template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/convert")));
+
+        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
+    }
+
+    @Test
+    public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure400() throws Exception {
+        wireMockServer.resetAll();
+
+        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
+
+        wireMockServer.resetAll();
+
+        stubFor(post(urlEqualTo("/scan"))
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+
+        stubFor(post(urlEqualTo("/convert"))
+                .willReturn(aResponse().withStatus(400).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));

@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
@@ -31,10 +30,6 @@ import static uk.gov.digital.ho.hocs.document.application.RequestData.transferMD
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
 
-    private String dlq;
-    private final int maximumRedeliveries;
-    private final int redeliveryDelay;
-    private final int backOffMultiplier;
     private S3DocumentService s3BucketService;
     private final String hocsConverterPath;
     private final String toQueue;
@@ -43,41 +38,23 @@ public class DocumentConversionConsumer extends RouteBuilder {
     private static final String FILENAME = "filename";
     private static final String PDF_FILENAME = "pdfFilename";
     private static final String UUID_TEXT = "uuid";
+    private static final String CONVERT_TO = "convertTo";
+    private static final String DOCUMENT_TYPE = "documentType";
 
     @Autowired
     public DocumentConversionConsumer(
             S3DocumentService s3BucketService,
             @Value("${hocsconverter.path}") String hocsConverterPath,
-            @Value("${docs.queue.dlq}") String dlq,
-            @Value("${docs.queue.conversion.maximumRedeliveries}") int maximumRedeliveries,
-            @Value("${docs.queue.redeliveryDelay}") int redeliveryDelay,
-            @Value("${docs.queue.backOffMultiplier}") int backOffMultiplier,
             @Value("${documentServiceQueueName}") String toQueue) {
         this.s3BucketService = s3BucketService;
         this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true", hocsConverterPath);
-        this.dlq = dlq;
-        this.maximumRedeliveries = maximumRedeliveries;
-        this.redeliveryDelay = redeliveryDelay;
-        this.backOffMultiplier = backOffMultiplier;
         this.toQueue = toQueue;
     }
 
     @Override
     public void configure() {
-        errorHandler(deadLetterChannel(dlq)
-                .loggingLevel(LoggingLevel.ERROR)
-                .retryAttemptedLogLevel(LoggingLevel.WARN)
-                .useOriginalMessage()
-                .maximumRedeliveries(maximumRedeliveries)
-                .redeliveryDelay(redeliveryDelay)
-                .backOffMultiplier(backOffMultiplier)
-                .asyncDelayedRedelivery()
-                .logRetryStackTrace(false)
-                .onPrepareFailure(exchange -> {
-                    exchange.getIn().setHeader("FailureMessage", exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
-                            Exception.class).getMessage());
-                    exchange.getIn().setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
-                }));
+
+        errorHandler(deadLetterChannel("log:conversion-queue"));
 
         from("direct:convertdocument").routeId("conversion-queue")
                 .onCompletion()
@@ -89,9 +66,11 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .end()
                 .log(LoggingLevel.DEBUG,"Attempt to convert document of type ${property.documentType}")
                 .process(transferHeadersToMDC())
+                .setProperty(CONVERT_TO, simple("${body.convertTo}"))
                 .choice()
                 .when(skipDocumentConversion)
                     .log(LoggingLevel.DEBUG, "Managed Document - Skipping Conversion: ${body.fileLink}")
+                    .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
                     .setProperty(FILENAME, simple("${body.fileLink}"))
                     .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
                     .endChoice()
@@ -107,8 +86,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(transferMDCToHeaders())
                     .to("direct:convert")
                     .endChoice();
-
-
 
         from("direct:convert").routeId("conversion-convert-queue")
                 .process(transferHeadersToMDC())
@@ -176,7 +153,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
         };
     }
 
-    private Predicate skipDocumentType = exchangeProperty("documentType").in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
-    private Predicate skipConvertToIsNone = exchangeProperty("convertTo").isEqualTo("NONE");
+    private Predicate skipDocumentType = exchangeProperty(DOCUMENT_TYPE).in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipConvertToIsNone = exchangeProperty(CONVERT_TO).isEqualTo("NONE");
     private Predicate skipDocumentConversion = PredicateBuilder.or(skipDocumentType, skipConvertToIsNone);
 }

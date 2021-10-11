@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentServiceTest {
@@ -58,8 +59,10 @@ public class DocumentServiceTest {
 
         verify(documentRepository).save(any(DocumentData.class));
         verify(documentClient).processDocument(documentUUID, fileName, "PDF");
+        verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoMoreInteractions(auditClient);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -87,9 +90,10 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
+        verifyNoInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -117,9 +121,10 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
+        verifyNoInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -148,9 +153,10 @@ public class DocumentServiceTest {
             // Do Nothing.
         }
 
-        verifyZeroInteractions(documentClient);
+        verifyNoInteractions(documentClient);
+        verifyNoInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test
@@ -169,10 +175,11 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(uuid);
         verify(documentRepository).save(documentData);
-
-        verifyZeroInteractions(documentClient);
+        verify(auditClient).updateDocumentAudit(any());
+        verifyNoInteractions(documentClient);
+        verifyNoMoreInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test(expected = ApplicationExceptions.EntityNotFoundException.class)
@@ -211,7 +218,8 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(null);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(auditClient);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -249,7 +257,8 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(auditClient);
+        verifyNoInteractions(s3DocumentService);
 
     }
 
@@ -289,11 +298,25 @@ public class DocumentServiceTest {
         verify(documentRepository).findByUuid(uuid);
 
         verifyNoMoreInteractions(documentRepository);
-        verifyZeroInteractions(s3DocumentService);
+        verifyNoInteractions(auditClient);
+        verifyNoInteractions(s3DocumentService);
     }
 
     @Test
-    public void shouldReturnDocumentListForCaseAndForType() {
+    public void shouldReturnDocumentListForReference() {
+
+        UUID uuid = UUID.randomUUID();
+
+        when(documentRepository.findAllByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
+
+        documentService.getDocumentsByReference(uuid);
+
+        verify(documentRepository).findAllByExternalReferenceUUID(uuid);
+        verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
+    public void shouldReturnDocumentListForReferenceAndForType() {
 
         UUID uuid = UUID.randomUUID();
 
@@ -362,7 +385,7 @@ public class DocumentServiceTest {
 
         documentService.createDocument(null, displayName, fileName, documentType,  convertTo);
 
-        verifyZeroInteractions(auditClient);
+        verifyNoInteractions(auditClient);
 
     }
 
@@ -374,7 +397,7 @@ public class DocumentServiceTest {
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
 
-        verifyZeroInteractions(auditClient);
+        verifyNoInteractions(auditClient);
     }
 
     @Test(expected = NullPointerException.class)
@@ -386,6 +409,22 @@ public class DocumentServiceTest {
         documentService.deleteDocument(uuid);
 
         verifyNoMoreInteractions(auditClient);
+    }
+
+    @Test
+    public void shouldReturnDocumentByFileUsesFileLink() throws IOException {
+        DocumentData documentData = mock(DocumentData.class);
+        when(documentData.getFileLink()).thenReturn("fileLink");
+        when(s3DocumentService.getFileFromTrustedS3("fileLink")).thenReturn(null);
+        UUID uuid = UUID.randomUUID();
+        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+
+        documentService.getDocumentFile(uuid);
+
+        verify(s3DocumentService, times(1)).getFileFromTrustedS3("fileLink");
+        verifyNoMoreInteractions((s3DocumentService));
+        verify(documentRepository, times(1)).findByUuid(uuid);
+        verifyNoMoreInteractions(documentRepository);
     }
 
     @Test
