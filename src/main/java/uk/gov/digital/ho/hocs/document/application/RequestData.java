@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document.application;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Processor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class RequestData implements HandlerInterceptor {
 
@@ -68,17 +70,22 @@ public class RequestData implements HandlerInterceptor {
     public static Processor transferHeadersToMDC() {
         return ex -> {
             MDC.put(CORRELATION_ID_HEADER, ex.getIn().getHeader(CORRELATION_ID_HEADER, String.class));
+            log.info("transferHeadersToMDC CorrelationId: {}",MDC.get(CORRELATION_ID_HEADER));
             MDC.put(USER_ID_HEADER, ex.getIn().getHeader(USER_ID_HEADER, String.class));
+            log.info("transferHeadersToMDC UserId: {}",MDC.get(USER_ID_HEADER));
             MDC.put(USERNAME_HEADER, ex.getIn().getHeader(USERNAME_HEADER, String.class));
+            log.info("transferHeadersToMDC UserName: {}",MDC.get(USERNAME_HEADER));
         };
     }
 
     public static Processor transferMDCToHeaders() {
         return ex -> {
             ex.getIn().setHeader(CORRELATION_ID_HEADER, MDC.get(CORRELATION_ID_HEADER));
+            log.info("transferMDCToHeaders CorrelationId: {}",MDC.get(CORRELATION_ID_HEADER));
             ex.getIn().setHeader(USER_ID_HEADER, MDC.get(USER_ID_HEADER));
+            log.info("transferMDCToHeaders Userid: {}",MDC.get(USER_ID_HEADER));
             ex.getIn().setHeader(USERNAME_HEADER, MDC.get(USERNAME_HEADER));
-
+            log.info("transferMDCToHeaders Username: {}",MDC.get(USER_ID_HEADER));
         };
     }
 
