@@ -71,9 +71,6 @@ public class DocumentConsumer extends RouteBuilder {
         from(fromQueue).routeId("document-queue")
                 .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
                 .process(transferHeadersToMDC())
-                .log(LoggingLevel.INFO, "Reading document request for case")
-                .log(LoggingLevel.INFO,"Received process document request ${body}")
-                .log("Attributes: ${header.all}")
                 .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
                 .setProperty("uuid", simple("${body.uuid}"))
                 .setProperty("fileLink", simple("${body.fileLink}"))
@@ -81,7 +78,6 @@ public class DocumentConsumer extends RouteBuilder {
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
-                .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
                 .process(transferMDCToHeaders())
                 .to(toQueue);
