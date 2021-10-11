@@ -17,6 +17,7 @@ import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import java.util.UUID;
 
 import static uk.gov.digital.ho.hocs.document.application.RequestData.transferHeadersToMDC;
+import static uk.gov.digital.ho.hocs.document.application.RequestData.transferMDCToHeaders;
 
 @Component
 public class DocumentConsumer extends RouteBuilder {
@@ -81,6 +82,7 @@ public class DocumentConsumer extends RouteBuilder {
                 .setProperty("documentType", simple("${body.type}") )
                 .log(LoggingLevel.DEBUG, "Doc type - ${body.type}")
                 .process(generateMalwareCheck())
+                .process(transferMDCToHeaders())
                 .to(toQueue);
     }
 

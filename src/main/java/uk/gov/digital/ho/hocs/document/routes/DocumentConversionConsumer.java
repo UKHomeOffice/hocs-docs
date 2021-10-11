@@ -81,12 +81,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .onWhen(exchangeProperty(STATUS).isNotNull())
                     .process(generateDocumentUpdateRequest())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .process(RequestData.transferHeadersToQueue())
+                    .process(RequestData.transferMDCToHeaders())
                     .to(toQueue)
                 .end()
                 .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
                 .log(LoggingLevel.DEBUG,"Value convertTo = ${body.convertTo}")
                 .log(LoggingLevel.DEBUG,"Should convert "+ skipDocumentConversion)
+                .process(RequestData.transferHeadersToMDC())
                 .choice()
                 .when(skipDocumentConversion)
                     .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
@@ -103,13 +104,14 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .process(RequestData.transferHeadersToQueue())
+                    .process(RequestData.transferMDCToHeaders())
                     .to("direct:convert")
                     .endChoice();
 
 
 
         from("direct:convert").routeId("conversion-convert-queue")
+                .process(RequestData.transferHeadersToMDC())
                 .errorHandler(noErrorHandler())
                 .log(LoggingLevel.INFO, "Calling document converter service")
                 .to(hocsConverterPath)
