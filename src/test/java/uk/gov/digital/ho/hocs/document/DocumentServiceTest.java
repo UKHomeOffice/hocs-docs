@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -37,15 +36,11 @@ public class DocumentServiceTest {
 
     @Mock
     private AuditClient auditClient;
-    @Mock
-    private RequestData requestData;
-
-    private boolean auditActive = true;
 
     @Before
     public void setUp() {
         this.documentService = new DocumentDataService(
-                documentRepository, s3DocumentService, auditClient, documentClient, auditActive, requestData);
+                documentRepository, s3DocumentService, auditClient, documentClient);
     }
 
     @Test
@@ -59,14 +54,10 @@ public class DocumentServiceTest {
         String userId = "userId1234";
         String correlationId = "correlationId4321";
 
-        when(requestData.userId()).thenReturn(userId);
-        when(requestData.correlationId()).thenReturn(correlationId);
         UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType, convertTo).getUuid();
 
-        verify(requestData).userId();
-        verify(requestData).correlationId();
         verify(documentRepository).save(any(DocumentData.class));
-        verify(documentClient).processDocument(documentUUID, fileName, "PDF", userId, correlationId);
+        verify(documentClient).processDocument(documentUUID, fileName, "PDF");
         verifyNoMoreInteractions(documentRepository);
         verifyZeroInteractions(s3DocumentService);
     }
