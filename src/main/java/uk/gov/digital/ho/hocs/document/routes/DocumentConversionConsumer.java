@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.digital.ho.hocs.document.application.RequestData.transferHeadersToMDC;
+import static uk.gov.digital.ho.hocs.document.application.RequestData.transferMDCToHeaders;
+
 @Component
 public class DocumentConversionConsumer extends RouteBuilder {
 
@@ -58,35 +61,34 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .onWhen(exchangeProperty(STATUS).isNotNull())
                     .process(generateDocumentUpdateRequest())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .process(RequestData.transferHeadersToQueue())
+                    .process(transferMDCToHeaders())
                     .to(toQueue)
                 .end()
-                .log(LoggingLevel.INFO,"Attempt to convert document of type ${property.documentType}")
-                .log(LoggingLevel.DEBUG,"Value convertTo = ${body.convertTo}")
-                .log(LoggingLevel.DEBUG,"Should convert "+ skipDocumentConversion)
+                .log(LoggingLevel.DEBUG,"Attempt to convert document of type ${property.documentType}")
+                .process(transferHeadersToMDC())
                 .setProperty(CONVERT_TO, simple("${body.convertTo}"))
                 .choice()
                 .when(skipDocumentConversion)
-                    .log(LoggingLevel.INFO, "Managed Document - Skipping Conversion: ${body.fileLink}")
+                    .log(LoggingLevel.DEBUG, "Managed Document - Skipping Conversion: ${body.fileLink}")
                     .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
                     .setProperty(FILENAME, simple("${body.fileLink}"))
                     .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
                     .endChoice()
                 .otherwise()
-                    .log(LoggingLevel.INFO, "Retrieving document from S3: ${body.fileLink}")
+                    .log(LoggingLevel.DEBUG, "Retrieving document from S3: ${body.fileLink}")
                     .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
                     .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                     .bean(s3BucketService, "getFileFromTrustedS3(${body.fileLink})")
                     .setProperty(FILENAME, simple("${body.filename}"))
                     .setProperty("originalFilename", simple("${body.originalFilename}"))
-                    .log(LoggingLevel.DEBUG, "Original Filename ${body.originalFilename}")
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .process(RequestData.transferHeadersToQueue())
+                    .process(transferMDCToHeaders())
                     .to("direct:convert")
                     .endChoice();
 
         from("direct:convert").routeId("conversion-convert-queue")
+                .process(transferHeadersToMDC())
                 .errorHandler(noErrorHandler())
                 .log(LoggingLevel.INFO, "Calling document converter service")
                 .to(hocsConverterPath)

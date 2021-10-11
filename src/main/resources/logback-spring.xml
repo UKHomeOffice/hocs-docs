@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
 
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <springProperty scope="context" name="appName" source="info.app.name"/>
     <springProperty scope="context" name="appVersion" source="info.app.version"/>
 
-    <springProfile name="development">
+    <springProfile name="local">
         <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
@@ -30,9 +30,13 @@
         <logger name="conversion-convert-queue" additivity="false" level="DEBUG">
             <appender-ref ref="consoleAppender"/>
         </logger>
+        <logger name="document-update-queue" additivity="false" level="DEBUG">
+            <appender-ref ref="consoleAppender"/>
+        </logger>
+
     </springProfile>
 
-    <springProfile name="!development">
+    <springProfile name="!local">
         <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
@@ -70,6 +74,7 @@
         <logger name="document-update-queue" additivity="false" level="INFO">
             <appender-ref ref="consoleAppender"/>
         </logger>
+      
     </springProfile>
 
     <logger name="org.apache.camel" additivity="false" level="WARN">

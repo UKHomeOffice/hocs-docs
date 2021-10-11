@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document.application;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Processor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
@@ -10,17 +11,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class RequestData implements HandlerInterceptor {
-
 
     public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
     public static final String USER_ID_HEADER = "X-Auth-UserId";
     public static final String USERNAME_HEADER = "X-Auth-Username";
-    public static final String CAMEL_CORRELATION_ID_HEADER = "correlationId";
     public static final String GROUP_HEADER = "X-Auth-Groups";
     public static final String ANONYMOUS = "anonymous";
-
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -60,7 +59,6 @@ public class RequestData implements HandlerInterceptor {
         return !isNullOrEmpty(username) ? username : ANONYMOUS;
     }
 
-
     public String correlationId() {
         return MDC.get(CORRELATION_ID_HEADER);
     }
@@ -69,30 +67,19 @@ public class RequestData implements HandlerInterceptor {
 
     public String username() { return MDC.get(USERNAME_HEADER); }
 
-
     public static Processor transferHeadersToMDC() {
         return ex -> {
             MDC.put(CORRELATION_ID_HEADER, ex.getIn().getHeader(CORRELATION_ID_HEADER, String.class));
-            MDC.put(CAMEL_CORRELATION_ID_HEADER, ex.getIn().getHeader(CORRELATION_ID_HEADER, String.class));
             MDC.put(USER_ID_HEADER, ex.getIn().getHeader(USER_ID_HEADER, String.class));
             MDC.put(USERNAME_HEADER, ex.getIn().getHeader(USERNAME_HEADER, String.class));
         };
     }
 
-    public static Processor transferHeadersToQueue() {
+    public static Processor transferMDCToHeaders() {
         return ex -> {
             ex.getIn().setHeader(CORRELATION_ID_HEADER, MDC.get(CORRELATION_ID_HEADER));
             ex.getIn().setHeader(USER_ID_HEADER, MDC.get(USER_ID_HEADER));
-        };
-    }
-
-    public static Processor transferAuthPropertiesToQueue() {
-        return ex -> {
-            String correlationId = ex.getProperty(CAMEL_CORRELATION_ID_HEADER).toString();
-            String userId = ex.getProperty("userId").toString();
-            MDC.put(CORRELATION_ID_HEADER, correlationId);
-            MDC.put(CAMEL_CORRELATION_ID_HEADER, correlationId);
-            MDC.put(USER_ID_HEADER, userId);
+            ex.getIn().setHeader(USERNAME_HEADER, MDC.get(USERNAME_HEADER));
         };
     }
 

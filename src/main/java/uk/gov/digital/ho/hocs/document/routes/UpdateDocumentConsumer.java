@@ -6,6 +6,7 @@ import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 
 @Component
 public class UpdateDocumentConsumer extends RouteBuilder {
@@ -23,11 +24,10 @@ public class UpdateDocumentConsumer extends RouteBuilder {
 
         errorHandler(deadLetterChannel("log:document-update-queue"));
 
-        from("direct:updaterecord").routeId("document-update-queue")
-                .log(LoggingLevel.DEBUG, "Updating document record")
-                .bean(documentDataService, "updateDocument(${body.uuid},${body.status}," +
-                        "${body.fileLink},${body.pdfLink})")
-                .log(LoggingLevel.DEBUG, "Updated document record")
+        from("direct:updaterecord")
+                .process(RequestData.transferHeadersToMDC())
+                .bean(documentDataService, "updateDocument(${body.uuid},${body.status}, ${body.fileLink},${body.pdfLink})")
+
                 .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
 }

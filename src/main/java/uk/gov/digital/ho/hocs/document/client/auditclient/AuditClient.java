@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import javax.json.Json;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
@@ -47,14 +46,13 @@ public class AuditClient {
         this.requestData = requestData;
     }
 
-    @Async
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
                 EventType.DOCUMENT_CREATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Create Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Create Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
@@ -65,14 +63,13 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
                 EventType.DOCUMENT_UPDATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Create audit for Update Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
@@ -83,14 +80,13 @@ public class AuditClient {
         }
     }
 
-    @Async
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
                 EventType.DOCUMENT_DELETED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
-            log.info("Create audit for Delete Document, document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
+            log.info("Auditing 'Delete Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
                     documentData.getUuid(),
                     documentData.getExternalReferenceUUID(),
                     requestData.correlationId(),
