@@ -258,7 +258,6 @@ public class DocumentConsumerIT {
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
     }
 
-    @Ignore
     @Test
     public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure400() throws Exception {
         wireMockServer.resetAll();

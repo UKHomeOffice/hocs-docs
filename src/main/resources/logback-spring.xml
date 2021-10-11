@@ -74,7 +74,7 @@
         <logger name="document-update-queue" additivity="false" level="INFO">
             <appender-ref ref="consoleAppender"/>
         </logger>
-      
+
     </springProfile>
 
     <logger name="org.apache.camel" additivity="false" level="WARN">
