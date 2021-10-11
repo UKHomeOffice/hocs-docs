@@ -108,7 +108,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(generateFailedDocument())
                     .log(LoggingLevel.DEBUG, "Uploading file to trusted bucket")
                     .bean(s3BucketService, "uploadFile")
-                    .log(LoggingLevel.DEBUG,"PDF Filename: ${body.filenamebroken}")
+                    .log(LoggingLevel.INFO,"PDF Filename: ${body.filenamebroken}")
                     .setProperty(PDF_FILENAME, simple("${body.filename}"))
                     .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
