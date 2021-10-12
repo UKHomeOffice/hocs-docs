@@ -35,7 +35,6 @@ dependencies {
     implementation('org.apache.httpcomponents:httpmime:4.5.13')
     implementation('org.glassfish:javax.json:1.1.4')
 
-    runtimeOnly 'com.h2database:h2:1.4.200'
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-core:6.5.6'
 

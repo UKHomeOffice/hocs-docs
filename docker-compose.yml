@@ -2,6 +2,17 @@ version: '3.1'
 
 services:
 
+  postgres:
+    image: quay.io/ukhomeofficedigital/postgres-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - hocs-docs
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+
   clamd:
     image: mkodockx/docker-clamav:alpine
     ports:
@@ -14,7 +25,7 @@ services:
     environment:
       - CLAMD_HOST=clamd
     ports:
-      - 8086:8080
+      - "8086:8080"
     networks:
       - hocs-docs
     depends_on:
@@ -27,7 +38,7 @@ services:
     container_name: localstack-sqs-tool
     ports:
       - "4567-4597:4567-4597"
-      - 8999:8080
+      - "8999:8080"
     environment:
       - SERVICES=sqs,sns,s3
       - DEBUG=${DEBUG- }
@@ -48,8 +59,8 @@ services:
     networks:
       - hocs-docs
     ports:
-      - 8084:8080
-      - 7084:8000
+      - "8084:8080"
+      - "7084:8000"
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
       SERVER_PORT: 8080
