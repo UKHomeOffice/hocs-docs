@@ -2,9 +2,7 @@ package uk.gov.digital.ho.hocs.document.aws;
 
 import com.adobe.testing.s3mock.junit4.S3MockRule;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import org.junit.*;
 import org.mockito.Mockito;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
@@ -140,10 +138,18 @@ public class S3DocumentServiceTest {
 
     private void clearS3Buckets() {
         if(untrustedClient.doesBucketExistV2(untrustedBucketName)) {
+            ObjectListing objectListing = untrustedClient.listObjects(untrustedBucketName);
+            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                untrustedClient.deleteObject(untrustedBucketName, s3ObjectSummary.getKey());
+            }
             untrustedClient.deleteBucket(untrustedBucketName);
         }
 
         if(trustedClient.doesBucketExistV2(trustedBucketName)) {
+            ObjectListing objectListing = trustedClient.listObjects(trustedBucketName);
+            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                trustedClient.deleteObject(trustedBucketName, s3ObjectSummary.getKey());
+            }
             trustedClient.deleteBucket(trustedBucketName);
         }
 

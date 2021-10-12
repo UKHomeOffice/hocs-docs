@@ -48,7 +48,7 @@ public class DocumentConsumerIT {
     @Autowired
     private DocumentDataService documentService;
 
-    private String endpoint = "direct://cs-dev-document-sqs";
+    @Value("${docs.queue}") private String endpoint;
 
     @Value("${docs.untrustedS3bucketName}") private String untrustedBucketName;
     @Value("${docs.trustedS3bucketName}") private String trustedBucketName;

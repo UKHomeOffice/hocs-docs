@@ -1,0 +1,47 @@
+version: '3.1'
+
+services:
+
+  clamd:
+    image: mkodockx/docker-clamav:alpine
+    ports:
+      - "3310:3310/tcp"
+    networks:
+      - hocs-docs
+
+  clamav:
+    image: lokori/clamav-rest
+    environment:
+      - CLAMD_HOST=clamd
+    ports:
+      - 8086:8080
+    networks:
+      - hocs-docs
+    depends_on:
+      - clamd
+
+  localstack:
+    image: localstack/localstack:0.11.2
+    networks:
+      - hocs-docs
+    container_name: localstack-sqs-tool
+    ports:
+      - "4567-4597:4567-4597"
+      - 8999:8080
+    environment:
+      - SERVICES=sqs,sns,s3
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_EXECUTION_ENV=True
+      - DEFAULT_REGION=eu-west-2
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - $PWD/src/test/resources/localstack:/docker-entrypoint-initaws.d
+
+networks:
+  hocs-docs:
