@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"local", "test"})
+@Profile({"local"})
 public class LocalStackConfiguration {
 
     private static final String EU_WEST_2 = "eu-west-2";

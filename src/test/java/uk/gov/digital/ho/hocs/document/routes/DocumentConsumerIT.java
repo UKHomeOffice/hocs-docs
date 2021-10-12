@@ -1,20 +1,28 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
-import org.apache.camel.test.spring.DisableJmx;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.utility.DockerImageName;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
@@ -31,12 +39,39 @@ import java.util.UUID;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 
 @ActiveProfiles("test")
 @SpringBootTest
 @RunWith(CamelSpringBootRunner.class)
 public class DocumentConsumerIT {
+
+    @ClassRule
+    public static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
+            .withServices(S3, SQS);
+
+    @TestConfiguration
+    static class AwsTestConfig {
+
+        @Bean({"Trusted","UnTrusted"})
+        public AmazonS3 amazonS3() {
+            return AmazonS3ClientBuilder.standard()
+                    .withCredentials(localStackContainer.getDefaultCredentialsProvider())
+                    .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(S3))
+                    .build();
+        }
+
+        @Bean
+        public AmazonSQSAsync amazonSQS() {
+            return AmazonSQSAsyncClientBuilder.standard()
+                    .withCredentials(localStackContainer.getDefaultCredentialsProvider())
+                    .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(SQS))
+                    .build();
+        }
+
+    }
 
     private static boolean setUpIsDone = false;
 
@@ -79,6 +114,12 @@ public class DocumentConsumerIT {
     private ProcessDocumentRequest requestTemplate ;
 
     @Before
+    public void setUp() throws URISyntaxException, IOException {
+        clearS3Buckets();
+        uploadUntrustedFiles();
+    }
+
+    @Before
     public void setup() throws Exception {
         document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL", "PDF");
         documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE", "PDF");
@@ -93,6 +134,7 @@ public class DocumentConsumerIT {
         if(!setUpIsDone) {
             configureFor("localhost", 9002);
             wireMockServer.start();
+            clearS3Buckets();
             uploadUntrustedFiles();
             setUpIsDone =true;
         }
@@ -343,4 +385,24 @@ public class DocumentConsumerIT {
         return headers;
     }
 
+    private void clearS3Buckets() {
+        if(untrustedClient.doesBucketExistV2(untrustedBucketName)) {
+            ObjectListing objectListing = untrustedClient.listObjects(untrustedBucketName);
+            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                untrustedClient.deleteObject(untrustedBucketName, s3ObjectSummary.getKey());
+            }
+        } else {
+            untrustedClient.createBucket(untrustedBucketName);
+        }
+
+        if(trustedClient.doesBucketExistV2(trustedBucketName)) {
+            ObjectListing objectListing = trustedClient.listObjects(trustedBucketName);
+            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                trustedClient.deleteObject(trustedBucketName, s3ObjectSummary.getKey());
+            }
+        } else {
+            trustedClient.createBucket(trustedBucketName);
+        }
+
+    }
 }
