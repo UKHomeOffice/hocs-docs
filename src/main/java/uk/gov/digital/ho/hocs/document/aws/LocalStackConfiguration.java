@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({ "local"})
+@Profile({"local", "test"})
 public class LocalStackConfiguration {
 
     private static final String EU_WEST_2 = "eu-west-2";
@@ -67,7 +67,6 @@ public class LocalStackConfiguration {
     }
 
     public AmazonS3 s3Client() {
-
         String host = String.format("http://%s:4572/", awsHost);
 
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);

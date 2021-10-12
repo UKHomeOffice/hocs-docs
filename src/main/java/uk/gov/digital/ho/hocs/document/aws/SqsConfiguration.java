@@ -19,7 +19,7 @@ public class SqsConfiguration {
     @Bean
     public AmazonSQS sqsClient(@Value("${docs.aws.sqs.access.key}") String accessKey,
                                @Value("${docs.aws.sqs.secret.key}") String secretKey,
-                               @Value("${aws.sqs.region}") String region) {
+                               @Value("${aws.region}") String region) {
 
         if (StringUtils.isEmpty(accessKey)) {
             throw new BeanCreationException("Failed to create SQS client bean. Need non-blank value for access key");

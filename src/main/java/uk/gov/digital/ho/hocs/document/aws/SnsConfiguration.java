@@ -19,7 +19,7 @@ public class SnsConfiguration {
     @Bean("auditSnsClient")
     public AmazonSNS auditSnsClient(@Value("${audit.aws.sns.access.key}") String accessKey,
                                     @Value("${audit.aws.sns.secret.key}") String secretKey,
-                                    @Value("${aws.sqs.region}") String region) {
+                                    @Value("${aws.region}") String region) {
 
         if (StringUtils.isEmpty(accessKey)) {
             throw new BeanCreationException("Failed to create SNS client bean. Need non-blank value for access key");

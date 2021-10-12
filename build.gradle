@@ -39,15 +39,13 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-core:6.5.6'
 
-    compileOnly('org.projectlombok:lombok')
-    annotationProcessor('org.projectlombok:lombok')
+    compileOnly('org.projectlombok:lombok:1.18.20')
+    annotationProcessor('org.projectlombok:lombok:1.18.20')
 
-    testImplementation("com.github.tomakehurst:wiremock-standalone:2.18.0")
+    testImplementation('com.github.tomakehurst:wiremock-standalone:2.27.2')
     testImplementation('org.apache.camel:camel-test-spring:2.25.4')
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('org.assertj:assertj-core')
-    testImplementation('com.adobe.testing:s3mock-junit4:2.2.2')
-    testImplementation('com.adobe.testing:s3mock:2.2.2')
+    testImplementation('org.springframework.boot:spring-boot-starter-test:2.5.5')
+    testImplementation('org.assertj:assertj-core:3.21.0')
 }
 
 jar {

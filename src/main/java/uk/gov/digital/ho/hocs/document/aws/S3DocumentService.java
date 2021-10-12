@@ -35,8 +35,8 @@ public class S3DocumentService {
     private static final String FILENAME = "filename";
     private String trustedBucketKMSkeyId;
 
-    public S3DocumentService( @Value("${docs.untrustedS3bucket}") String untrustedS3BucketName,
-                              @Value("${docs.trustedS3bucket}") String trustedS3Bucket,
+    public S3DocumentService( @Value("${docs.untrustedS3bucketName}") String untrustedS3BucketName,
+                              @Value("${docs.trustedS3bucketName}") String trustedS3Bucket,
                               @Qualifier("Trusted") AmazonS3 trustedS3Client,
                               @Qualifier("UnTrusted") AmazonS3 untrustedS3Client,
                               @Value("${docs.trustedS3bucketKMSKeyId}") String trustedBucketKMSkeyId) {

@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
-import com.adobe.testing.s3mock.S3MockApplication;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -37,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @SpringBootTest
 @RunWith(CamelSpringBootRunner.class)
-@DisableJmx
 public class DocumentConsumerIT {
 
     private static boolean setUpIsDone = false;
@@ -55,8 +53,6 @@ public class DocumentConsumerIT {
 
     @Autowired
     ObjectMapper mapper;
-
-    private int LOCAL_S3_PORT = 9003;
 
     @Autowired
     @Qualifier("UnTrusted")
@@ -97,7 +93,6 @@ public class DocumentConsumerIT {
         if(!setUpIsDone) {
             configureFor("localhost", 9002);
             wireMockServer.start();
-            startMockS3Service();
             uploadUntrustedFiles();
             setUpIsDone =true;
         }
@@ -330,15 +325,6 @@ public class DocumentConsumerIT {
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
         return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
-    }
-
-    private void startMockS3Service() {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(S3MockApplication.PROP_HTTP_PORT, LOCAL_S3_PORT);
-        properties.put(S3MockApplication.PROP_SECURE_CONNECTION, false);
-        properties.put(S3MockApplication.PROP_SILENT, false);
-        properties.put(S3MockApplication.PROP_INITIAL_BUCKETS, trustedBucketName + ", " + untrustedBucketName);
-        S3MockApplication.start(properties);
     }
 
     private void uploadUntrustedFiles() throws URISyntaxException, IOException {

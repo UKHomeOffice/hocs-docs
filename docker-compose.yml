@@ -43,5 +43,16 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - $PWD/src/test/resources/localstack:/docker-entrypoint-initaws.d
 
+  converter:
+    image: quay.io/ukhomeofficedigital/hocs-docs-converter:latest
+    networks:
+      - hocs-docs
+    ports:
+      - 8084:8080
+      - 7084:8000
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
+      SERVER_PORT: 8080
+
 networks:
   hocs-docs:

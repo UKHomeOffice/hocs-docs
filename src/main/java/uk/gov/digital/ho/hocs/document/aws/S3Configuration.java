@@ -19,14 +19,14 @@ public class S3Configuration {
     @Bean("Trusted")
     public AmazonS3 trustedS3Client(@Value("${trusted.aws.s3.access.key}") String accessKey,
                              @Value("${trusted.aws.s3.secret.key}") String secretKey,
-                             @Value("${aws.sqs.region}") String region) {
+                             @Value("${aws.region}") String region) {
         return s3Client(accessKey, secretKey, region);
     }
 
     @Bean("UnTrusted")
     public AmazonS3 untrustedS3Client(@Value("${untrusted.aws.s3.access.key}") String accessKey,
                              @Value("${untrusted.aws.s3.secret.key}") String secretKey,
-                             @Value("${aws.sqs.region}") String region) {
+                             @Value("${aws.region}") String region) {
         return s3Client(accessKey, secretKey, region);
     }
 

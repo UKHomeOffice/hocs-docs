@@ -34,8 +34,8 @@ public class AuditClient {
     @Autowired
     public AuditClient(ProducerTemplate producerTemplate,
                        @Value("${audit.sns}") String auditQueue,
-                       @Value("${auditing.deployment.name}") String raisingService,
-                       @Value("${auditing.deployment.namespace}") String namespace,
+                       @Value("${info.app.name}") String raisingService,
+                       @Value("${audit.deployment.namespace}") String namespace,
                        ObjectMapper objectMapper,
                        RequestData requestData) {
         this.producerTemplate = producerTemplate;

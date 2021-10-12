@@ -1,10 +1,16 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
-import com.adobe.testing.s3mock.junit4.S3MockRule;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
@@ -21,30 +27,31 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("test")
+@SpringBootTest
+@RunWith(CamelSpringBootRunner.class)
 public class S3DocumentServiceTest {
-    private static String untrustedBucketName = "untrusted-bucked";
-    private static String trustedBucketName = "trusted-bucked";
 
-    @ClassRule
-    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
+    @Value("${docs.untrustedS3bucketName}")
+    private String untrustedBucketName;
+    @Value("${docs.trustedS3bucketName}")
+    private String trustedBucketName;
 
-    private AmazonS3 untrustedClient;
-    private AmazonS3 trustedClient;
+    @Autowired
+    @Qualifier("UnTrusted")
+    AmazonS3 untrustedClient;
+
+    @Autowired
+    @Qualifier("Trusted")
+    AmazonS3 trustedClient;
+
+    @Autowired
     private S3DocumentService service;
 
     @Before
     public void setUp() throws Exception {
-        untrustedClient = S3_MOCK_RULE.createS3Client();
-        trustedClient = S3_MOCK_RULE.createS3Client();
-        service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient, "");
         clearS3Buckets();
         uploadUntrustedFiles();
-    }
-
-    @After
-    public void takeDown() {
-        untrustedClient.shutdown();
-        trustedClient.shutdown();
     }
 
     @Test
@@ -142,7 +149,6 @@ public class S3DocumentServiceTest {
             for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
                 untrustedClient.deleteObject(untrustedBucketName, s3ObjectSummary.getKey());
             }
-            untrustedClient.deleteBucket(untrustedBucketName);
         }
 
         if(trustedClient.doesBucketExistV2(trustedBucketName)) {
@@ -150,10 +156,6 @@ public class S3DocumentServiceTest {
             for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
                 trustedClient.deleteObject(trustedBucketName, s3ObjectSummary.getKey());
             }
-            trustedClient.deleteBucket(trustedBucketName);
         }
-
-        untrustedClient.createBucket(untrustedBucketName);
-        trustedClient.createBucket(trustedBucketName);
     }
 }
