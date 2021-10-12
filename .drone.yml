@@ -3,6 +3,13 @@ kind: pipeline
 type: kubernetes
 name: build
 
+services:
+  - name: postgres
+    image: quay.io/ukhomeofficedigital/postgres-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+
 steps:
   - name: build project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
@@ -11,6 +18,9 @@ steps:
 
   - name: test project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
+    environment:
+      DB_HOST: "postgres"
+      AWS_LOCAL_HOST: "localstack"
     commands:
       - ./gradlew check --no-daemon
     depends_on:
