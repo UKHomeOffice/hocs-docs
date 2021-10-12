@@ -12,7 +12,7 @@ steps:
   - name: test project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
     environment:
-      DB_HOST: "postgres"
+      - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
       - ./gradlew check --no-daemon
     depends_on:
