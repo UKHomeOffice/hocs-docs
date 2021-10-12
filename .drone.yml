@@ -12,7 +12,7 @@ steps:
   - name: test project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
     environment:
-      - DOCKER_HOST=tcp://172.17.0.1:2375
+      DOCKER_HOST: tcp://172.17.0.1:2375
     commands:
       - ./gradlew check --no-daemon
     depends_on:
