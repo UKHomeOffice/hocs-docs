@@ -98,7 +98,6 @@ public class AuditClient {
     }
 
     private String createAuditPayload(DocumentData documentData) {
-
         return Json.createObjectBuilder()
                 .add("documentUUID", documentData.getUuid().toString())
                 .add("documentTitle", documentData.getDisplayName())
