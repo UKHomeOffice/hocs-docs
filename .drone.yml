@@ -60,16 +60,6 @@ steps:
     depends_on:
       - test project
 
-  - name: wait for docker
-    image: docker
-    commands:
-      - n=0; until docker stats --no-stream; do echo "Waiting for Docker $n"; n=$((n +1)); sleep 1; done
-    when:
-      event:
-        - promote
-      target:
-        - release
-
 trigger:
   event:
     - push
