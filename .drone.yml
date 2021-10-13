@@ -11,18 +11,21 @@ steps:
 
   - name: test project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
-    environment:
-      DOCKER_HOST: tcp://172.17.0.1:2375
     commands:
       - ./gradlew check --no-daemon
     depends_on:
       - build project
+      - wait for docker
+
+  - name: wait for docker
+    image: docker
+    commands:
+      - n=0; until docker stats --no-stream; do echo "Waiting for Docker $n"; n=$((n +1)); sleep 1; done
 
   - name: sonar scanner
     image: quay.io/ukhomeofficedigital/sonar-scanner:v3.0.3
     depends_on:
       - build project
-      - wait for docker
 
   - name: build & push
     image: plugins/docker
