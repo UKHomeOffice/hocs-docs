@@ -22,6 +22,7 @@ steps:
     image: quay.io/ukhomeofficedigital/sonar-scanner:v3.0.3
     depends_on:
       - build project
+      - wait for docker
 
   - name: build & push
     image: plugins/docker
@@ -56,9 +57,26 @@ steps:
     depends_on:
       - test project
 
+  - name: wait for docker
+    image: docker
+    commands:
+      - n=0; until docker stats --no-stream; do echo "Waiting for Docker $n"; n=$((n +1)); sleep 1; done
+    when:
+      event:
+        - promote
+      target:
+        - release
+
 trigger:
   event:
     - push
+
+services:
+  - name: docker
+    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
+
+environment:
+  DOCKER_HOST: tcp://docker:2375
 
 ---
 kind: pipeline
