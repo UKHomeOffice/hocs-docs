@@ -39,7 +39,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 public class S3DocumentServiceTest {
 
     @ClassRule
-    public static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
+    public static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("quay.io/ukhomeofficedigital/localstack:latest"))
             .withServices(S3);
 
     @TestConfiguration
