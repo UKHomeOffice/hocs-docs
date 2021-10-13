@@ -3,6 +3,19 @@ kind: pipeline
 type: kubernetes
 name: build
 
+services:
+  - name: postgres
+    image: quay.io/ukhomeofficedigital/postgres-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+
+  - name: localstack
+    image: quay.io/ukhomeofficedigital/localstack
+    environment:
+      SERVICES: sqs,sns,s3
+      DEFAULT_REGION: eu-west-2
+
 steps:
   - name: build project
     image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
@@ -63,10 +76,6 @@ steps:
 trigger:
   event:
     - push
-
-services:
-  - name: docker
-    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
 
 environment:
   DOCKER_HOST: tcp://docker:2375
