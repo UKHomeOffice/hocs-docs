@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @RestController
@@ -30,14 +30,14 @@ class DocumentDataResource {
         this.documentDataService = documentDataService;
     }
 
-    @PostMapping(value = "/document", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/document", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
         String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
         DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType(), convertTo);
         return ResponseEntity.ok(documentData.getUuid());
     }
 
-    @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
         Set<DocumentData> documents = new HashSet<>();
         if(type == null) {
@@ -48,7 +48,7 @@ class DocumentDataResource {
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
-    @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
         DocumentData document = documentDataService.getDocumentData(documentUUID);
         return ResponseEntity.ok(DocumentDto.from(document));
@@ -60,7 +60,7 @@ class DocumentDataResource {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/document/{documentUUID}/file", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/{documentUUID}/file", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<ByteArrayResource> getDocumentFile(@PathVariable UUID documentUUID) {
         S3Document document = documentDataService.getDocumentFile(documentUUID);
 
@@ -74,7 +74,7 @@ class DocumentDataResource {
                 .body(resource);
     }
 
-    @GetMapping(value = "/document/{documentUUID}/pdf", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/{documentUUID}/pdf", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID documentUUID) {
         S3Document document = documentDataService.getDocumentPdf(documentUUID);
 
@@ -88,7 +88,7 @@ class DocumentDataResource {
                 .body(resource);
     }
 
-    @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getDocumentName(@PathVariable UUID documentUUID) {
         DocumentData documentData = documentDataService.getDocumentData(documentUUID);
         // 'ApplicationExceptions.EntityNotFoundException' thrown in getDocumentData if null
