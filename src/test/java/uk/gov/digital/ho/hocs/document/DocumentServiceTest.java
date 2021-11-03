@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -30,13 +32,13 @@ public class DocumentServiceTest {
     @Mock
     private S3DocumentService s3DocumentService;
 
-    private DocumentDataService documentService;
-
     @Mock
     private DocumentClient documentClient;
 
     @Mock
     private AuditClient auditClient;
+
+    private DocumentDataService documentService;
 
     @Before
     public void setUp() {
@@ -440,6 +442,29 @@ public class DocumentServiceTest {
         verify(s3DocumentService, times(1)).getFileFromTrustedS3("pdfLink");
         verifyNoMoreInteractions((s3DocumentService));
         verify(documentRepository, times(1)).findByUuid(uuid);
+        verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
+    public void shouldReturnEmptyDocumentIfPdfLinkIsEmpty() {
+        UUID documentUuid = UUID.randomUUID();
+        String originalFileName = "TEST";
+
+        DocumentData documentData = mock(DocumentData.class);
+        when(documentData.getPdfLink()).thenReturn("");
+        when(documentData.getDisplayName()).thenReturn(originalFileName);
+
+        when(documentRepository.findByUuid(documentUuid)).thenReturn(documentData);
+
+        var response = documentService.getDocumentPdf(documentUuid);
+
+        assertEquals(response.getOriginalFilename(), originalFileName);
+        assertEquals(response.getData().length, 0);
+        assertNull(response.getFilename());
+        assertNull(response.getFileType());
+        assertNull(response.getMimeType());
+
+        verify(documentRepository).findByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
     }
 }

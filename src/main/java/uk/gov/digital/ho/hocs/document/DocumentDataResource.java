@@ -6,6 +6,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
@@ -78,13 +79,21 @@ class DocumentDataResource {
     public ResponseEntity<ByteArrayResource> getDocumentPdf(@PathVariable UUID documentUUID) {
         S3Document document = documentDataService.getDocumentPdf(documentUUID);
 
-        ByteArrayResource resource = new ByteArrayResource(document.getData());
-        MediaType mediaType = MediaType.valueOf(document.getMimeType());
+        return generateFileResponseEntity(document);
+    }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename())
-                .contentType(mediaType)
-                .contentLength(document.getData().length)
+    private ResponseEntity<ByteArrayResource> generateFileResponseEntity(S3Document document) {
+        ByteArrayResource resource = new ByteArrayResource(document.getData());
+
+        var response = ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename());
+
+        if (StringUtils.hasText(document.getMimeType())) {
+            MediaType mediaType = MediaType.valueOf(document.getMimeType());
+            response = response.contentType(mediaType);
+        }
+
+        return response.contentLength(document.getData().length)
                 .body(resource);
     }
 

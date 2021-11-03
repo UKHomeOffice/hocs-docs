@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -95,13 +96,29 @@ public class DocumentDataService {
         }
     }
 
-    public S3Document getDocumentPdf(UUID documentUUID) {
-        DocumentData documentData = getDocumentData(documentUUID);
-        try{
-            log.debug("Getting Document PDF: {}", documentUUID);
-            return s3DocumentService.getFileFromTrustedS3(documentData.getPdfLink());
+    public S3Document getDocumentPdf(UUID documentUuid) {
+        return getDocumentFromS3(documentUuid, DocumentType.PDF);
+    }
+
+    private S3Document getDocumentFromS3(UUID documentUuid, DocumentType documentType) {
+        DocumentData documentData = getDocumentData(documentUuid);
+
+        String fileLink = documentType.equals(DocumentType.PDF) ? documentData.getPdfLink() : documentData.getFileLink();
+
+        if (!StringUtils.hasText(fileLink)) {
+            return new S3Document(null, documentData.getDisplayName(), new byte[0],
+                    null, null);
+        }
+
+        try {
+            return s3DocumentService.getFileFromTrustedS3(fileLink);
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }
+    }
+
+    private enum DocumentType {
+        ORIGINAL,
+        PDF
     }
 }
