@@ -80,7 +80,6 @@ public class DocumentResourceTest {
         String fileName = "TEST";
 
         when(s3Document.getMimeType()).thenReturn(null);
-        when(s3Document.getFilename()).thenReturn(null);
         when(s3Document.getData()).thenReturn(new byte[0]);
         when(s3Document.getOriginalFilename()).thenReturn(fileName);
 
