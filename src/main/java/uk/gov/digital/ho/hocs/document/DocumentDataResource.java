@@ -65,14 +65,7 @@ class DocumentDataResource {
     public ResponseEntity<ByteArrayResource> getDocumentFile(@PathVariable UUID documentUUID) {
         S3Document document = documentDataService.getDocumentFile(documentUUID);
 
-        ByteArrayResource resource = new ByteArrayResource(document.getData());
-        MediaType mediaType = MediaType.valueOf(document.getMimeType());
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename())
-                .contentType(mediaType)
-                .contentLength(document.getData().length)
-                .body(resource);
+        return generateFileResponseEntity(document);
     }
 
     @GetMapping(value = "/document/{documentUUID}/pdf", produces = APPLICATION_JSON_VALUE)

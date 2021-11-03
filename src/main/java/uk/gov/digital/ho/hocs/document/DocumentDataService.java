@@ -86,14 +86,8 @@ public class DocumentDataService {
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));
     }
 
-    public S3Document getDocumentFile(UUID documentUUID) {
-        DocumentData documentData = getDocumentData(documentUUID);
-        try {
-            log.debug("Getting Document File: {}", documentUUID);
-            return s3DocumentService.getFileFromTrustedS3(documentData.getFileLink());
-        } catch (IOException e) {
-            throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(),DOCUMENT_NOT_FOUND);
-        }
+    public S3Document getDocumentFile(UUID documentUuid) {
+        return getDocumentFromS3(documentUuid, DocumentType.ORIGINAL);
     }
 
     public S3Document getDocumentPdf(UUID documentUuid) {

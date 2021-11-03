@@ -446,6 +446,29 @@ public class DocumentServiceTest {
     }
 
     @Test
+    public void shouldReturnEmptyDocumentIfFileLinkIsEmpty() {
+        UUID documentUuid = UUID.randomUUID();
+        String originalFileName = "TEST";
+
+        DocumentData documentData = mock(DocumentData.class);
+        when(documentData.getFileLink()).thenReturn("");
+        when(documentData.getDisplayName()).thenReturn(originalFileName);
+
+        when(documentRepository.findByUuid(documentUuid)).thenReturn(documentData);
+
+        var response = documentService.getDocumentFile(documentUuid);
+
+        assertEquals(response.getOriginalFilename(), originalFileName);
+        assertEquals(response.getData().length, 0);
+        assertNull(response.getFilename());
+        assertNull(response.getFileType());
+        assertNull(response.getMimeType());
+
+        verify(documentRepository).findByUuid(documentUuid);
+        verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
     public void shouldReturnEmptyDocumentIfPdfLinkIsEmpty() {
         UUID documentUuid = UUID.randomUUID();
         String originalFileName = "TEST";
