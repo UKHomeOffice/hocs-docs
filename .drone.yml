@@ -34,6 +34,10 @@ steps:
       DOCKER_PASSWORD:
         from_secret: QUAY_ROBOT_TOKEN
       DOCKER_USERNAME: ukhomeofficedigital+hocs_quay_robot
+    when:
+      branch:
+        exclude:
+          - main
     depends_on:
       - test project
 
@@ -43,6 +47,8 @@ steps:
       registry: quay.io
       repo: quay.io/ukhomeofficedigital/hocs-docs
       tags:
+        - build_${DRONE_BUILD_NUMBER}
+        - ${DRONE_COMMIT_SHA}
         - latest
     environment:
       DOCKER_PASSWORD:
@@ -50,7 +56,8 @@ steps:
       DOCKER_USERNAME: ukhomeofficedigital+hocs_quay_robot
     when:
       branch:
-        - main
+        include:
+          - main
     depends_on:
       - test project
 
