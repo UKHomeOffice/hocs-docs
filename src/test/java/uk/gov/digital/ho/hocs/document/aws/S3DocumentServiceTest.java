@@ -28,7 +28,7 @@ public class S3DocumentServiceTest {
     private static String trustedBucketName = "trusted-bucked";
 
     @ClassRule
-    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
+    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withHttpPort(8765).withSecureConnection(false).build();
 
     private AmazonS3 untrustedClient;
     private AmazonS3 trustedClient;
