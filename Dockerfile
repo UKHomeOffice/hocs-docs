@@ -31,7 +31,7 @@ RUN chmod a+x /app/scripts/*
 
 COPY --from=builder dependencies/ ./
 COPY --from=builder snapshot-dependencies/ ./
-RUN true # Bug where copying with 0 action then copying again throws an error
+RUN true # Bug where copying without action then copying again throws an error
 COPY --from=builder spring-boot-loader/ ./
 COPY --from=builder application/ ./
 
