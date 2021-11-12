@@ -34,7 +34,14 @@ class DocumentDataResource {
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
         String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
-        DocumentData documentData = documentDataService.createDocument(request.getExternalReferenceUUID(),request.getName(), request.getFileLink(), request.getType(), convertTo);
+        DocumentData documentData = documentDataService.createDocument(
+                request.getExternalReferenceUUID(),
+                request.getActionDataItemUuid(),
+                request.getName(),
+                request.getFileLink(),
+                request.getType(),
+                convertTo
+        );
         return ResponseEntity.ok(documentData.getUuid());
     }
 
@@ -46,6 +53,21 @@ class DocumentDataResource {
         } else {
            documents.addAll(documentDataService.getDocumentsByReferenceForType(externalReferenceUUID, type));
         }
+        return ResponseEntity.ok(GetDocumentsResponse.from(documents));
+    }
+
+    @GetMapping(
+            value = "/document/reference/{externalReferenceUUID}/actionDataUuid/{actionDataUuid}/type/{type}",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseAndAction(
+            @PathVariable UUID externalReferenceUUID,
+            @PathVariable UUID actionDataUuid,
+            @PathVariable String type) {
+        Set<DocumentData> documents = new HashSet<>();
+        documents.addAll(documentDataService
+                .getDocumentsByReferenceAndActionDataUuid(externalReferenceUUID, actionDataUuid, type));
+
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 

@@ -38,9 +38,15 @@ public class DocumentDataService {
         this.documentClient = documentClient;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
+    public DocumentData createDocument(
+            UUID externalReferenceUUID,
+            UUID actionDataItemUuid,
+            String displayName,
+            String fileName,
+            String type,
+            String convertTo) {
         log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
-        DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
+        DocumentData documentData = new DocumentData(externalReferenceUUID, actionDataItemUuid, type, displayName);
         documentRepository.save(documentData);
         documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
         auditClient.createDocumentAudit(documentData);
@@ -72,6 +78,11 @@ public class DocumentDataService {
 
     public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
         return documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
+    }
+    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(
+            UUID externalReferenceUUID, UUID actionDataUuid, String type) {
+        return documentRepository
+                .findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid, type);
     }
 
     public Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {

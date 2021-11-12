@@ -22,6 +22,9 @@ public class CreateDocumentRequest {
     @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
 
+    @JsonProperty("actionDataItemUuid")
+    private UUID actionDataItemUuid;
+
     @JsonProperty("convertTo")
     private String convertTo = "PDF";
 }
