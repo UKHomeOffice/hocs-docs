@@ -84,9 +84,9 @@ public class DocumentConsumerIT {
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL", "PDF");
-        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE", "PDF");
-        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE", "PDF");
+        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), null, "some document", "some fileName", "ORIGINAL", "PDF");
+        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID),null,  "some document", "some fileName", "STANDARD_LINE", "PDF");
+        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID),null,  "some document", "some fileName", "TEMPLATE", "PDF");
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();

@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
@@ -17,8 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -50,6 +50,7 @@ public class DocumentServiceTest {
     public void shouldCreateDocumentWithValidParams() {
 
         UUID uuid = UUID.randomUUID();
+        UUID actionDataItemUuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
         String documentType = "ORIGINAL";
@@ -57,14 +58,21 @@ public class DocumentServiceTest {
         String userId = "userId1234";
         String correlationId = "correlationId4321";
 
-        UUID documentUUID = documentService.createDocument(uuid, displayName, fileName, documentType, convertTo).getUuid();
+        ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
 
-        verify(documentRepository).save(any(DocumentData.class));
+        UUID documentUUID = documentService.createDocument(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo).getUuid();
+
+        verify(documentRepository).save(argumentCaptor.capture());
         verify(documentClient).processDocument(documentUUID, fileName, "PDF");
         verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(documentRepository);
         verifyNoMoreInteractions(auditClient);
         verifyNoInteractions(s3DocumentService);
+
+        DocumentData capturedDocumentData = argumentCaptor.getValue();
+
+        assertEquals(capturedDocumentData.getExternalReferenceUUID(), uuid);
+        assertEquals(capturedDocumentData.getActionDataItemUuid(), actionDataItemUuid);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -75,7 +83,7 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
 
-        documentService.createDocument(null, displayName, fileName, documentType, convertTo);
+        documentService.createDocument(null, null, displayName, fileName, documentType, convertTo);
     }
 
     @Test()
@@ -87,7 +95,7 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, null, fileName, documentType, convertTo);
+            documentService.createDocument(uuid, null, null, fileName, documentType, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -106,7 +114,7 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, displayName,  fileName,null, convertTo);
+        documentService.createDocument(uuid, null, displayName,  fileName,null, convertTo);
     }
 
     @Test()
@@ -118,7 +126,7 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, displayName, fileName, null, convertTo);
+            documentService.createDocument(uuid, null, displayName, fileName, null, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -138,7 +146,7 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, null, fileName, documentType, convertTo);
+        documentService.createDocument(uuid, null, null, fileName, documentType, convertTo);
     }
 
     @Test()
@@ -150,7 +158,7 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(null, displayName, fileName, documentType, convertTo);
+            documentService.createDocument(null, null, displayName, fileName, documentType, convertTo);
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -167,7 +175,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -231,7 +239,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -245,7 +253,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -270,7 +278,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -285,7 +293,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -339,7 +347,7 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, displayName, fileName, documentType, convertTo);
+        documentService.createDocument(uuid, null, displayName, fileName, documentType, convertTo);
 
         verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
@@ -352,7 +360,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
@@ -367,7 +375,7 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName);
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.deleteDocument(uuid);
@@ -385,7 +393,7 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(null, displayName, fileName, documentType,  convertTo);
+        documentService.createDocument(null, null, displayName, fileName, documentType,  convertTo);
 
         verifyNoInteractions(auditClient);
 

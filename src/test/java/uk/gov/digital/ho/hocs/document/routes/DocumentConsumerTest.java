@@ -42,7 +42,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
     public void shouldAddDocumentToMalwareQueueOnSuccess() throws Exception {
         UUID externalReferenceUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName"));
+        when(documentDataService.getDocumentData(any(String.class)))
+                .thenReturn(new DocumentData(externalReferenceUUID, null, "ORIGINAL", "SomeDisplayName"));
 
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
@@ -61,7 +62,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
         UUID externalReferenceUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class))).thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName"));
+        when(documentDataService.getDocumentData(any(String.class)))
+                .thenReturn(new DocumentData(externalReferenceUUID, null, "ORIGINAL", "SomeDisplayName"));
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("externalReferenceUUID", externalReferenceUUID.toString());
         mockEndpoint.expectedPropertyReceived("uuid", documentUUID.toString());
