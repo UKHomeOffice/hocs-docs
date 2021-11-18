@@ -39,22 +39,6 @@ public class DocumentDataService {
         this.documentClient = documentClient;
     }
 
-//    public DocumentData createDocument(
-//            UUID externalReferenceUUID,
-//            UUID actionDataItemUuid,
-//            String displayName,
-//            String fileName,
-//            String type,
-//            String convertTo) {
-//        log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
-//        DocumentData documentData = new DocumentData(externalReferenceUUID, actionDataItemUuid, type, displayName);
-//        documentRepository.save(documentData);
-//        documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
-//        auditClient.createDocumentAudit(documentData);
-//        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
-//        return documentData;
-//    }
-
     public DocumentData createDocument(CreateDocumentRequest request) {
         log.debug("Creating Document: {}, external Reference  UUID: {}",
                 request.getName(), request.getExternalReferenceUUID());
