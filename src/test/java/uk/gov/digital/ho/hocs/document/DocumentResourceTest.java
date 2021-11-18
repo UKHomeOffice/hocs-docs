@@ -39,25 +39,26 @@ public class DocumentResourceTest {
 
     @Test
     public void shouldCreateDocumentWithValidParams() throws ApplicationExceptions.EntityCreationException {
-
-
         String displayName = "name";
         String documentType = "ORIGINAL";
         DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
         String fileName = "fileName";
         String convertTo = "convertTo";
 
-        when(documentService
-                .createDocument(uuid, null, displayName, fileName, documentType, convertTo))
-                .thenReturn(documentData);
+        final CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
+                uuid,
+                null,
+                displayName,
+                fileName,
+                documentType,
+                convertTo);
 
-        CreateDocumentRequest request =
-                new CreateDocumentRequest(displayName, documentType, fileName, uuid, null, convertTo);
+        when(documentService.createDocument(createDocumentRequest)).thenReturn(documentData);
 
-        ResponseEntity response = documentResource.createDocument(request);
+        ResponseEntity response = documentResource.createDocument(createDocumentRequest);
 
         verify(documentService, times(1))
-                .createDocument(uuid, null, displayName, fileName, documentType, convertTo);
+                .createDocument(createDocumentRequest);
 
         verifyNoMoreInteractions(documentService);
 

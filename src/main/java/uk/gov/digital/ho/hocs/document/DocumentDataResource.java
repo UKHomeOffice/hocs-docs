@@ -34,15 +34,7 @@ class DocumentDataResource {
     @PostMapping(value = "/document", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createDocument(@RequestBody CreateDocumentRequest request) {
 
-        String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
-        DocumentData documentData = documentDataService.createDocument(
-                request.getExternalReferenceUUID(),
-                request.getActionDataItemUuid(),
-                request.getName(),
-                request.getFileLink(),
-                request.getType(),
-                convertTo
-        );
+        DocumentData documentData = documentDataService.createDocument(request);
         return ResponseEntity.ok(documentData.getUuid());
     }
 

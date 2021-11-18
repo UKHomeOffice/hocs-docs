@@ -9,6 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
+import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -60,7 +61,9 @@ public class DocumentServiceTest {
 
         ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
 
-        UUID documentUUID = documentService.createDocument(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo).getUuid();
+        UUID documentUUID = documentService.createDocument
+                (new CreateDocumentRequest(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo))
+                .getUuid();
 
         verify(documentRepository).save(argumentCaptor.capture());
         verify(documentClient).processDocument(documentUUID, fileName, "PDF");
@@ -83,7 +86,13 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
 
-        documentService.createDocument(null, null, displayName, fileName, documentType, convertTo);
+        documentService.createDocument(new CreateDocumentRequest(
+                null,
+                null,
+                displayName,
+                fileName,
+                documentType,
+                convertTo));
     }
 
     @Test()
@@ -95,7 +104,15 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, null, null, fileName, documentType, convertTo);
+            documentService.createDocument(
+                    new CreateDocumentRequest(
+                            uuid,
+                            null,
+                            null,
+                            fileName,
+                            documentType,
+                            convertTo)
+            );
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -114,7 +131,8 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, null, displayName,  fileName,null, convertTo);
+        documentService.createDocument(
+                new CreateDocumentRequest(uuid, null, displayName,  fileName,null, convertTo));
     }
 
     @Test()
@@ -126,7 +144,8 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(uuid, null, displayName, fileName, null, convertTo);
+            documentService.createDocument(
+                    new CreateDocumentRequest(uuid, null, displayName, fileName, null, convertTo));
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -146,7 +165,8 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, null, null, fileName, documentType, convertTo);
+        documentService.createDocument(
+                new CreateDocumentRequest(uuid, null, null, fileName, documentType, convertTo));
     }
 
     @Test()
@@ -158,7 +178,14 @@ public class DocumentServiceTest {
         String convertTo = "PDF";
 
         try {
-            documentService.createDocument(null, null, displayName, fileName, documentType, convertTo);
+            documentService.createDocument(
+                    new CreateDocumentRequest(
+                            null,
+                            null,
+                            displayName,
+                            fileName,
+                            documentType,
+                            convertTo));
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -347,7 +374,8 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(uuid, null, displayName, fileName, documentType, convertTo);
+        documentService.createDocument(
+                new CreateDocumentRequest(uuid, null, displayName, fileName, documentType, convertTo));
 
         verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
@@ -393,7 +421,15 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String convertTo = "PDF";
 
-        documentService.createDocument(null, null, displayName, fileName, documentType,  convertTo);
+        documentService.createDocument(
+                new CreateDocumentRequest(
+                        null,
+                        null,
+                        displayName,
+                        fileName,
+                        documentType,
+                        convertTo
+                ));
 
         verifyNoInteractions(auditClient);
 

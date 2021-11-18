@@ -45,11 +45,11 @@ public class DocumentCreateIntegrationTest {
     @Test
     public void shouldCreateANewDocumentAndReturnUuid() {
         CreateDocumentRequest request = new CreateDocumentRequest(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
                 "Test Document",
-                INTEGRATION_TEST_DOCUMENT_TYPE,
                 "test_doc.docx",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                INTEGRATION_TEST_DOCUMENT_TYPE,
                 "PDF"
                 );
 
@@ -64,10 +64,10 @@ public class DocumentCreateIntegrationTest {
     public void shouldCreateANewDocumentAndGetByCase() {
         final UUID caseUuid = UUID.randomUUID();
         final CreateDocumentRequest request = new CreateDocumentRequest(
-                "Test Document",
-                INTEGRATION_TEST_DOCUMENT_TYPE,
-                "test_doc.docx",
                 caseUuid,
+                "Test Document",
+                "test_doc.docx",
+                INTEGRATION_TEST_DOCUMENT_TYPE,
                 "PDF"
         );
 
@@ -102,11 +102,11 @@ public class DocumentCreateIntegrationTest {
         final UUID caseUuid = UUID.randomUUID();
         final UUID actionUUID = UUID.randomUUID();
         final CreateDocumentRequest request = new CreateDocumentRequest(
-                "Test Document",
-                INTEGRATION_TEST_DOCUMENT_TYPE,
-                "test_doc.docx",
                 caseUuid,
                 actionUUID,
+                "Test Document",
+                "test_doc.docx",
+                INTEGRATION_TEST_DOCUMENT_TYPE,
                 "PDF"
         );
 
