@@ -9,6 +9,18 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class CreateDocumentRequest {
+    public CreateDocumentRequest(
+            String name,
+            String type,
+            String fileLink,
+            UUID externalReferenceUUID,
+            String convertTo) {
+        this.name = name;
+        this.type = type;
+        this.fileLink = fileLink;
+        this.externalReferenceUUID = externalReferenceUUID;
+        this.convertTo = convertTo;
+    }
 
     @JsonProperty("name")
     private String name;
