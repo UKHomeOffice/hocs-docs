@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
+import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -84,9 +85,15 @@ public class DocumentConsumerIT {
 
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "ORIGINAL", "PDF");
-        documentStandardLine = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "STANDARD_LINE", "PDF");
-        documentTemplate = documentService.createDocument(UUID.fromString(externalReferenceUUID), "some document", "some fileName", "TEMPLATE", "PDF");
+        document = documentService.createDocument(
+                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
+                        null, "some document", "some fileName", "ORIGINAL", "PDF"));
+        documentStandardLine = documentService.createDocument(
+                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
+                        null,  "some document", "some fileName", "STANDARD_LINE", "PDF"));
+        documentTemplate = documentService.createDocument(
+                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
+                        null,  "some document", "some fileName", "TEMPLATE", "PDF"));
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();

@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
+import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -38,13 +39,25 @@ public class DocumentDataService {
         this.documentClient = documentClient;
     }
 
-    public DocumentData createDocument(UUID externalReferenceUUID, String displayName, String fileName, String type, String convertTo) {
-        log.debug("Creating Document: {}, external Reference  UUID: {}", displayName, externalReferenceUUID);
-        DocumentData documentData = new DocumentData(externalReferenceUUID, type, displayName);
+    public DocumentData createDocument(CreateDocumentRequest request) {
+        log.debug("Creating Document: {}, external Reference  UUID: {}",
+                request.getName(), request.getExternalReferenceUUID());
+
+        String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
+
+        DocumentData documentData = new DocumentData(
+                request.getExternalReferenceUUID(),
+                request.getActionDataItemUuid(),
+                request.getType(),
+                request.getName()
+        );
+
         documentRepository.save(documentData);
-        documentClient.processDocument(documentData.getUuid(), fileName, convertTo);
+        documentClient.processDocument(documentData.getUuid(), request.getFileLink(), convertTo);
         auditClient.createDocumentAudit(documentData);
+
         log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
+
         return documentData;
     }
 
@@ -72,6 +85,11 @@ public class DocumentDataService {
 
     public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
         return documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
+    }
+    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(
+            UUID externalReferenceUUID, UUID actionDataUuid, String type) {
+        return documentRepository
+                .findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid, type);
     }
 
     public Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {
