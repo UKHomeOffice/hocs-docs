@@ -1,1 +1,0 @@
-DELETE FROM document.document_data WHERE type = 'INTEGRATION_TEST_DOCUMENT_TYPE';
