@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '2.5.1'
     id 'java'
+    id 'jacoco'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -22,6 +23,25 @@ repositories {
 
 bootRun {
     args = ["--spring.profiles.active=local, development"]
+}
+
+plugins.withType(JacocoPlugin) {
+    tasks["test"].finalizedBy 'jacocoTestReport'
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = true
+        html.required = false
+        csv.required = false
+        //for XML
+        xml.destination file("${buildDir}/reports/jacoco.xml")
+    }
 }
 
 dependencies {
@@ -53,6 +73,7 @@ dependencies {
 
     compileOnly('org.projectlombok:lombok')
     annotationProcessor('org.projectlombok:lombok')
+
 
     testImplementation("com.github.tomakehurst:wiremock-standalone:2.18.0")
     testImplementation('org.apache.camel:camel-test-spring:2.24.0')
