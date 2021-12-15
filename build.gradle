@@ -60,7 +60,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    testImplementation 'com.github.tomakehurst:wiremock-standalone:2.18.0'
+    testImplementation 'com.github.tomakehurst:wiremock-standalone:2.27.2'
     testImplementation 'org.apache.camel:camel-test-spring:2.24.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
