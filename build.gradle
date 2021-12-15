@@ -49,7 +49,7 @@ dependencies {
     implementation 'org.apache.camel:camel-aws:2.24.0'
     implementation 'org.apache.camel:camel-http4:2.24.0'
     implementation 'org.apache.httpcomponents:httpmime:4.5.6'
-    implementation 'com.amazonaws:aws-java-sdk:1.11.553'
+    implementation 'com.amazonaws:aws-java-sdk:1.12.129'
     implementation 'org.glassfish:javax.json:1.0.4'
 
     implementation 'org.flywaydb:flyway-core'
