@@ -45,7 +45,7 @@ dependencies {
     implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
 
     implementation 'org.apache.camel:camel-spring-boot:2.24.0'
-    implementation 'org.apache.camel:camel-jackson:2.24.0'
+    implementation 'org.apache.camel:camel-jackson:3.13.0'
     implementation 'org.apache.camel:camel-aws:2.24.0'
     implementation 'org.apache.camel:camel-http4:2.24.0'
     implementation 'org.apache.httpcomponents:httpmime:4.5.13'
