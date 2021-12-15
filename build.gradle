@@ -1,28 +1,17 @@
 plugins {
-    id 'org.springframework.boot' version '2.5.1'
     id 'java'
     id 'jacoco'
+    // This is stuck on 2.5 because of s3mock.
+    id 'org.springframework.boot' version '2.5.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
-
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'jacoco'
 
 group = 'uk.gov.digital.ho.hocs'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
-}
-
-bootRun {
-    args = ["--spring.profiles.active=local, development"]
 }
 
 plugins.withType(JacocoPlugin) {
@@ -45,42 +34,38 @@ jacocoTestReport {
 }
 
 dependencies {
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.5'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.12.5'
-    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.5'
-
     implementation('org.springframework.boot:spring-boot-starter-web') {
-        exclude module: "spring-boot-starter-tomcat"
+        exclude(module: 'spring-boot-starter-tomcat')
     }
-    implementation('org.springframework.boot:spring-boot-starter-undertow')
-    implementation('net.logstash.logback:logstash-logback-encoder:5.3')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
-    implementation('org.springframework.boot:spring-boot-starter-json')
-    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
 
-    implementation('org.apache.camel:camel-spring-boot:2.24.0')
-    implementation('org.apache.camel:camel-jackson:2.24.0')
-    implementation('org.apache.camel:camel-aws:2.24.0')
-    implementation('org.apache.camel:camel-http4:2.24.0')
-    implementation('org.apache.httpcomponents:httpmime:4.5.6')
-    implementation('com.amazonaws:aws-java-sdk:1.11.553')
-    implementation('org.glassfish:javax.json:1.0.4')
+    implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
 
-    implementation('org.flywaydb:flyway-core')
+    implementation 'org.apache.camel:camel-spring-boot:2.24.0'
+    implementation 'org.apache.camel:camel-jackson:2.24.0'
+    implementation 'org.apache.camel:camel-aws:2.24.0'
+    implementation 'org.apache.camel:camel-http4:2.24.0'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.6'
+    implementation 'com.amazonaws:aws-java-sdk:1.11.553'
+    implementation 'org.glassfish:javax.json:1.0.4'
 
-    runtimeOnly('org.hsqldb:hsqldb')
-    runtimeOnly('org.postgresql:postgresql')
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.hsqldb:hsqldb'
+    runtimeOnly 'org.postgresql:postgresql:42.3.1'
 
-    compileOnly('org.projectlombok:lombok')
-    annotationProcessor('org.projectlombok:lombok')
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-
-    testImplementation("com.github.tomakehurst:wiremock-standalone:2.18.0")
-    testImplementation('org.apache.camel:camel-test-spring:2.24.0')
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('org.assertj:assertj-core')
-    testImplementation('com.adobe.testing:s3mock-junit4:2.1.8')
-    testImplementation('com.adobe.testing:s3mock:2.1.8')
+    testImplementation 'com.github.tomakehurst:wiremock-standalone:2.18.0'
+    testImplementation 'org.apache.camel:camel-test-spring:2.24.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'com.adobe.testing:s3mock-junit4:2.1.8'
+    testImplementation 'com.adobe.testing:s3mock:2.1.8'
 }
 
 jar {
