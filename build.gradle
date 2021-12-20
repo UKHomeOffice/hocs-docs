@@ -64,7 +64,7 @@ dependencies {
     testImplementation 'org.apache.camel:camel-test-spring:2.24.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation 'com.adobe.testing:s3mock-junit4:2.1.8'
+    testImplementation 'com.adobe.testing:s3mock-junit4:2.2.3'
     testImplementation 'com.adobe.testing:s3mock:2.1.8'
 }
 
