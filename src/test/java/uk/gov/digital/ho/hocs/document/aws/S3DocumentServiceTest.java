@@ -3,8 +3,10 @@ package uk.gov.digital.ho.hocs.document.aws;
 import com.adobe.testing.s3mock.junit4.S3MockRule;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.junit.*;
 import org.mockito.Mockito;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
@@ -25,8 +27,8 @@ import static org.mockito.Mockito.when;
 
 
 public class S3DocumentServiceTest {
-    private static String untrustedBucketName = "untrusted-bucked";
-    private static String trustedBucketName = "trusted-bucked";
+    private static final String untrustedBucketName = "untrusted-bucked";
+    private static final String trustedBucketName = "trusted-bucked";
 
     @ClassRule
     public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
@@ -58,7 +60,7 @@ public class S3DocumentServiceTest {
     }
 
     @Test
-    public void shouldReturnUploadedMetaData() throws IOException, URISyntaxException {
+    public void shouldReturnUploadedMetaData() throws IOException {
         S3Document document = service.getFileFromUntrustedS3("someUUID.docx");
         assertThat(document.getOriginalFilename()).isEqualTo("sample.docx");
         assertThat(document.getFilename()).isEqualTo("someUUID.docx");
@@ -141,10 +143,32 @@ public class S3DocumentServiceTest {
 
     private void clearS3Buckets() {
         if(untrustedClient.doesBucketExistV2(untrustedBucketName)) {
+            ObjectListing objectListing = untrustedClient.listObjects(untrustedBucketName);
+            while (true) {
+                for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                    untrustedClient.deleteObject(untrustedBucketName, s3ObjectSummary.getKey());
+                }
+                if (objectListing.isTruncated()) {
+                    objectListing = untrustedClient.listNextBatchOfObjects(objectListing);
+                } else {
+                    break;
+                }
+            }
             untrustedClient.deleteBucket(untrustedBucketName);
         }
 
         if(trustedClient.doesBucketExistV2(trustedBucketName)) {
+            ObjectListing objectListing = trustedClient.listObjects(trustedBucketName);
+            while (true) {
+                for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                    trustedClient.deleteObject(trustedBucketName, s3ObjectSummary.getKey());
+                }
+                if (objectListing.isTruncated()) {
+                    objectListing = trustedClient.listNextBatchOfObjects(objectListing);
+                } else {
+                    break;
+                }
+            }
             trustedClient.deleteBucket(trustedBucketName);
         }
 
