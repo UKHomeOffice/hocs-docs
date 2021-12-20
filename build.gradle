@@ -7,6 +7,7 @@ plugins {
 }
 
 def camelVersion = '2.25.4'
+var s3MockVersion = '2.2.3'
 
 group = 'uk.gov.digital.ho.hocs'
 version = '0.0.1-SNAPSHOT'
@@ -44,7 +45,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-json'
 
-    implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
 
     implementation "org.apache.camel:camel-spring-boot:${camelVersion}"
     implementation "org.apache.camel:camel-jackson:${camelVersion}"
@@ -66,8 +67,8 @@ dependencies {
     testImplementation "org.apache.camel:camel-test-spring:${camelVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation 'com.adobe.testing:s3mock-junit4:2.1.8'
-    testImplementation 'com.adobe.testing:s3mock:2.1.8'
+    testImplementation "com.adobe.testing:s3mock-junit4:${s3MockVersion}"
+    testImplementation "com.adobe.testing:s3mock:${s3MockVersion}"
 }
 
 jar {
