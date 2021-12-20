@@ -6,6 +6,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
+var S3MockVersion = '2.2.3'
+
 group = 'uk.gov.digital.ho.hocs'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -64,8 +66,8 @@ dependencies {
     testImplementation 'org.apache.camel:camel-test-spring:2.24.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation 'com.adobe.testing:s3mock-junit4:2.2.3'
-    testImplementation 'com.adobe.testing:s3mock:2.1.8'
+    testImplementation "com.adobe.testing:s3mock-junit4:${S3MockVersion}"
+    testImplementation "com.adobe.testing:s3mock:${S3MockVersion}"
 }
 
 jar {
