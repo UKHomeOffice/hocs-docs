@@ -6,7 +6,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
-var S3MockVersion = '2.2.3'
+def camelVersion = '2.25.4'
+var s3MockVersion = '2.2.3'
 
 group = 'uk.gov.digital.ho.hocs'
 version = '0.0.1-SNAPSHOT'
@@ -46,10 +47,10 @@ dependencies {
 
     implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
 
-    implementation 'org.apache.camel:camel-spring-boot:2.24.0'
-    implementation 'org.apache.camel:camel-jackson:2.24.0'
-    implementation 'org.apache.camel:camel-aws:2.24.0'
-    implementation 'org.apache.camel:camel-http4:2.24.0'
+    implementation "org.apache.camel:camel-spring-boot:${camelVersion}"
+    implementation "org.apache.camel:camel-jackson:${camelVersion}"
+    implementation "org.apache.camel:camel-aws:${camelVersion}"
+    implementation "org.apache.camel:camel-http4:${camelVersion}"
     implementation 'org.apache.httpcomponents:httpmime:4.5.13'
     implementation 'com.amazonaws:aws-java-sdk:1.12.129'
     implementation 'org.glassfish:javax.json:1.0.4'
@@ -63,11 +64,11 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     testImplementation 'com.github.tomakehurst:wiremock-standalone:2.27.2'
-    testImplementation 'org.apache.camel:camel-test-spring:2.24.0'
+    testImplementation "org.apache.camel:camel-test-spring:${camelVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation "com.adobe.testing:s3mock-junit4:${S3MockVersion}"
-    testImplementation "com.adobe.testing:s3mock:${S3MockVersion}"
+    testImplementation "com.adobe.testing:s3mock-junit4:${s3MockVersion}"
+    testImplementation "com.adobe.testing:s3mock:${s3MockVersion}"
 }
 
 jar {
