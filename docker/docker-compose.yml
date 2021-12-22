@@ -1,12 +1,12 @@
-version: '3.1'
+version: '3.8'
 
 services:
 
   postgres:
-    image: postgres:9.6
+    image: postgres:12-alpine
     restart: always
     ports:
-      - 5432:5432
+      - "5432:5432"
     networks:
       - hocs-network
     environment:
@@ -27,27 +27,27 @@ services:
     environment:
       - CLAMD_HOST=clamd
     ports:
-      - 8086:8080
+      - "8086:8080"
     networks:
       - hocs-network
     depends_on:
       - clamd
 
-localstack:
-  image: localstack/localstack:latest
-  ports:
-    - 9000:8080
-    - 4572:4572
-    - 4576:4576
-    - 4575:4575
-    - 4571:4571
-    - 4578:4578
-  networks:
-    - hocs-network
-  environment:
-    HOSTNAME_EXTERNAL: localstack
-    DEFAULT_REGION: eu-west-2
-    SERVICES: sqs,s3,sns
+  localstack:
+    image: localstack/localstack:0.11.1
+    ports:
+      - "9000:8080"
+      - "4572:4572"
+      - "4576:4576"
+      - "4575:4575"
+      - "4571:4571"
+      - "4578:4578"
+    networks:
+      - hocs-network
+    environment:
+      HOSTNAME_EXTERNAL: localstack
+      DEFAULT_REGION: eu-west-2
+      SERVICES: sqs,s3,sns
 
   aws_cli:
     image: xueshanf/awscli
@@ -79,3 +79,6 @@ localstack:
       - hocs-network
     depends_on:
       - localstack
+
+networks:
+  hocs-network:
