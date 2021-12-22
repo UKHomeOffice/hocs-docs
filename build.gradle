@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     // This is stuck on 2.5 because of s3mock.
-    id 'org.springframework.boot' version '2.6.1'
+    id 'org.springframework.boot' version '2.6.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
