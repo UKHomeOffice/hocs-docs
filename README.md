@@ -1,5 +1,7 @@
 # HOCS Document Service
 
+[![CodeQL](https://github.com/UKHomeOffice/hocs-docs/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/UKHomeOffice/hocs-docs/actions/workflows/codeql-analysis.yml)
+
  ## Developing locally
  
  The service will run against localstack using the `local` Spring profile and the docker-compose services in `docker/docker-compose.yml`
