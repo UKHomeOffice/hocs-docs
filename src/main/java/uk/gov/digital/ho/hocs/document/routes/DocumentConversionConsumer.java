@@ -73,7 +73,8 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
                     .setProperty(FILENAME, simple("${body.fileLink}"))
                     .setProperty(STATUS, simple(DocumentStatus.UPLOADED.toString()))
-                    .endChoice()
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+                .endChoice()
                 .otherwise()
                     .log(LoggingLevel.DEBUG, "Retrieving document from S3: ${body.fileLink}")
                     .setProperty(UUID_TEXT, simple("${body.documentUUID}"))
@@ -116,7 +117,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document, response: ${body}", 
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document, response: ${body}",
                             LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice();
