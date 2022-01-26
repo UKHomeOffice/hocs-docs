@@ -1,9 +1,12 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,6 +33,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     private final String endpoint = "direct:convertdocument";
     private final String toEndpoint = "mock:updaterecord";
+    public  final String mockNoConvertEndEndpoint = "mock:noConvertEndEndpoint";
+
     private final String conversionService = "mock:conversion-service";
     private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx", "PDF");
 
@@ -38,7 +43,6 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     protected RouteBuilder createRouteBuilder() throws Exception {
       return new DocumentConversionConsumer(s3BucketService, conversionService, toEndpoint);
     }
-
 
     @Test
     public void shouldAddDocumentToDocumentServiceQueueOnSuccess() throws Exception {
@@ -55,11 +59,24 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldNotAddDocumentToDocumentServiceQueueWhenShouldNotConvert() throws Exception {
         DocumentConversionRequest noneRequest = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx", "NONE");
 
+        context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                weaveAddLast().to(mockNoConvertEndEndpoint);
+            }
+        });
+
         MockEndpoint mockConversionService = mockConversionService();
-        getMockEndpoint(toEndpoint).expectedMessageCount(1);
         template.sendBody(endpoint,noneRequest);
+        getMockEndpoint(toEndpoint).expectedMessageCount(1);
         getMockEndpoint(toEndpoint).assertIsSatisfied();
         mockConversionService.assertIsNotSatisfied();
+
+        assertTrue(
+                getMockEndpoint(mockNoConvertEndEndpoint)
+                        .getReceivedExchanges()
+                        .get(0).getMessage().getHeaders().containsKey(SqsConstants.RECEIPT_HANDLE)
+        );
     }
 
     @Test
