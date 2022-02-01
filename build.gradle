@@ -7,7 +7,7 @@ plugins {
 }
 
 def camelVersion = '2.25.4'
-var s3MockVersion = '2.3.3'
+var s3MockVersion = '2.4.1'
 
 group = 'uk.gov.digital.ho.hocs'
 version = '0.0.1-SNAPSHOT'
