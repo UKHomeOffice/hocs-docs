@@ -49,7 +49,8 @@ public class DocumentDataService {
                 request.getExternalReferenceUUID(),
                 request.getActionDataItemUuid(),
                 request.getType(),
-                request.getName()
+                request.getName(),
+                request.getUploadOwnerUUID()
         );
 
         documentRepository.save(documentData);

@@ -56,13 +56,13 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
-        String userId = "userId1234";
+        UUID uploadOwnerUUID = UUID.randomUUID();
         String correlationId = "correlationId4321";
 
         ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
 
         UUID documentUUID = documentService.createDocument
-                (new CreateDocumentRequest(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo))
+                (new CreateDocumentRequest(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo, uploadOwnerUUID))
                 .getUuid();
 
         verify(documentRepository).save(argumentCaptor.capture());
@@ -85,6 +85,7 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         documentService.createDocument(new CreateDocumentRequest(
                 null,
@@ -92,7 +93,8 @@ public class DocumentServiceTest {
                 displayName,
                 fileName,
                 documentType,
-                convertTo));
+                convertTo,
+                uploadOwnerUUID));
     }
 
     @Test()
@@ -102,6 +104,8 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
+
 
         try {
             documentService.createDocument(
@@ -111,7 +115,8 @@ public class DocumentServiceTest {
                             null,
                             fileName,
                             documentType,
-                            convertTo)
+                            convertTo,
+                            uploadOwnerUUID)
             );
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
@@ -130,9 +135,10 @@ public class DocumentServiceTest {
         String displayName = "name";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, displayName,  fileName,null, convertTo));
+                new CreateDocumentRequest(uuid, null, displayName,  fileName,null, convertTo, uploadOwnerUUID));
     }
 
     @Test()
@@ -142,10 +148,11 @@ public class DocumentServiceTest {
         String displayName = "name";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         try {
             documentService.createDocument(
-                    new CreateDocumentRequest(uuid, null, displayName, fileName, null, convertTo));
+                    new CreateDocumentRequest(uuid, null, displayName, fileName, null, convertTo, uploadOwnerUUID));
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -164,9 +171,10 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, null, fileName, documentType, convertTo));
+                new CreateDocumentRequest(uuid, null, null, fileName, documentType, convertTo, uploadOwnerUUID));
     }
 
     @Test()
@@ -176,6 +184,7 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         try {
             documentService.createDocument(
@@ -185,7 +194,8 @@ public class DocumentServiceTest {
                             displayName,
                             fileName,
                             documentType,
-                            convertTo));
+                            convertTo,
+                            uploadOwnerUUID));
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -202,7 +212,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -266,7 +277,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -280,7 +292,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -305,7 +318,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -320,7 +334,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -373,9 +388,10 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, displayName, fileName, documentType, convertTo));
+                new CreateDocumentRequest(uuid, null, displayName, fileName, documentType, convertTo, uploadOwnerUUID));
 
         verify(auditClient).createDocumentAudit(any());
         verifyNoMoreInteractions(auditClient);
@@ -388,7 +404,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName,uploadOwnerUUID);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
@@ -403,7 +420,8 @@ public class DocumentServiceTest {
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.deleteDocument(uuid);
@@ -420,6 +438,7 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         String fileName = "fileName";
         String convertTo = "PDF";
+        UUID uploadOwnerUUID = UUID.randomUUID();
 
         documentService.createDocument(
                 new CreateDocumentRequest(
@@ -428,7 +447,8 @@ public class DocumentServiceTest {
                         displayName,
                         fileName,
                         documentType,
-                        convertTo
+                        convertTo,
+                        uploadOwnerUUID
                 ));
 
         verifyNoInteractions(auditClient);

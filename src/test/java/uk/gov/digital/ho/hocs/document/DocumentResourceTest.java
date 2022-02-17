@@ -41,7 +41,8 @@ public class DocumentResourceTest {
     public void shouldCreateDocumentWithValidParams() throws ApplicationExceptions.EntityCreationException {
         String displayName = "name";
         String documentType = "ORIGINAL";
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName);
+        UUID uploadOwnerUUID = java.util.UUID.randomUUID();
+        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
         String fileName = "fileName";
         String convertTo = "convertTo";
 
@@ -51,7 +52,8 @@ public class DocumentResourceTest {
                 displayName,
                 fileName,
                 documentType,
-                convertTo);
+                convertTo,
+                uploadOwnerUUID);
 
         when(documentService.createDocument(createDocumentRequest)).thenReturn(documentData);
 

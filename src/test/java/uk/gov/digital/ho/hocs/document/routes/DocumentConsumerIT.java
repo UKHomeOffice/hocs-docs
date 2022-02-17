@@ -70,6 +70,7 @@ public class DocumentConsumerIT {
     private static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().port(9002));
 
     private final String externalReferenceUUID = UUID.randomUUID().toString();
+    private static final UUID UPLOAD_OWNER_UUID = UUID.randomUUID();
     private String documentUUID;
     private String documentStandardLineUUID;
     private String documentTemplateUUID;
@@ -87,13 +88,13 @@ public class DocumentConsumerIT {
     public void setup() throws Exception {
         document = documentService.createDocument(
                 new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        null, "some document", "some fileName", "ORIGINAL", "PDF"));
+                        "some document", "some fileName", "ORIGINAL", "PDF",UPLOAD_OWNER_UUID));
         documentStandardLine = documentService.createDocument(
                 new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        null,  "some document", "some fileName", "STANDARD_LINE", "PDF"));
+                        "some document", "some fileName", "STANDARD_LINE", "PDF", UPLOAD_OWNER_UUID));
         documentTemplate = documentService.createDocument(
                 new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        null,  "some document", "some fileName", "TEMPLATE", "PDF"));
+                        "some document", "some fileName", "TEMPLATE", "PDF", UPLOAD_OWNER_UUID));
         documentUUID = document.getUuid().toString();
         documentStandardLineUUID = documentStandardLine.getUuid().toString();
         documentTemplateUUID = documentTemplate.getUuid().toString();

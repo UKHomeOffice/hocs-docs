@@ -70,7 +70,12 @@ public class DocumentData implements Serializable {
     @Setter
     private UUID actionDataItemUuid;
 
-    public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName) {
+    @Column(name = "upload_owner")
+    @Getter
+    @Setter
+    private UUID uploadOwnerUUID;
+
+    public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName, UUID uploadOwnerUUID) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
             throw new ApplicationExceptions.EntityCreationException(String.format("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName), DOCUMENT_CREATION_FAILURE);
         }
@@ -79,6 +84,7 @@ public class DocumentData implements Serializable {
         this.displayName = displayName;
         this.externalReferenceUUID = externalReferenceUUID;
         this.actionDataItemUuid = actionDataItemUuid;
+        this.uploadOwnerUUID = uploadOwnerUUID;
     }
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
