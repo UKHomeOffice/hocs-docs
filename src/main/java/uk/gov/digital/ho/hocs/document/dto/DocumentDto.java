@@ -28,6 +28,8 @@ public class DocumentDto {
     @JsonProperty("displayName")
     private String displayName;
 
+    private UUID uploadOwnerUUID;
+
     @JsonProperty("status")
     private DocumentStatus status;
 
@@ -50,6 +52,7 @@ public class DocumentDto {
                 documentData.getExternalReferenceUUID(),
                 documentData.getType(),
                 documentData.getDisplayName(),
+                documentData.getUploadOwnerUUID(),
                 documentData.getStatus(),
                 documentData.getCreated(),
                 documentData.getUpdated(),

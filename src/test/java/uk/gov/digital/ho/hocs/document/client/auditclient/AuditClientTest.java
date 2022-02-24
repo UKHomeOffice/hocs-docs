@@ -62,7 +62,8 @@ public class AuditClientTest {
     @Test
     public void shouldSetHeaders()  {
         UUID caseUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document");
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
         Map<String, Object> expectedHeaders = new HashMap<String, Object>(){{
                 put("event_type", EventType.DOCUMENT_CREATED.toString());
                 put(RequestData.CORRELATION_ID_HEADER, requestData.correlationId());
@@ -80,7 +81,8 @@ public class AuditClientTest {
     @Test
     public void shouldSetAuditFields() throws IOException {
         UUID caseUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL","a document");
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
 
         auditClient.createDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
@@ -96,7 +98,9 @@ public class AuditClientTest {
     @Test
     public void shouldNotThrowExceptionOnFailure() {
         UUID caseUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document");
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
+
         doThrow(new RuntimeException("An error occurred")).when(producerTemplate).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
         assertThatCode(() -> { auditClient.createDocumentAudit(docData);}).doesNotThrowAnyException();
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
@@ -105,7 +109,9 @@ public class AuditClientTest {
     @Test
     public void createDocumentAudit() throws IOException {
         UUID caseUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document");
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
+
         auditClient.createDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
         CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
