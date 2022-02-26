@@ -7,12 +7,12 @@ steps:
   - name: build project
     image: quay.io/ukhomeofficedigital/hocs-base-image-build
     commands:
-      - ./gradlew clean assemble --no-daemon
+      - ./gradlew clean assemble
 
   - name: test project
     image: quay.io/ukhomeofficedigital/hocs-base-image-build
     commands:
-      - ./gradlew check --no-daemon
+      - ./gradlew check
     depends_on:
       - build project
 
