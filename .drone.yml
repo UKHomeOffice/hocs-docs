@@ -5,12 +5,12 @@ name: build
 
 steps:
   - name: build project
-    image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
+    image: quay.io/ukhomeofficedigital/hocs-base-image-build
     commands:
       - ./gradlew assemble --no-daemon
 
   - name: test project
-    image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
+    image: quay.io/ukhomeofficedigital/hocs-base-image-build
     commands:
       - ./gradlew check --no-daemon
     depends_on:
