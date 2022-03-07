@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
@@ -29,14 +30,16 @@ public class DocumentDataService {
     private final S3DocumentService s3DocumentService;
     private final AuditClient auditClient;
     private final DocumentClient documentClient;
+    private final RequestData requestData;
 
 
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient ){
+    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, RequestData requestData){
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
         this.documentClient = documentClient;
+        this.requestData = requestData;
     }
 
     public DocumentData createDocument(CreateDocumentRequest request) {
@@ -45,12 +48,14 @@ public class DocumentDataService {
 
         String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
 
+//        UUID userID = UUID.randomUUID();
         DocumentData documentData = new DocumentData(
                 request.getExternalReferenceUUID(),
                 request.getActionDataItemUuid(),
                 request.getType(),
                 request.getName(),
-                request.getUploadOwnerUUID()
+                UUID.fromString(requestData.userId())
+//                userID
         );
 
         documentRepository.save(documentData);
