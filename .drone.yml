@@ -4,17 +4,11 @@ type: kubernetes
 name: build
 
 steps:
-  - name: build project
-    image: quay.io/ukhomeofficedigital/hocs-base-image-build
-    commands:
-      - ./gradlew clean assemble
 
   - name: test project
     image: quay.io/ukhomeofficedigital/hocs-base-image-build
     commands:
-      - ./gradlew check
-    depends_on:
-      - build project
+      - ./gradlew clean build --no-daemon
 
   - name: sonar scanner
     image: quay.io/ukhomeofficedigital/sonar-scanner
