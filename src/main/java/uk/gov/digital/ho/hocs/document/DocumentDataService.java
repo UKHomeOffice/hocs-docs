@@ -48,14 +48,12 @@ public class DocumentDataService {
 
         String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
 
-//        UUID userID = UUID.randomUUID();
         DocumentData documentData = new DocumentData(
                 request.getExternalReferenceUUID(),
                 request.getActionDataItemUuid(),
                 request.getType(),
                 request.getName(),
                 UUID.fromString(requestData.userId())
-//                userID
         );
 
         documentRepository.save(documentData);
