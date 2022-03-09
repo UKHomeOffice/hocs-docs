@@ -14,14 +14,12 @@ public class CreateDocumentRequest {
             String name,
             String fileLink,
             String type,
-            String convertTo,
-            UUID uploadOwnerUUID) {
+            String convertTo) {
         this.name = name;
         this.type = type;
         this.fileLink = fileLink;
         this.externalReferenceUUID = externalReferenceUUID;
         this.convertTo = convertTo;
-        this.uploadOwnerUUID = uploadOwnerUUID;
     }
     @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
@@ -40,7 +38,4 @@ public class CreateDocumentRequest {
 
     @JsonProperty("convertTo")
     private String convertTo = "PDF";
-
-    private UUID uploadOwnerUUID;
-
 }
