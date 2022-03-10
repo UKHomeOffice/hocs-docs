@@ -15,7 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.RestTemplate;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
@@ -36,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(CamelSpringBootRunner.class)
 @DisableJmx
 public class DocumentConsumerIT {
@@ -57,6 +63,9 @@ public class DocumentConsumerIT {
     @Autowired
     ObjectMapper mapper;
 
+    @Autowired
+    RestTemplate restTemplate;
+
     private int LOCAL_S3_PORT = 9003;
 
     @Autowired
@@ -67,37 +76,57 @@ public class DocumentConsumerIT {
     @Qualifier("Trusted")
     AmazonS3 trustedClient;
 
+    @LocalServerPort
+    private int port;
+
     private static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().port(9002));
 
-    private final String externalReferenceUUID = UUID.randomUUID().toString();
-    private static final UUID UPLOAD_OWNER_UUID = UUID.randomUUID();
     private String documentUUID;
     private String documentStandardLineUUID;
     private String documentTemplateUUID;
     private final String filename = "someUUID.docx";
     private final String originalFilename = "sample.docx";
 
-    private DocumentData document;
-    private DocumentData documentStandardLine;
-    private DocumentData documentTemplate;
     private ProcessDocumentRequest request ;
     private ProcessDocumentRequest requestStandardLine ;
     private ProcessDocumentRequest requestTemplate ;
 
+    private static final UUID EXTERNAL_REFERENCE_UUID = UUID.fromString("41d6f4d5-9bee-4b1c-b01c-35f5f3899f7c");
+    private static final UUID USER_ID = UUID.fromString("d030c101-3ff6-43d7-9b6c-9cd54ccf5529");
+
+    private HttpHeaders headers = new HttpHeaders();
+
     @Before
     public void setup() throws Exception {
-        document = documentService.createDocument(
-                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        "some document", "some fileName", "ORIGINAL", "PDF",UPLOAD_OWNER_UUID));
-        documentStandardLine = documentService.createDocument(
-                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        "some document", "some fileName", "STANDARD_LINE", "PDF", UPLOAD_OWNER_UUID));
-        documentTemplate = documentService.createDocument(
-                new CreateDocumentRequest(UUID.fromString(externalReferenceUUID),
-                        "some document", "some fileName", "TEMPLATE", "PDF", UPLOAD_OWNER_UUID));
-        documentUUID = document.getUuid().toString();
-        documentStandardLineUUID = documentStandardLine.getUuid().toString();
-        documentTemplateUUID = documentTemplate.getUuid().toString();
+
+        headers.add("X-Auth-UserId", USER_ID.toString());
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+
+        CreateDocumentRequest requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
+                "some document", "some fileName", "ORIGINAL", "PDF");
+        HttpEntity<String> documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
+        ResponseEntity<UUID> documentRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+
+
+        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
+                        "some document", "some fileName", "STANDARD_LINE", "PDF");
+        documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
+        ResponseEntity<UUID> documentStandardLineRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+
+
+        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
+                        "some document", "some fileName", "TEMPLATE", "PDF");
+        documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
+        ResponseEntity<UUID> documentTemplateRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+
+        if (documentRequest.getBody() == null || documentStandardLineRequest.getBody() == null || documentTemplateRequest.getBody() == null) {
+            throw new RuntimeException("Test set up failure");
+        }
+
+        documentUUID = documentRequest.getBody().toString();
+        documentStandardLineUUID = documentStandardLineRequest.getBody().toString();
+        documentTemplateUUID = documentTemplateRequest.getBody().toString();
         request = new ProcessDocumentRequest(documentUUID, filename, "PDF");
         requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF");
         requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF");
@@ -194,6 +223,7 @@ public class DocumentConsumerIT {
 
     @Test
     public void shouldUploadOriginalDocumentAndConvertedPDFAfterMalwareScan() throws Exception {
+
         runSuccessfulConversion();
         assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(2);
     }
@@ -206,11 +236,11 @@ public class DocumentConsumerIT {
 
        ObjectMetadata pdfMetadata = trustedClient.getObjectMetadata(trustedBucketName, pdfKey);
        assertThat(pdfMetadata.getContentType()).isEqualTo("application/pdf");
-       assertThat(pdfMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(externalReferenceUUID);
+       assertThat(pdfMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(EXTERNAL_REFERENCE_UUID.toString());
        assertThat(pdfMetadata.getUserMetaDataOf("originalName")).isEqualTo("sample.pdf");
 
         ObjectMetadata docxMetadata = trustedClient.getObjectMetadata(trustedBucketName, docxKey);
-        assertThat(docxMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(externalReferenceUUID);
+        assertThat(docxMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(EXTERNAL_REFERENCE_UUID.toString());
         assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
     }
 
@@ -218,19 +248,14 @@ public class DocumentConsumerIT {
     public void shouldUpdateDocumentStatusInDatabaseOnSuccess() throws Exception {
         wireMockServer.resetAll();
 
-        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
-
         runSuccessfulConversion();
 
-        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        DocumentData updatedDocument = documentService.getDocumentData(documentUUID);
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.UPLOADED);
     }
 
     @Test
     public void shouldUpdateDocumentStatusInDatabaseOnMalwareFound() throws Exception {
-        wireMockServer.resetAll();
-
-        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
 
         wireMockServer.resetAll();
 
@@ -240,16 +265,12 @@ public class DocumentConsumerIT {
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
 
-        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        DocumentData updatedDocument = documentService.getDocumentData(documentUUID);
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_VIRUS);
     }
 
     @Test
     public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure500() throws Exception {
-        wireMockServer.resetAll();
-
-        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
-
         wireMockServer.resetAll();
 
         stubFor(post(urlEqualTo("/scan"))
@@ -262,16 +283,12 @@ public class DocumentConsumerIT {
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/convert")));
 
-        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        DocumentData updatedDocument = documentService.getDocumentData(documentUUID);
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
     }
 
     @Test
     public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure400() throws Exception {
-        wireMockServer.resetAll();
-
-        assertThat(document.getStatus()).isEqualTo(DocumentStatus.PENDING);
-
         wireMockServer.resetAll();
 
         stubFor(post(urlEqualTo("/scan"))
@@ -284,14 +301,14 @@ public class DocumentConsumerIT {
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/convert")));
 
-        DocumentData updatedDocument = documentService.getDocumentData(document.getUuid());
+        DocumentData updatedDocument = documentService.getDocumentData(documentUUID);
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
     }
 
 
     private String getKeyFromExtension(String extension) {
         return trustedClient.listObjectsV2(trustedBucketName)
-                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(externalReferenceUUID))))
+                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(EXTERNAL_REFERENCE_UUID.toString()))))
                 .findFirst().get().getKey();
     }
 
@@ -360,7 +377,7 @@ public class DocumentConsumerIT {
     Map<String, Object> getHeaders() {
         Map<String, Object> headers = new HashMap<>();
         headers.put(RequestData.CORRELATION_ID_HEADER, UUID.randomUUID());
-        headers.put(RequestData.USER_ID_HEADER, UUID.randomUUID());
+        headers.put(RequestData.USER_ID_HEADER, USER_ID);
         headers.put(RequestData.USERNAME_HEADER, "some user");
         return headers;
     }

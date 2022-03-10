@@ -24,13 +24,13 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentResourceTest {
 
-    public static final java.util.UUID UUID = java.util.UUID.randomUUID();
     @Mock
     private DocumentDataService documentService;
 
     private DocumentDataResource documentResource;
 
-    private UUID uuid = UUID.randomUUID();
+    private static final String USER_ID = "d030c101-3ff6-43d7-9b6c-9cd54ccf5529";
+    private static final UUID DOC_ID = UUID.fromString("16664dda-e680-4d3b-951f-c90afb10d62f");
 
     @Before
     public void setUp() {
@@ -41,19 +41,18 @@ public class DocumentResourceTest {
     public void shouldCreateDocumentWithValidParams() throws ApplicationExceptions.EntityCreationException {
         String displayName = "name";
         String documentType = "ORIGINAL";
-        UUID uploadOwnerUUID = java.util.UUID.randomUUID();
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        UUID uploadOwnerUUID = UUID.fromString(USER_ID);
+        DocumentData documentData = new DocumentData(DOC_ID, null, documentType, displayName, uploadOwnerUUID);
         String fileName = "fileName";
         String convertTo = "convertTo";
 
         final CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
-                uuid,
+                DOC_ID,
                 null,
                 displayName,
                 fileName,
                 documentType,
-                convertTo,
-                uploadOwnerUUID);
+                convertTo);
 
         when(documentService.createDocument(createDocumentRequest)).thenReturn(documentData);
 
@@ -70,11 +69,11 @@ public class DocumentResourceTest {
 
     @Test
     public void shouldReturnListOfDocumentsForAType() {
-        when(documentService.getDocumentsByReferenceForType(uuid, "DRAFT")).thenReturn(new HashSet<>());
+        when(documentService.getDocumentsByReferenceForType(DOC_ID, "DRAFT")).thenReturn(new HashSet<>());
 
-        ResponseEntity<GetDocumentsResponse> response = documentResource.getDocumentsForCaseForType(uuid, "DRAFT");
+        ResponseEntity<GetDocumentsResponse> response = documentResource.getDocumentsForCaseForType(DOC_ID, "DRAFT");
 
-        verify(documentService, times(1)).getDocumentsByReferenceForType(uuid, "DRAFT");
+        verify(documentService, times(1)).getDocumentsByReferenceForType(DOC_ID, "DRAFT");
         verifyNoMoreInteractions(documentService);
 
         assertThat(response).isNotNull();
@@ -90,9 +89,9 @@ public class DocumentResourceTest {
         when(s3Document.getData()).thenReturn(new byte[0]);
         when(s3Document.getOriginalFilename()).thenReturn(fileName);
 
-        when(documentService.getDocumentPdf(uuid)).thenReturn(s3Document);
+        when(documentService.getDocumentPdf(DOC_ID)).thenReturn(s3Document);
 
-        var response = documentResource.getDocumentPdf(uuid);
+        var response = documentResource.getDocumentPdf(DOC_ID);
 
         assertFalse(response.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
     }
