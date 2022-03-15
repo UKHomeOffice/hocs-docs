@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
@@ -45,8 +46,10 @@ public class DocumentDto {
     @JsonProperty("hasPdf")
     private Boolean hasPdf;
 
-    public static DocumentDto from(DocumentData documentData) {
+    @JsonProperty("hasOriginalFile")
+    private Boolean hasOriginalFile;
 
+    public static DocumentDto from(DocumentData documentData) {
         return new DocumentDto(
                 documentData.getUuid(),
                 documentData.getExternalReferenceUUID(),
@@ -57,7 +60,8 @@ public class DocumentDto {
                 documentData.getCreated(),
                 documentData.getUpdated(),
                 documentData.getDeleted(),
-                documentData.getPdfLink() != null && !documentData.getPdfLink().isEmpty()
+                StringUtils.hasText(documentData.getPdfLink()),
+                StringUtils.hasText(documentData.getFileLink())
         );
     }
 }
