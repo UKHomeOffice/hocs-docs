@@ -10,6 +10,7 @@ import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
+import uk.gov.digital.ho.hocs.document.dto.CopyDocumentsRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -18,6 +19,7 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -565,5 +567,43 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
+    public void shouldCopyDocumentsWithValidRequest() {
+        UUID fromUUID = UUID.randomUUID();
+        UUID toUUID = UUID.randomUUID();
+        Set<String> types = Set.of("To document");
+
+        DocumentData documentData = new DocumentData(
+                fromUUID,
+                UUID.randomUUID(),
+                "To document",
+                "name",
+                UUID.randomUUID()
+        );
+        documentData.update(
+                "fileLink",
+                "pdfLink",
+                DocumentStatus.UPLOADED
+
+        );
+        Set<DocumentData> documents = Set.of(documentData);
+
+        CopyDocumentsRequest request = new CopyDocumentsRequest(fromUUID, toUUID, types);
+
+        ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
+        when(documentService.getDocumentsByReferenceForType(fromUUID, "To document")).thenReturn(documents);
+
+        documentService.copyDocuments(request);
+
+        verify(documentRepository).save(argumentCaptor.capture());
+
+        DocumentData capturedDocumentData = argumentCaptor.getValue();
+
+        assertEquals(capturedDocumentData.getExternalReferenceUUID(), toUUID);
+        assertEquals(capturedDocumentData.getType(), "To document");
+        assertEquals(capturedDocumentData.getFileLink(), "fileLink");
+        assertEquals(capturedDocumentData.getPdfLink(), "pdfLink");
     }
 }

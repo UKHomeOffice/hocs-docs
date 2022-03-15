@@ -9,6 +9,7 @@ import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
+import uk.gov.digital.ho.hocs.document.dto.CopyDocumentsRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -16,8 +17,10 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
@@ -136,5 +139,23 @@ public class DocumentDataService {
     private enum DocumentType {
         ORIGINAL,
         PDF
+    }
+
+    private void copyDocument(DocumentData documentData, UUID toReferenceUUID) {
+
+        DocumentData copiedDocumentData = new DocumentData(documentData, toReferenceUUID);
+
+        documentRepository.save(copiedDocumentData);
+        auditClient.createDocumentAudit(documentData);
+    }
+
+    public void copyDocuments(CopyDocumentsRequest request) {
+        Set<String> documentTypes = request.getTypes();
+        Set<DocumentData> documentData = new java.util.HashSet<>();
+
+        for (String type : documentTypes) {
+            documentData.addAll(getDocumentsByReferenceForType(request.getFromReferenceUUID(), type));
+        }
+        documentData.forEach((element) -> copyDocument(element, request.getToReferenceUUID()));
     }
 }
