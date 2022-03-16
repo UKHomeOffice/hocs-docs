@@ -18,6 +18,7 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -150,8 +151,11 @@ public class DocumentDataService {
     }
 
     public void copyDocuments(CopyDocumentsRequest request) {
+        log.debug("Copying Documents from case: {}, to case: {}",
+                request.getFromReferenceUUID(), request.getToReferenceUUID());
+        
         Set<String> documentTypes = request.getTypes();
-        Set<DocumentData> documentData = new java.util.HashSet<>();
+        Set<DocumentData> documentData = new HashSet<>();
 
         for (String type : documentTypes) {
             documentData.addAll(getDocumentsByReferenceForType(request.getFromReferenceUUID(), type));
