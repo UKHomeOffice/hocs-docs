@@ -1,10 +1,13 @@
 package uk.gov.digital.ho.hocs.document;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
@@ -19,6 +22,7 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,6 +50,12 @@ public class DocumentServiceTest {
     private RequestData requestData;
 
     private DocumentDataService documentService;
+
+    @Captor
+    private ArgumentCaptor<List<DocumentData>> documentDataSetCaptorRepository;
+
+    @Captor
+    private ArgumentCaptor<List<DocumentData>> documentDataSetCaptorAudit;
 
     private static final String USER_ID = "d030c101-3ff6-43d7-9b6c-9cd54ccf5529";
 
@@ -588,22 +598,31 @@ public class DocumentServiceTest {
                 DocumentStatus.UPLOADED
 
         );
-        Set<DocumentData> documents = Set.of(documentData);
+        List<DocumentData> documents = List.of(documentData);
 
         CopyDocumentsRequest request = new CopyDocumentsRequest(fromUUID, toUUID, types);
 
-        ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
-        when(documentService.getDocumentsByReferenceForType(fromUUID, "To document")).thenReturn(documents);
+        when(documentRepository.findAllByExternalReferenceUUIDAndTypeIn(fromUUID, types)).thenReturn(documents);
 
         documentService.copyDocuments(request);
 
-        verify(documentRepository).save(argumentCaptor.capture());
+        verify(documentRepository, times(1)).saveAll(documentDataSetCaptorRepository.capture());
+        verify(auditClient, times(1)).createDocumentsAudit(documentDataSetCaptorAudit.capture());
 
-        DocumentData capturedDocumentData = argumentCaptor.getValue();
+        List<DocumentData> capturedDocumentData = documentDataSetCaptorRepository.getValue();
+        DocumentData capturedDocument = capturedDocumentData.get(0);
 
-        assertEquals(capturedDocumentData.getExternalReferenceUUID(), toUUID);
-        assertEquals(capturedDocumentData.getType(), "To document");
-        assertEquals(capturedDocumentData.getFileLink(), "fileLink");
-        assertEquals(capturedDocumentData.getPdfLink(), "pdfLink");
+        assertEquals(capturedDocument.getExternalReferenceUUID(), toUUID);
+        assertEquals(capturedDocument.getType(), "To document");
+        assertEquals(capturedDocument.getFileLink(), "fileLink");
+        assertEquals(capturedDocument.getPdfLink(), "pdfLink");
+
+        capturedDocumentData = documentDataSetCaptorAudit.getValue();
+        capturedDocument = capturedDocumentData.get(0);
+
+        assertEquals(capturedDocument.getExternalReferenceUUID(), toUUID);
+        assertEquals(capturedDocument.getType(), "To document");
+        assertEquals(capturedDocument.getFileLink(), "fileLink");
+        assertEquals(capturedDocument.getPdfLink(), "pdfLink");
     }
 }
