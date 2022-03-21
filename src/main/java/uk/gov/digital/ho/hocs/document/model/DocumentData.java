@@ -75,20 +75,6 @@ public class DocumentData implements Serializable {
     @Setter
     private UUID uploadOwnerUUID;
 
-    public DocumentData(DocumentData documentData, UUID toReferenceUUID) {
-        if (toReferenceUUID == null) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot copy document(%s, %s).", documentData.getUuid(), documentData.getDisplayName()), DOCUMENT_CREATION_FAILURE);
-        }
-        this.uuid = UUID.randomUUID();
-        this.type = documentData.getType();
-        this.displayName = documentData.getDisplayName();
-        this.externalReferenceUUID = toReferenceUUID;
-        this.actionDataItemUuid = documentData.getActionDataItemUuid();
-        this.uploadOwnerUUID = documentData.getUploadOwnerUUID();
-        this.fileLink = documentData.getFileLink();
-        this.pdfLink = documentData.getPdfLink();
-        this.status = documentData.getStatus().toString();
-    }
 
     public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName, UUID uploadOwnerUUID) {
         if (externalReferenceUUID == null || type == null || displayName == null) {

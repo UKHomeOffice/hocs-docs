@@ -12,8 +12,10 @@ import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -61,6 +63,10 @@ public class AuditClient {
         } catch (Exception e) {
             logError(e, documentData.getUuid());
         }
+    }
+
+    public void createDocumentsAudit(Collection<DocumentData> documentData) {
+        documentData.forEach(this::createDocumentAudit);
     }
 
     public void updateDocumentAudit(DocumentData documentData) {

@@ -19,8 +19,10 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -142,24 +144,35 @@ public class DocumentDataService {
         PDF
     }
 
-    private void copyDocument(DocumentData documentData, UUID toReferenceUUID) {
+    public DocumentData copyDocument(DocumentData fromDocument, UUID toUUID) {
+        DocumentData toDocument = new DocumentData(
+                toUUID,
+                fromDocument.getActionDataItemUuid(),
+                fromDocument.getType(),
+                fromDocument.getDisplayName(),
+                fromDocument.getUploadOwnerUUID()
+        );
+        toDocument.update(
+                fromDocument.getFileLink(),
+                fromDocument.getPdfLink(),
+                fromDocument.getStatus()
+        );
 
-        DocumentData copiedDocumentData = new DocumentData(documentData, toReferenceUUID);
-
-        documentRepository.save(copiedDocumentData);
-        auditClient.createDocumentAudit(documentData);
+        return toDocument;
     }
 
     public void copyDocuments(CopyDocumentsRequest request) {
         log.debug("Copying Documents from case: {}, to case: {}",
                 request.getFromReferenceUUID(), request.getToReferenceUUID());
-        
-        Set<String> documentTypes = request.getTypes();
-        Set<DocumentData> documentData = new HashSet<>();
 
-        for (String type : documentTypes) {
-            documentData.addAll(getDocumentsByReferenceForType(request.getFromReferenceUUID(), type));
-        }
-        documentData.forEach((element) -> copyDocument(element, request.getToReferenceUUID()));
+        List<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUIDAndTypeIn(request.getFromReferenceUUID(), request.getTypes());
+
+        List<DocumentData> copiedDocumentData = documentData.stream().map((element) -> copyDocument(element, request.getToReferenceUUID())).collect(Collectors.toList());
+
+        documentRepository.saveAll(copiedDocumentData);
+        auditClient.createDocumentsAudit(copiedDocumentData);
+
+        log.info("Successfully copied Documents from case: {}, to case: {}",
+                request.getFromReferenceUUID(), request.getToReferenceUUID());
     }
 }

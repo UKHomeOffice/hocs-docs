@@ -4,6 +4,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,4 +21,6 @@ public interface DocumentRepository extends CrudRepository<DocumentData, String>
     Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(UUID externalReferenceUUID,
                                                                           UUID actionDataItemUuid,
                                                                           String type);
+
+    List<DocumentData> findAllByExternalReferenceUUIDAndTypeIn(UUID externalReferenceUUID, Collection<String> types);
 }
