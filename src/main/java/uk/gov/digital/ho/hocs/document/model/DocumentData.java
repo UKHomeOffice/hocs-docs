@@ -75,6 +75,7 @@ public class DocumentData implements Serializable {
     @Setter
     private UUID uploadOwnerUUID;
 
+
     public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName, UUID uploadOwnerUUID) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
             throw new ApplicationExceptions.EntityCreationException(String.format("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName), DOCUMENT_CREATION_FAILURE);

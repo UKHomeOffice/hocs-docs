@@ -1,15 +1,19 @@
 package uk.gov.digital.ho.hocs.document;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.client.auditclient.AuditClient;
 import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
+import uk.gov.digital.ho.hocs.document.dto.CopyDocumentsRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -18,6 +22,8 @@ import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -44,6 +50,12 @@ public class DocumentServiceTest {
     private RequestData requestData;
 
     private DocumentDataService documentService;
+
+    @Captor
+    private ArgumentCaptor<List<DocumentData>> documentDataSetCaptorRepository;
+
+    @Captor
+    private ArgumentCaptor<List<DocumentData>> documentDataSetCaptorAudit;
 
     private static final String USER_ID = "d030c101-3ff6-43d7-9b6c-9cd54ccf5529";
 
@@ -565,5 +577,52 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
+    }
+
+    @Test
+    public void shouldCopyDocumentsWithValidRequest() {
+        UUID fromUUID = UUID.randomUUID();
+        UUID toUUID = UUID.randomUUID();
+        Set<String> types = Set.of("To document");
+
+        DocumentData documentData = new DocumentData(
+                fromUUID,
+                UUID.randomUUID(),
+                "To document",
+                "name",
+                UUID.randomUUID()
+        );
+        documentData.update(
+                "fileLink",
+                "pdfLink",
+                DocumentStatus.UPLOADED
+
+        );
+        List<DocumentData> documents = List.of(documentData);
+
+        CopyDocumentsRequest request = new CopyDocumentsRequest(fromUUID, toUUID, types);
+
+        when(documentRepository.findAllByExternalReferenceUUIDAndTypeIn(fromUUID, types)).thenReturn(documents);
+
+        documentService.copyDocuments(request);
+
+        verify(documentRepository, times(1)).saveAll(documentDataSetCaptorRepository.capture());
+        verify(auditClient, times(1)).createDocumentsAudit(documentDataSetCaptorAudit.capture());
+
+        List<DocumentData> capturedDocumentData = documentDataSetCaptorRepository.getValue();
+        DocumentData capturedDocument = capturedDocumentData.get(0);
+
+        assertEquals(capturedDocument.getExternalReferenceUUID(), toUUID);
+        assertEquals(capturedDocument.getType(), "To document");
+        assertEquals(capturedDocument.getFileLink(), "fileLink");
+        assertEquals(capturedDocument.getPdfLink(), "pdfLink");
+
+        capturedDocumentData = documentDataSetCaptorAudit.getValue();
+        capturedDocument = capturedDocumentData.get(0);
+
+        assertEquals(capturedDocument.getExternalReferenceUUID(), toUUID);
+        assertEquals(capturedDocument.getType(), "To document");
+        assertEquals(capturedDocument.getFileLink(), "fileLink");
+        assertEquals(capturedDocument.getPdfLink(), "pdfLink");
     }
 }

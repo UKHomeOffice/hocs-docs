@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import uk.gov.digital.ho.hocs.document.dto.CopyDocumentsRequest;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.DocumentDto;
 import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
@@ -36,6 +37,12 @@ class DocumentDataResource {
 
         DocumentData documentData = documentDataService.createDocument(request);
         return ResponseEntity.ok(documentData.getUuid());
+    }
+
+    @PostMapping(value = "/documents/copy", consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> copyDocuments(@RequestBody CopyDocumentsRequest request) {
+        documentDataService.copyDocuments(request);
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_VALUE)
