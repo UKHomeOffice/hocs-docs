@@ -123,13 +123,14 @@ public class DocumentDataService {
     }
 
     private S3Document getDocumentFromS3(UUID documentUuid, DocumentType documentType) {
+        log.info("Get Document {} ({}) from S3", documentUuid, documentType, value(EVENT, DOCUMENT_DATA_REQUEST));
         DocumentData documentData = getDocumentData(documentUuid);
 
         String fileLink = documentType.equals(DocumentType.PDF) ? documentData.getPdfLink() : documentData.getFileLink();
 
         if (!StringUtils.hasText(fileLink)) {
-            return new S3Document(null, documentData.getDisplayName(), new byte[0],
-                    null, null);
+            log.warn("DocumentData has no filelink", value(EVENT, DOCUMENT_FILELINK_MISSING));
+            return new S3Document(null, documentData.getDisplayName(), new byte[0], null, null);
         }
 
         try {

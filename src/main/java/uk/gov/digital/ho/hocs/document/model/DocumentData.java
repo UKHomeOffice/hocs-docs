@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_CREATION_FAILURE;
-import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UDPATE_FAILURE;
+import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UPDATE_FAILURE;
 
 @Entity
 @Table(name = "document_data")
@@ -90,7 +90,7 @@ public class DocumentData implements Serializable {
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
         if (fileLink == null || status == null) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status), DOCUMENT_UDPATE_FAILURE);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status), DOCUMENT_UPDATE_FAILURE);
         }
         this.fileLink = fileLink;
         this.pdfLink = pdfLink;
