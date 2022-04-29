@@ -53,7 +53,7 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk:1.12.137'
     implementation 'org.glassfish:javax.json:1.0.4'
 
-    implementation 'org.flywaydb:flyway-core:8.5.9'
+    implementation 'org.flywaydb:flyway-core:8.5.10'
     runtimeOnly 'org.hsqldb:hsqldb'
     runtimeOnly 'org.postgresql:postgresql:42.3.4'
 
