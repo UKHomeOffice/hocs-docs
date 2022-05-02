@@ -1,3 +1,5 @@
+import org.gradle.api.JavaVersion
+
 plugins {
     id 'java'
     id 'jacoco'
@@ -9,7 +11,7 @@ def camelVersion = '2.25.4'
 var s3MockVersion = '2.4.10'
 
 group = 'uk.gov.digital.ho.hocs'
-sourceCompatibility = '11'
+sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
