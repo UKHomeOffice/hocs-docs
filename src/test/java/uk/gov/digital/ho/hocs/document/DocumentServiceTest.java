@@ -1,13 +1,11 @@
 package uk.gov.digital.ho.hocs.document;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
@@ -27,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -74,7 +71,6 @@ public class DocumentServiceTest {
         String fileName = "fileName";
         String documentType = "ORIGINAL";
         String convertTo = "PDF";
-        String correlationId = "correlationId4321";
 
         when(requestData.userId()).thenReturn(USER_ID);
 
@@ -85,13 +81,14 @@ public class DocumentServiceTest {
                 .getUuid();
 
         verify(documentRepository).save(argumentCaptor.capture());
+        DocumentData capturedDocumentData = argumentCaptor.getValue();
+
+
         verify(documentClient).processDocument(documentUUID, fileName, "PDF");
-        verify(auditClient).createDocumentAudit(any());
+        verify(auditClient).createDocumentAudit(capturedDocumentData);
         verifyNoMoreInteractions(documentRepository);
         verifyNoMoreInteractions(auditClient);
         verifyNoInteractions(s3DocumentService);
-
-        DocumentData capturedDocumentData = argumentCaptor.getValue();
 
         assertEquals(capturedDocumentData.getExternalReferenceUUID(), uuid);
         assertEquals(capturedDocumentData.getActionDataItemUuid(), actionDataItemUuid);
@@ -246,7 +243,7 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(uuid);
         verify(documentRepository).save(documentData);
-        verify(auditClient).updateDocumentAudit(any());
+        verify(auditClient).updateDocumentAudit(documentData);
         verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
@@ -414,10 +411,10 @@ public class DocumentServiceTest {
 
         when(requestData.userId()).thenReturn(USER_ID);
 
-        documentService.createDocument(
+        var documentData = documentService.createDocument(
                 new CreateDocumentRequest(uuid, null, displayName, fileName, documentType, convertTo));
 
-        verify(auditClient).createDocumentAudit(any());
+        verify(auditClient).createDocumentAudit(documentData);
         verifyNoMoreInteractions(auditClient);
 
     }
@@ -446,11 +443,12 @@ public class DocumentServiceTest {
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.randomUUID();
         DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        documentData.setDeleted();
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.deleteDocument(uuid);
 
-        verify(auditClient).deleteDocumentAudit(any());
+        verify(auditClient).deleteDocumentAudit(documentData);
         verifyNoMoreInteractions(auditClient);
 
     }

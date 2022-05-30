@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +49,7 @@ public class AuditClientTest {
 
     @Before
     public void setUp() {
-        when(requestData.correlationId()).thenReturn(randomUUID().toString());
+        when(requestData.correlationId()).thenReturn(UUID.randomUUID().toString());
         when(requestData.userId()).thenReturn("some user id");
         when(requestData.groups()).thenReturn("some groups");
         when(requestData.username()).thenReturn("some username");
@@ -117,5 +116,20 @@ public class AuditClientTest {
         CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
         assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_CREATED.toString());
         assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
+    }
+
+    @Test
+    public void deleteDocumentAudit() throws IOException {
+        UUID caseUUID = UUID.randomUUID();
+        UUID uploadOwnerUUID = UUID.randomUUID();
+        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
+        docData.setDeleted();
+
+        auditClient.deleteDocumentAudit(docData);
+        verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
+        CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
+        assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_DELETED.toString());
+        assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
+        assertThat(request.getAuditTimestamp()).isEqualTo(docData.getDeletedOn());
     }
 }

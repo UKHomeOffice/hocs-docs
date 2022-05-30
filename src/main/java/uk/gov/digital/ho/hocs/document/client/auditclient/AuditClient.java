@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -51,7 +50,8 @@ public class AuditClient {
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_CREATED.toString());
+                EventType.DOCUMENT_CREATED.toString(),
+                documentData.getCreated());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Create Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -72,7 +72,8 @@ public class AuditClient {
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_UPDATED.toString());
+                EventType.DOCUMENT_UPDATED.toString(),
+                documentData.getUpdated());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -89,7 +90,8 @@ public class AuditClient {
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_DELETED.toString());
+                EventType.DOCUMENT_DELETED.toString(),
+                documentData.getDeletedOn());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
             log.info("Auditing 'Delete Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -108,19 +110,19 @@ public class AuditClient {
         return Json.createObjectBuilder()
                 .add("documentUUID", documentData.getUuid().toString())
                 .add("documentTitle", documentData.getDisplayName())
-                .add("documentType", documentData.getType().toString())
+                .add("documentType", documentData.getType())
                 .build()
                 .toString();
     }
 
-    private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType) {
+    private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType, LocalDateTime eventTime) {
         return new CreateAuditRequest(
                 requestData.correlationId(),
                 caseUUID,
                 raisingService,
                 auditPayload,
                 namespace,
-                LocalDateTime.now(),
+                eventTime,
                 eventType,
                 requestData.userId());
     }
