@@ -130,6 +130,5 @@ public class AuditClientTest {
         CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
         assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_DELETED.toString());
         assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
-        assertThat(request.getAuditTimestamp()).isEqualTo(docData.getDeletedOn());
     }
 }

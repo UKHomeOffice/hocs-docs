@@ -50,8 +50,7 @@ public class AuditClient {
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_CREATED.toString(),
-                documentData.getCreated());
+                EventType.DOCUMENT_CREATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Create Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -72,8 +71,7 @@ public class AuditClient {
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_UPDATED.toString(),
-                documentData.getUpdated());
+                EventType.DOCUMENT_UPDATED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -90,8 +88,7 @@ public class AuditClient {
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
                 createAuditPayload(documentData),
-                EventType.DOCUMENT_DELETED.toString(),
-                documentData.getDeletedOn());
+                EventType.DOCUMENT_DELETED.toString());
         try {
             producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
             log.info("Auditing 'Delete Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
@@ -115,14 +112,14 @@ public class AuditClient {
                 .toString();
     }
 
-    private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType, LocalDateTime eventTime) {
+    private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType) {
         return new CreateAuditRequest(
                 requestData.correlationId(),
                 caseUUID,
                 raisingService,
                 auditPayload,
                 namespace,
-                eventTime,
+                LocalDateTime.now(),
                 eventType,
                 requestData.userId());
     }
