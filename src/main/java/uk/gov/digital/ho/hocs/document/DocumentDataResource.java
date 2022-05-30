@@ -15,7 +15,6 @@ import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 

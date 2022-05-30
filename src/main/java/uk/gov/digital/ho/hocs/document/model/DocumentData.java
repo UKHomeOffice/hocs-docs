@@ -16,7 +16,6 @@ import static uk.gov.digital.ho.hocs.document.application.LogEvent.DOCUMENT_UPDA
 
 @Entity
 @Table(name = "document_data")
-@Where(clause = "not deleted")
 @NoArgsConstructor
 public class DocumentData implements Serializable {
 
