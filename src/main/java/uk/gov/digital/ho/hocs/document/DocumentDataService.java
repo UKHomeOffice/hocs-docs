@@ -108,7 +108,7 @@ public class DocumentDataService {
 
     public void deleteDocument(UUID documentUUID) {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
-        documentData.setDeleted(true);
+        documentData.setDeleted();
         documentRepository.save(documentData);
         auditClient.deleteDocumentAudit(documentData);
         log.info("Set Document to deleted: {}", documentUUID, value(EVENT, DOCUMENT_DELETED));

@@ -52,17 +52,16 @@ public class DocumentData implements Serializable {
     @Column(name = "status")
     private String status = DocumentStatus.PENDING.toString();
 
-    @Column(name = "created")
+    @Column(name = "created_on")
     @Getter
     private LocalDateTime created = LocalDateTime.now();
 
-    @Column(name = "updated")
+    @Column(name = "updated_on")
     @Getter
     private LocalDateTime updated;
 
     @Column(name = "deleted")
     @Getter
-    @Setter
     private Boolean deleted = Boolean.FALSE;
 
     @Column(name = "action_data_item_uuid")
@@ -75,6 +74,9 @@ public class DocumentData implements Serializable {
     @Setter
     private UUID uploadOwnerUUID;
 
+    @Column(name = "deleted_on")
+    @Getter
+    private LocalDateTime deletedOn;
 
     public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName, UUID uploadOwnerUUID) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
@@ -102,5 +104,9 @@ public class DocumentData implements Serializable {
         return DocumentStatus.valueOf(this.status);
     }
 
+    public void setDeleted() {
+        this.deleted = true;
+        this.deletedOn = LocalDateTime.now();
+    }
 
 }

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -108,7 +107,7 @@ public class AuditClient {
         return Json.createObjectBuilder()
                 .add("documentUUID", documentData.getUuid().toString())
                 .add("documentTitle", documentData.getDisplayName())
-                .add("documentType", documentData.getType().toString())
+                .add("documentType", documentData.getType())
                 .build()
                 .toString();
     }
