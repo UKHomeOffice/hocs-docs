@@ -5,8 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

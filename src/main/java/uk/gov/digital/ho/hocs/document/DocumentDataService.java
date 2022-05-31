@@ -17,13 +17,10 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
@@ -81,7 +78,7 @@ public class DocumentDataService {
         log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
     }
 
-    // User internally only
+    // Used internally only
     public DocumentData getDocumentData(String documentUUID) {
         return getDocumentData(UUID.fromString(documentUUID));
     }
@@ -186,7 +183,7 @@ public class DocumentDataService {
                 request.getFromReferenceUUID(), request.getToReferenceUUID());
     }
 
-    // User internally only
+    // Used internally only
     private DocumentData getDocumentData(UUID documentUUID) {
         DocumentData documentData = documentRepository.findByUuid(documentUUID);
         if (documentData != null) {
