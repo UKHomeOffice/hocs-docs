@@ -65,7 +65,7 @@ class DocumentDataResource {
 
     @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
-        DocumentData document = documentDataService.getDocumentData(documentUUID);
+        DocumentData document = documentDataService.getActiveDocumentData(documentUUID);
         return ResponseEntity.ok(DocumentDto.from(document));
     }
 

@@ -13,11 +13,14 @@ import java.util.UUID;
 @Repository
 public interface DocumentRepository extends CrudRepository<DocumentData, String> {
 
-    @Query(value = "SELECT * FROM document_data WHERE uuid = ?1 AND NOT deleted", nativeQuery = true)
+    @Query(value = "SELECT * FROM document_data WHERE uuid = ?1", nativeQuery = true)
     DocumentData findByUuid(UUID uuid);
 
+    @Query(value = "SELECT * FROM document_data WHERE uuid = ?1 AND NOT deleted", nativeQuery = true)
+    DocumentData findActiveByUuid(UUID uuid);
+
     @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND NOT deleted", nativeQuery = true)
-    Set<DocumentData> findAllByExternalReferenceUUID(UUID externalReferenceUUID);
+    Set<DocumentData> findAllActiveByExternalReferenceUUID(UUID externalReferenceUUID);
 
     @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND action_data_item_uuid = ?2 AND NOT deleted", nativeQuery = true)
-    Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(UUID externalReferenceUUID, UUID actionDataItemUuid);}
+    Set<DocumentData> findAllActiveByExternalReferenceUUIDAndActionDataItemUuidAndType(UUID externalReferenceUUID, UUID actionDataItemUuid);}

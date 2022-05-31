@@ -71,6 +71,7 @@ public class DocumentDataService {
         return documentData;
     }
 
+    // Used internally only
     public void updateDocument(UUID documentUUID, DocumentStatus status, String fileLink, String pdfLink) {
         log.debug("Updating Document: {}", documentUUID);
         DocumentData documentData = getDocumentData(documentUUID);
@@ -80,12 +81,13 @@ public class DocumentDataService {
         log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
     }
 
+    // User internally only
     public DocumentData getDocumentData(String documentUUID) {
         return getDocumentData(UUID.fromString(documentUUID));
     }
 
-    public DocumentData getDocumentData(UUID documentUUID) {
-        DocumentData documentData = documentRepository.findByUuid(documentUUID);
+    public DocumentData getActiveDocumentData(UUID documentUUID) {
+        DocumentData documentData = documentRepository.findActiveByUuid(documentUUID);
         if (documentData != null) {
             return documentData;
         } else {
@@ -94,17 +96,20 @@ public class DocumentDataService {
     }
 
     public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID, String type) {
-        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
+        Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(externalReferenceUUID);
         if(type != null) {
             return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
         }
         return documentData;
     }
 
-    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(
-            UUID externalReferenceUUID, UUID actionDataUuid, String type) {
-        return documentRepository
-                .findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid, type);
+    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(UUID externalReferenceUUID, UUID actionDataUuid, String type) {
+        Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid);
+        if(type != null) {
+            return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
+        } else {
+            return documentData;
+        }
     }
 
     public void deleteDocument(UUID documentUUID) {
@@ -125,7 +130,7 @@ public class DocumentDataService {
 
     private S3Document getDocumentFromS3(UUID documentUuid, DocumentType documentType) {
         log.info("Get Document {} ({}) from S3", documentUuid, documentType, value(EVENT, DOCUMENT_DATA_REQUEST));
-        DocumentData documentData = getDocumentData(documentUuid);
+        DocumentData documentData = getActiveDocumentData(documentUuid);
 
         String fileLink = documentType.equals(DocumentType.PDF) ? documentData.getPdfLink() : documentData.getFileLink();
 
@@ -167,7 +172,7 @@ public class DocumentDataService {
         log.debug("Copying Documents from case: {}, to case: {}",
                 request.getFromReferenceUUID(), request.getToReferenceUUID());
 
-        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUID(request.getFromReferenceUUID());
+        Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(request.getFromReferenceUUID());
 
         List<DocumentData> copiedDocumentData = documentData
                 .stream()
@@ -179,5 +184,15 @@ public class DocumentDataService {
 
         log.info("Successfully copied Documents from case: {}, to case: {}",
                 request.getFromReferenceUUID(), request.getToReferenceUUID());
+    }
+
+    // User internally only
+    private DocumentData getDocumentData(UUID documentUUID) {
+        DocumentData documentData = documentRepository.findByUuid(documentUUID);
+        if (documentData != null) {
+            return documentData;
+        } else {
+            throw new ApplicationExceptions.EntityNotFoundException(String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
+        }
     }
 }
