@@ -52,11 +52,11 @@ public class DocumentData implements Serializable {
     @Column(name = "status")
     private String status = DocumentStatus.PENDING.toString();
 
-    @Column(name = "created")
+    @Column(name = "created_on")
     @Getter
     private LocalDateTime created = LocalDateTime.now();
 
-    @Column(name = "updated")
+    @Column(name = "updated_on")
     @Getter
     private LocalDateTime updated;
 
