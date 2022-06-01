@@ -17,13 +17,10 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 import uk.gov.digital.ho.hocs.document.repository.DocumentRepository;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
@@ -101,10 +98,13 @@ public class DocumentDataService {
         return documentData;
     }
 
-    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(
-            UUID externalReferenceUUID, UUID actionDataUuid, String type) {
-        return documentRepository
-                .findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid, type);
+    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(UUID externalReferenceUUID, UUID actionDataUuid, String type) {
+        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUIDAndActionDataItemUuid(externalReferenceUUID, actionDataUuid);
+        if(type != null) {
+            return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
+        } else {
+            return documentData;
+        }
     }
 
     public void deleteDocument(UUID documentUUID) {
