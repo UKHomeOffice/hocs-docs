@@ -505,7 +505,7 @@ public class DocumentServiceTest {
         when(documentData.getFileLink()).thenReturn("fileLink");
         when(s3DocumentService.getFileFromTrustedS3("fileLink")).thenReturn(null);
         UUID uuid = UUID.randomUUID();
-        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(uuid)).thenReturn(documentData);
 
         documentService.getDocumentFile(uuid);
 
@@ -540,7 +540,7 @@ public class DocumentServiceTest {
         when(documentData.getFileLink()).thenReturn("");
         when(documentData.getDisplayName()).thenReturn(originalFileName);
 
-        when(documentRepository.findByUuid(documentUuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(documentUuid)).thenReturn(documentData);
 
         var response = documentService.getDocumentFile(documentUuid);
 
