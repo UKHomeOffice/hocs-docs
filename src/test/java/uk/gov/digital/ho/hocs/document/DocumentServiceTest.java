@@ -596,11 +596,11 @@ public class DocumentServiceTest {
                 DocumentStatus.UPLOADED
 
         );
-        List<DocumentData> documents = List.of(documentData);
+        Set<DocumentData> documents = Set.of(documentData);
 
         CopyDocumentsRequest request = new CopyDocumentsRequest(fromUUID, toUUID, types);
 
-        when(documentRepository.findAllByExternalReferenceUUIDAndTypeIn(fromUUID, types)).thenReturn(documents);
+        when(documentRepository.findAllByExternalReferenceUUID(fromUUID)).thenReturn(documents);
 
         documentService.copyDocuments(request);
 

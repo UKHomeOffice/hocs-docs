@@ -21,6 +21,4 @@ public interface DocumentRepository extends CrudRepository<DocumentData, String>
     Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(UUID externalReferenceUUID,
                                                                           UUID actionDataItemUuid,
                                                                           String type);
-
-    List<DocumentData> findAllByExternalReferenceUUIDAndTypeIn(UUID externalReferenceUUID, Collection<String> types);
 }
