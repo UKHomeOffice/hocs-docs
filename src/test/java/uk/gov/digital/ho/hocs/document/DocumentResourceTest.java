@@ -46,7 +46,7 @@ public class DocumentResourceTest {
         String fileName = "fileName";
         String convertTo = "convertTo";
 
-        final CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
+        CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
                 DOC_ID,
                 null,
                 displayName,
@@ -56,7 +56,7 @@ public class DocumentResourceTest {
 
         when(documentService.createDocument(createDocumentRequest)).thenReturn(documentData);
 
-        ResponseEntity response = documentResource.createDocument(createDocumentRequest);
+        ResponseEntity<UUID> response = documentResource.createDocument(createDocumentRequest);
 
         verify(documentService, times(1))
                 .createDocument(createDocumentRequest);
@@ -69,11 +69,11 @@ public class DocumentResourceTest {
 
     @Test
     public void shouldReturnListOfDocumentsForAType() {
-        when(documentService.getDocumentsByReferenceForType(DOC_ID, "DRAFT")).thenReturn(new HashSet<>());
+        when(documentService.getDocumentsByReference(DOC_ID, "DRAFT")).thenReturn(new HashSet<>());
 
         ResponseEntity<GetDocumentsResponse> response = documentResource.getDocumentsForCaseForType(DOC_ID, "DRAFT");
 
-        verify(documentService, times(1)).getDocumentsByReferenceForType(DOC_ID, "DRAFT");
+        verify(documentService, times(1)).getDocumentsByReference(DOC_ID, "DRAFT");
         verifyNoMoreInteractions(documentService);
 
         assertThat(response).isNotNull();
