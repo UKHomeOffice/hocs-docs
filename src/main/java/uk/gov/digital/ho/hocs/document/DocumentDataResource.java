@@ -47,12 +47,7 @@ class DocumentDataResource {
 
     @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
-        Set<DocumentData> documents = new HashSet<>();
-        if(type == null) {
-            documents.addAll(documentDataService.getDocumentsByReference(externalReferenceUUID));
-        } else {
-           documents.addAll(documentDataService.getDocumentsByReferenceForType(externalReferenceUUID, type));
-        }
+        Set<DocumentData> documents = documentDataService.getDocumentsByReference(externalReferenceUUID, type);
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
@@ -64,9 +59,7 @@ class DocumentDataResource {
             @PathVariable UUID externalReferenceUUID,
             @PathVariable UUID actionDataUuid,
             @PathVariable String type) {
-        Set<DocumentData> documents = new HashSet<>();
-        documents.addAll(documentDataService
-                .getDocumentsByReferenceAndActionDataUuid(externalReferenceUUID, actionDataUuid, type));
+        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceAndActionDataUuid(externalReferenceUUID, actionDataUuid, type);
 
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
@@ -97,7 +90,7 @@ class DocumentDataResource {
         return generateFileResponseEntity(document);
     }
 
-    private ResponseEntity<ByteArrayResource> generateFileResponseEntity(S3Document document) {
+    private static ResponseEntity<ByteArrayResource> generateFileResponseEntity(S3Document document) {
         ByteArrayResource resource = new ByteArrayResource(document.getData());
 
         var response = ResponseEntity.ok()

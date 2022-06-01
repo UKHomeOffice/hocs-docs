@@ -381,7 +381,7 @@ public class DocumentServiceTest {
 
         when(documentRepository.findAllByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
 
-        documentService.getDocumentsByReference(uuid);
+        documentService.getDocumentsByReference(uuid, null);
 
         verify(documentRepository).findAllByExternalReferenceUUID(uuid);
         verifyNoMoreInteractions(documentRepository);
@@ -392,11 +392,11 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
 
-        when(documentRepository.findAllByExternalReferenceUUIDAndType(uuid,"DRAFT" )).thenReturn(new HashSet<>());
+        when(documentRepository.findAllByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
 
-        documentService.getDocumentsByReferenceForType(uuid, "DRAFT");
+        documentService.getDocumentsByReference(uuid, "DRAFT");
 
-        verify(documentRepository).findAllByExternalReferenceUUIDAndType(uuid, "DRAFT");
+        verify(documentRepository).findAllByExternalReferenceUUID(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 

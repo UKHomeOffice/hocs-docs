@@ -93,17 +93,18 @@ public class DocumentDataService {
         }
     }
 
-    public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID) {
-        return documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
+    public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID, String type) {
+        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUID(externalReferenceUUID);
+        if(type != null) {
+            return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
+        }
+        return documentData;
     }
+
     public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(
             UUID externalReferenceUUID, UUID actionDataUuid, String type) {
         return documentRepository
                 .findAllByExternalReferenceUUIDAndActionDataItemUuidAndType(externalReferenceUUID, actionDataUuid, type);
-    }
-
-    public Set<DocumentData> getDocumentsByReferenceForType(UUID externalReferenceUUID, String type) {
-        return documentRepository.findAllByExternalReferenceUUIDAndType(externalReferenceUUID,type);
     }
 
     public void deleteDocument(UUID documentUUID) {
