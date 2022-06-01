@@ -166,9 +166,12 @@ public class DocumentDataService {
         log.debug("Copying Documents from case: {}, to case: {}",
                 request.getFromReferenceUUID(), request.getToReferenceUUID());
 
-        List<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUIDAndTypeIn(request.getFromReferenceUUID(), request.getTypes());
+        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUID(request.getFromReferenceUUID());
 
-        List<DocumentData> copiedDocumentData = documentData.stream().map((element) -> copyDocument(element, request.getToReferenceUUID())).collect(Collectors.toList());
+        List<DocumentData> copiedDocumentData = documentData
+                .stream()
+                .filter(it -> request.getTypes().contains(it.getType()))
+                .map(it -> copyDocument(it, request.getToReferenceUUID())).toList();
 
         documentRepository.saveAll(copiedDocumentData);
         auditClient.createDocumentsAudit(copiedDocumentData);
