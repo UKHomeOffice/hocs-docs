@@ -15,7 +15,6 @@ import uk.gov.digital.ho.hocs.document.dto.GetDocumentsResponse;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -66,7 +65,7 @@ class DocumentDataResource {
 
     @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
-        DocumentData document = documentDataService.getDocumentData(documentUUID);
+        DocumentData document = documentDataService.getActiveDocumentData(documentUUID);
         return ResponseEntity.ok(DocumentDto.from(document));
     }
 
@@ -105,10 +104,10 @@ class DocumentDataResource {
                 .body(resource);
     }
 
+    @Deprecated(forRemoval = true)
     @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getDocumentName(@PathVariable UUID documentUUID) {
-        DocumentData documentData = documentDataService.getDocumentData(documentUUID);
-        // 'ApplicationExceptions.EntityNotFoundException' thrown in getDocumentData if null
+        DocumentData documentData = documentDataService.getActiveDocumentData(documentUUID);
         return ResponseEntity.ok(documentData.getDisplayName());
     }
 
