@@ -51,6 +51,7 @@ class DocumentDataResource {
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
+    @Deprecated(forRemoval = true)
     @GetMapping(
             value = "/document/reference/{externalReferenceUUID}/actionDataUuid/{actionDataUuid}/type/{type}",
             produces = APPLICATION_JSON_VALUE

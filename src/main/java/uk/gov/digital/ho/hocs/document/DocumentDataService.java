@@ -98,13 +98,13 @@ public class DocumentDataService {
         return documentData;
     }
 
+    @Deprecated(forRemoval = true)
     public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(UUID externalReferenceUUID, UUID actionDataUuid, String type) {
         Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUIDAndActionDataItemUuid(externalReferenceUUID, actionDataUuid);
         if(type != null) {
             return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
-        } else {
-            return documentData;
         }
+        return documentData;
     }
 
     public void deleteDocument(UUID documentUUID) {
