@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.hocs.document.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -10,10 +11,14 @@ import java.util.UUID;
 @Repository
 public interface DocumentRepository extends CrudRepository<DocumentData, String> {
 
+    @Query(value = "SELECT * FROM document_data WHERE uuid = ?1", nativeQuery = true)
     DocumentData findByUuid(UUID uuid);
 
-    Set<DocumentData> findAllByExternalReferenceUUID(UUID externalReferenceUUID);
+    @Query(value = "SELECT * FROM document_data WHERE uuid = ?1 AND NOT deleted", nativeQuery = true)
+    DocumentData findActiveByUuid(UUID uuid);
 
-    Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuid(UUID externalReferenceUUID,
-                                                                          UUID actionDataItemUuid);
-}
+    @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND NOT deleted", nativeQuery = true)
+    Set<DocumentData> findAllActiveByExternalReferenceUUID(UUID externalReferenceUUID);
+
+    @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND action_data_item_uuid = ?2 AND NOT deleted", nativeQuery = true)
+    Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuid(UUID externalReferenceUUID, UUID actionDataItemUuid);}

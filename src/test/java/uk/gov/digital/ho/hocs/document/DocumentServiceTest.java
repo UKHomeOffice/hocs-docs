@@ -379,11 +379,11 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
 
-        when(documentRepository.findAllByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
+        when(documentRepository.findAllActiveByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
 
         documentService.getDocumentsByReference(uuid, null);
 
-        verify(documentRepository).findAllByExternalReferenceUUID(uuid);
+        verify(documentRepository).findAllActiveByExternalReferenceUUID(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -392,11 +392,11 @@ public class DocumentServiceTest {
 
         UUID uuid = UUID.randomUUID();
 
-        when(documentRepository.findAllByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
+        when(documentRepository.findAllActiveByExternalReferenceUUID(uuid)).thenReturn(new HashSet<>());
 
         documentService.getDocumentsByReference(uuid, "DRAFT");
 
-        verify(documentRepository).findAllByExternalReferenceUUID(uuid);
+        verify(documentRepository).findAllActiveByExternalReferenceUUID(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -505,13 +505,13 @@ public class DocumentServiceTest {
         when(documentData.getFileLink()).thenReturn("fileLink");
         when(s3DocumentService.getFileFromTrustedS3("fileLink")).thenReturn(null);
         UUID uuid = UUID.randomUUID();
-        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(uuid)).thenReturn(documentData);
 
         documentService.getDocumentFile(uuid);
 
         verify(s3DocumentService, times(1)).getFileFromTrustedS3("fileLink");
         verifyNoMoreInteractions((s3DocumentService));
-        verify(documentRepository, times(1)).findByUuid(uuid);
+        verify(documentRepository, times(1)).findActiveByUuid(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -521,13 +521,13 @@ public class DocumentServiceTest {
         when(documentData.getPdfLink()).thenReturn("pdfLink");
         when(s3DocumentService.getFileFromTrustedS3("pdfLink")).thenReturn(null);
         UUID uuid = UUID.randomUUID();
-        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(uuid)).thenReturn(documentData);
 
         documentService.getDocumentPdf(uuid);
 
         verify(s3DocumentService, times(1)).getFileFromTrustedS3("pdfLink");
         verifyNoMoreInteractions((s3DocumentService));
-        verify(documentRepository, times(1)).findByUuid(uuid);
+        verify(documentRepository, times(1)).findActiveByUuid(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -540,7 +540,7 @@ public class DocumentServiceTest {
         when(documentData.getFileLink()).thenReturn("");
         when(documentData.getDisplayName()).thenReturn(originalFileName);
 
-        when(documentRepository.findByUuid(documentUuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(documentUuid)).thenReturn(documentData);
 
         var response = documentService.getDocumentFile(documentUuid);
 
@@ -550,7 +550,7 @@ public class DocumentServiceTest {
         assertNull(response.getFileType());
         assertNull(response.getMimeType());
 
-        verify(documentRepository).findByUuid(documentUuid);
+        verify(documentRepository).findActiveByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -563,7 +563,7 @@ public class DocumentServiceTest {
         when(documentData.getPdfLink()).thenReturn("");
         when(documentData.getDisplayName()).thenReturn(originalFileName);
 
-        when(documentRepository.findByUuid(documentUuid)).thenReturn(documentData);
+        when(documentRepository.findActiveByUuid(documentUuid)).thenReturn(documentData);
 
         var response = documentService.getDocumentPdf(documentUuid);
 
@@ -573,7 +573,7 @@ public class DocumentServiceTest {
         assertNull(response.getFileType());
         assertNull(response.getMimeType());
 
-        verify(documentRepository).findByUuid(documentUuid);
+        verify(documentRepository).findActiveByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -600,7 +600,7 @@ public class DocumentServiceTest {
 
         CopyDocumentsRequest request = new CopyDocumentsRequest(fromUUID, toUUID, types);
 
-        when(documentRepository.findAllByExternalReferenceUUID(fromUUID)).thenReturn(documents);
+        when(documentRepository.findAllActiveByExternalReferenceUUID(fromUUID)).thenReturn(documents);
 
         documentService.copyDocuments(request);
 
