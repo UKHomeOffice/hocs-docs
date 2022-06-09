@@ -511,7 +511,7 @@ public class DocumentServiceTest {
 
         verify(s3DocumentService, times(1)).getFileFromTrustedS3("fileLink");
         verifyNoMoreInteractions((s3DocumentService));
-        verify(documentRepository, times(1)).findByUuid(uuid);
+        verify(documentRepository, times(1)).findActiveByUuid(uuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
@@ -550,7 +550,7 @@ public class DocumentServiceTest {
         assertNull(response.getFileType());
         assertNull(response.getMimeType());
 
-        verify(documentRepository).findByUuid(documentUuid);
+        verify(documentRepository).findActiveByUuid(documentUuid);
         verifyNoMoreInteractions(documentRepository);
     }
 
