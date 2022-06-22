@@ -66,7 +66,6 @@ public class DocumentServiceTest {
     public void shouldCreateDocumentWithValidParams() {
 
         UUID uuid = UUID.randomUUID();
-        UUID actionDataItemUuid = UUID.randomUUID();
         String displayName = "name";
         String fileName = "fileName";
         String documentType = "ORIGINAL";
@@ -77,7 +76,7 @@ public class DocumentServiceTest {
         ArgumentCaptor<DocumentData> argumentCaptor = ArgumentCaptor.forClass(DocumentData.class);
 
         UUID documentUUID = documentService.createDocument
-                (new CreateDocumentRequest(uuid, actionDataItemUuid, displayName, fileName, documentType, convertTo))
+                (new CreateDocumentRequest(uuid, displayName, fileName, documentType, convertTo))
                 .getUuid();
 
         verify(documentRepository).save(argumentCaptor.capture());
@@ -91,7 +90,6 @@ public class DocumentServiceTest {
         verifyNoInteractions(s3DocumentService);
 
         assertEquals(capturedDocumentData.getExternalReferenceUUID(), uuid);
-        assertEquals(capturedDocumentData.getActionDataItemUuid(), actionDataItemUuid);
     }
 
     @Test(expected = ApplicationExceptions.EntityCreationException.class)
@@ -105,7 +103,6 @@ public class DocumentServiceTest {
         when(requestData.userId()).thenReturn(USER_ID);
 
         documentService.createDocument(new CreateDocumentRequest(
-                null,
                 null,
                 displayName,
                 fileName,
@@ -127,7 +124,6 @@ public class DocumentServiceTest {
             documentService.createDocument(
                     new CreateDocumentRequest(
                             uuid,
-                            null,
                             null,
                             fileName,
                             documentType,
@@ -154,7 +150,7 @@ public class DocumentServiceTest {
         when(requestData.userId()).thenReturn(USER_ID);
 
         documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, displayName,  fileName,null, convertTo));
+                new CreateDocumentRequest(uuid, displayName,  fileName,null, convertTo));
     }
 
     @Test()
@@ -169,7 +165,7 @@ public class DocumentServiceTest {
 
         try {
             documentService.createDocument(
-                    new CreateDocumentRequest(uuid, null, displayName, fileName, null, convertTo));
+                    new CreateDocumentRequest(uuid, displayName, fileName, null, convertTo));
         } catch (ApplicationExceptions.EntityCreationException e) {
             // Do Nothing.
         }
@@ -192,7 +188,7 @@ public class DocumentServiceTest {
         when(requestData.userId()).thenReturn(USER_ID);
 
         documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, null, fileName, documentType, convertTo));
+                new CreateDocumentRequest(uuid, null, fileName, documentType, convertTo));
     }
 
     @Test()
@@ -208,7 +204,6 @@ public class DocumentServiceTest {
         try {
             documentService.createDocument(
                     new CreateDocumentRequest(
-                            null,
                             null,
                             displayName,
                             fileName,
@@ -233,7 +228,7 @@ public class DocumentServiceTest {
 
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
 
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -298,7 +293,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -313,7 +308,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         String link = "";
 
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
@@ -339,7 +334,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -355,7 +350,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         DocumentStatus documentStatus = DocumentStatus.UPLOADED;
         String link = "";
 
@@ -412,7 +407,7 @@ public class DocumentServiceTest {
         when(requestData.userId()).thenReturn(USER_ID);
 
         var documentData = documentService.createDocument(
-                new CreateDocumentRequest(uuid, null, displayName, fileName, documentType, convertTo));
+                new CreateDocumentRequest(uuid, displayName, fileName, documentType, convertTo));
 
         verify(auditClient).createDocumentAudit(documentData);
         verifyNoMoreInteractions(auditClient);
@@ -426,7 +421,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName,uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName,uploadOwnerUUID);
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
         documentService.updateDocument(uuid, DocumentStatus.UPLOADED,"", "");
@@ -442,7 +437,7 @@ public class DocumentServiceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.randomUUID();
-        DocumentData documentData = new DocumentData(uuid, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
         documentData.setDeleted();
         when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
 
@@ -465,7 +460,6 @@ public class DocumentServiceTest {
 
         documentService.createDocument(
                 new CreateDocumentRequest(
-                        null,
                         null,
                         displayName,
                         fileName,
@@ -585,7 +579,6 @@ public class DocumentServiceTest {
 
         DocumentData documentData = new DocumentData(
                 fromUUID,
-                UUID.randomUUID(),
                 "To document",
                 "name",
                 UUID.randomUUID()

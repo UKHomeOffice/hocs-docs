@@ -42,13 +42,12 @@ public class DocumentResourceTest {
         String displayName = "name";
         String documentType = "ORIGINAL";
         UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(DOC_ID, null, documentType, displayName, uploadOwnerUUID);
+        DocumentData documentData = new DocumentData(DOC_ID, documentType, displayName, uploadOwnerUUID);
         String fileName = "fileName";
         String convertTo = "convertTo";
 
         CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
                 DOC_ID,
-                null,
                 displayName,
                 fileName,
                 documentType,

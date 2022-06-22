@@ -50,20 +50,6 @@ class DocumentDataResource {
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
 
-    @Deprecated(forRemoval = true)
-    @GetMapping(
-            value = "/document/reference/{externalReferenceUUID}/actionDataUuid/{actionDataUuid}/type/{type}",
-            produces = APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseAndAction(
-            @PathVariable UUID externalReferenceUUID,
-            @PathVariable UUID actionDataUuid,
-            @PathVariable String type) {
-        Set<DocumentData> documents = documentDataService.getDocumentsByReferenceAndActionDataUuid(externalReferenceUUID, actionDataUuid, type);
-
-        return ResponseEntity.ok(GetDocumentsResponse.from(documents));
-    }
-
     @GetMapping(value = "/document/{documentUUID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<DocumentDto> getDocumentResourceLocation(@PathVariable UUID documentUUID) {
         DocumentData document = documentDataService.getActiveDocumentData(documentUUID);

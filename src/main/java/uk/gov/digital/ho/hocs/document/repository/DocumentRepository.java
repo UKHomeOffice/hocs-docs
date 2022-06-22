@@ -19,6 +19,4 @@ public interface DocumentRepository extends CrudRepository<DocumentData, String>
 
     @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND NOT deleted", nativeQuery = true)
     Set<DocumentData> findAllActiveByExternalReferenceUUID(UUID externalReferenceUUID);
-
-    @Query(value = "SELECT * FROM document_data WHERE external_reference_uuid = ?1 AND action_data_item_uuid = ?2 AND NOT deleted", nativeQuery = true)
-    Set<DocumentData> findAllByExternalReferenceUUIDAndActionDataItemUuid(UUID externalReferenceUUID, UUID actionDataItemUuid);}
+}
