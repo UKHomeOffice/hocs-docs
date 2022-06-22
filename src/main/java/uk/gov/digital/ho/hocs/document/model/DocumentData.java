@@ -62,11 +62,6 @@ public class DocumentData implements Serializable {
     @Getter
     private Boolean deleted = Boolean.FALSE;
 
-    @Column(name = "action_data_item_uuid")
-    @Getter
-    @Setter
-    private UUID actionDataItemUuid;
-
     @Column(name = "upload_owner")
     @Getter
     @Setter
@@ -76,7 +71,7 @@ public class DocumentData implements Serializable {
     @Getter
     private LocalDateTime deletedOn;
 
-    public DocumentData(UUID externalReferenceUUID, UUID actionDataItemUuid, String type, String displayName, UUID uploadOwnerUUID) {
+    public DocumentData(UUID externalReferenceUUID, String type, String displayName, UUID uploadOwnerUUID) {
         if (externalReferenceUUID == null || type == null || displayName == null) {
             throw new ApplicationExceptions.EntityCreationException(String.format("Cannot create DocumentData(%s, %s, %s).", externalReferenceUUID, type, displayName), DOCUMENT_CREATION_FAILURE);
         }
@@ -84,7 +79,6 @@ public class DocumentData implements Serializable {
         this.type = type;
         this.displayName = displayName;
         this.externalReferenceUUID = externalReferenceUUID;
-        this.actionDataItemUuid = actionDataItemUuid;
         this.uploadOwnerUUID = uploadOwnerUUID;
     }
 

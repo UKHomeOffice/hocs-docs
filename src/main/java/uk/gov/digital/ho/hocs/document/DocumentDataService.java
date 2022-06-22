@@ -53,7 +53,6 @@ public class DocumentDataService {
 
         DocumentData documentData = new DocumentData(
                 request.getExternalReferenceUUID(),
-                request.getActionDataItemUuid(),
                 request.getType(),
                 request.getName(),
                 UUID.fromString(requestData.userId())
@@ -94,15 +93,6 @@ public class DocumentDataService {
 
     public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID, String type) {
         Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(externalReferenceUUID);
-        if(type != null) {
-            return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
-        }
-        return documentData;
-    }
-
-    @Deprecated(forRemoval = true)
-    public Set<DocumentData> getDocumentsByReferenceAndActionDataUuid(UUID externalReferenceUUID, UUID actionDataUuid, String type) {
-        Set<DocumentData> documentData = documentRepository.findAllByExternalReferenceUUIDAndActionDataItemUuid(externalReferenceUUID, actionDataUuid);
         if(type != null) {
             return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
         }
@@ -151,7 +141,6 @@ public class DocumentDataService {
     public DocumentData copyDocument(DocumentData fromDocument, UUID toUUID) {
         DocumentData toDocument = new DocumentData(
                 toUUID,
-                fromDocument.getActionDataItemUuid(),
                 fromDocument.getType(),
                 fromDocument.getDisplayName(),
                 fromDocument.getUploadOwnerUUID()

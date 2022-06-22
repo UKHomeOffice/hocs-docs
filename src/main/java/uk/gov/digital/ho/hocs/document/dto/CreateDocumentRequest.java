@@ -6,7 +6,6 @@ import lombok.Getter;
 
 import java.util.UUID;
 
-@AllArgsConstructor
 @Getter
 public class CreateDocumentRequest {
     public CreateDocumentRequest(
@@ -23,9 +22,6 @@ public class CreateDocumentRequest {
     }
     @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
-
-    @JsonProperty("actionDataItemUuid")
-    private UUID actionDataItemUuid;
 
     @JsonProperty("name")
     private String name;

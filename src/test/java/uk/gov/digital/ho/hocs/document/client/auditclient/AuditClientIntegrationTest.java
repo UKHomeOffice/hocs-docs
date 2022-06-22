@@ -40,7 +40,7 @@ public class AuditClientIntegrationTest extends CamelTestSupport {
     public void shouldPutMessageOnAuditQueue() throws InterruptedException {
         UUID caseUUID = UUID.randomUUID();
         UUID uploadOwnerUUID = UUID.randomUUID();
-        DocumentData docData = new DocumentData(caseUUID, null, "ORIGINAL", "a document", uploadOwnerUUID);
+        DocumentData docData = new DocumentData(caseUUID, "ORIGINAL", "a document", uploadOwnerUUID);
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         auditClient.createDocumentAudit(docData);
         mockEndpoint.assertIsSatisfied();
