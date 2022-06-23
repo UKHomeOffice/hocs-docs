@@ -27,6 +27,15 @@ public class LocalStackConfiguration {
     @Value("${aws.local.host:localhost}")
     private String awsHost;
 
+    @Value("${aws.local.sqs.port:4566}")
+    private String sqsPort;
+
+    @Value("${aws.local.sns.port:4566}")
+    private String snsPort;
+
+    @Value("${aws.local.s3.port:4566}")
+    private String s3Port;
+
     @Bean("auditSqsClient")
     public AmazonSQS auditSqsClient() {
         return sqsClient();
@@ -35,7 +44,7 @@ public class LocalStackConfiguration {
     @Bean
     public AmazonSQS sqsClient() {
 
-        String host = String.format("http://%s:4576/", awsHost);
+        String host = String.format("http://%s:%s/", awsHost, sqsPort);
 
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
         return AmazonSQSClientBuilder.standard()
@@ -47,7 +56,7 @@ public class LocalStackConfiguration {
 
     @Bean("auditSnsClient")
     public AmazonSNS auditSnsClient() {
-        String host = String.format("http://%s:4575/", awsHost);
+        String host = String.format("http://%s:%s/", awsHost, snsPort);
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
         return AmazonSNSClientBuilder.standard()
                 .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
@@ -68,7 +77,7 @@ public class LocalStackConfiguration {
 
     public AmazonS3 s3Client() {
 
-        String host = String.format("http://%s:4572/", awsHost);
+        String host = String.format("http://%s:%s/", awsHost, s3Port);
 
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
 
