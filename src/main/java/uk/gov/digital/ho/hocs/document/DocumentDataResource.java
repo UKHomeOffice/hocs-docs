@@ -104,12 +104,4 @@ class DocumentDataResource {
         return response.contentLength(document.getData().length)
                 .body(resource);
     }
-
-    @Deprecated(forRemoval = true)
-    @GetMapping(value = "/document/{documentUUID}/name", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getDocumentName(@PathVariable UUID documentUUID) {
-        DocumentData documentData = documentDataService.getActiveDocumentData(documentUUID);
-        return ResponseEntity.ok(documentData.getDisplayName());
-    }
-
 }
