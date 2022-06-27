@@ -56,7 +56,6 @@ dependencies {
     implementation 'org.glassfish:javax.json:1.0.4'
 
     implementation 'org.flywaydb:flyway-core:8.5.13'
-    runtimeOnly 'org.hsqldb:hsqldb'
     runtimeOnly 'org.postgresql:postgresql:42.4.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'

@@ -9,6 +9,13 @@ trigger:
     exclude:
       - main
 
+services:
+  - name: postgres
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+
 steps:
   - name: test project
     image: quay.io/ukhomeofficedigital/hocs-base-image-build:1.0.5
@@ -128,6 +135,13 @@ trigger:
   branch:
     - main
     - support/*
+
+services:
+  - name: postgres
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
 
 steps:
   - name: test project
