@@ -166,7 +166,7 @@ spec:
             - name: SERVER_PORT
               value: '8080'
             - name: SPRING_PROFILES_ACTIVE
-              value: 'sqs, sns, s3, postgres'
+              value: 'sqs, sns, s3'
             - name: CLAMAV_ROOT
               value: 'https4://clamav.virus-scan.svc.cluster.local'
             - name: HOCSCONVERTER_ROOT
