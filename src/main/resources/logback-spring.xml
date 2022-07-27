@@ -80,6 +80,10 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
+    <logger name="com.amazonaws.services.s3.AmazonS3Client" additivity="false" level="ERROR">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
     <logger name="io.undertow" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
     </logger>
