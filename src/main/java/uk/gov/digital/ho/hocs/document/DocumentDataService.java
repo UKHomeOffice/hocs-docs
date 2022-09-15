@@ -30,14 +30,21 @@ import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 public class DocumentDataService {
 
     private final DocumentRepository documentRepository;
+
     private final S3DocumentService s3DocumentService;
+
     private final AuditClient auditClient;
+
     private final DocumentClient documentClient;
+
     private final RequestData requestData;
 
-
     @Autowired
-    public DocumentDataService(DocumentRepository documentRepository, S3DocumentService s3DocumentService, AuditClient auditClient, DocumentClient documentClient, RequestData requestData){
+    public DocumentDataService(DocumentRepository documentRepository,
+                               S3DocumentService s3DocumentService,
+                               AuditClient auditClient,
+                               DocumentClient documentClient,
+                               RequestData requestData) {
         this.documentRepository = documentRepository;
         this.s3DocumentService = s3DocumentService;
         this.auditClient = auditClient;
@@ -46,23 +53,20 @@ public class DocumentDataService {
     }
 
     public DocumentData createDocument(CreateDocumentRequest request) {
-        log.debug("Creating Document: {}, external Reference  UUID: {}",
-                request.getName(), request.getExternalReferenceUUID());
+        log.debug("Creating Document: {}, external Reference  UUID: {}", request.getName(),
+            request.getExternalReferenceUUID());
 
         String convertTo = (request.getConvertTo() != null) ? request.getConvertTo() : "PDF";
 
-        DocumentData documentData = new DocumentData(
-                request.getExternalReferenceUUID(),
-                request.getType(),
-                request.getName(),
-                UUID.fromString(requestData.userId())
-        );
+        DocumentData documentData = new DocumentData(request.getExternalReferenceUUID(), request.getType(),
+            request.getName(), UUID.fromString(requestData.userId()));
 
         documentRepository.save(documentData);
         documentClient.processDocument(documentData.getUuid(), request.getFileLink(), convertTo);
         auditClient.createDocumentAudit(documentData);
 
-        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(), documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
+        log.info("Created Document: {}, external Reference UUID: {}", documentData.getUuid(),
+            documentData.getExternalReferenceUUID(), value(EVENT, DOCUMENT_CREATED));
 
         return documentData;
     }
@@ -74,7 +78,8 @@ public class DocumentDataService {
         documentData.update(fileLink, pdfLink, status);
         documentRepository.save(documentData);
         auditClient.updateDocumentAudit(documentData);
-        log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(), value(EVENT, DOCUMENT_UPDATED));
+        log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(),
+            value(EVENT, DOCUMENT_UPDATED));
     }
 
     // Used internally only
@@ -87,13 +92,14 @@ public class DocumentDataService {
         if (documentData != null) {
             return documentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException(String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
+            throw new ApplicationExceptions.EntityNotFoundException(
+                String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
         }
     }
 
     public Set<DocumentData> getDocumentsByReference(UUID externalReferenceUUID, String type) {
         Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(externalReferenceUUID);
-        if(type != null) {
+        if (type != null) {
             return documentData.stream().filter(it -> it.getType().equals(type)).collect(Collectors.toSet());
         }
         return documentData;
@@ -119,7 +125,9 @@ public class DocumentDataService {
         log.info("Get Document {} ({}) from S3", documentUuid, documentType, value(EVENT, DOCUMENT_DATA_REQUEST));
         DocumentData documentData = getActiveDocumentData(documentUuid);
 
-        String fileLink = documentType.equals(DocumentType.PDF) ? documentData.getPdfLink() : documentData.getFileLink();
+        String fileLink = documentType.equals(DocumentType.PDF)
+            ? documentData.getPdfLink()
+            : documentData.getFileLink();
 
         if (!StringUtils.hasText(fileLink)) {
             log.warn("DocumentData has no filelink", value(EVENT, DOCUMENT_FILELINK_MISSING));
@@ -139,37 +147,29 @@ public class DocumentDataService {
     }
 
     public DocumentData copyDocument(DocumentData fromDocument, UUID toUUID) {
-        DocumentData toDocument = new DocumentData(
-                toUUID,
-                fromDocument.getType(),
-                fromDocument.getDisplayName(),
-                fromDocument.getUploadOwnerUUID()
-        );
-        toDocument.update(
-                fromDocument.getFileLink(),
-                fromDocument.getPdfLink(),
-                fromDocument.getStatus()
-        );
+        DocumentData toDocument = new DocumentData(toUUID, fromDocument.getType(), fromDocument.getDisplayName(),
+            fromDocument.getUploadOwnerUUID());
+        toDocument.update(fromDocument.getFileLink(), fromDocument.getPdfLink(), fromDocument.getStatus());
 
         return toDocument;
     }
 
     public void copyDocuments(CopyDocumentsRequest request) {
-        log.debug("Copying Documents from case: {}, to case: {}",
-                request.getFromReferenceUUID(), request.getToReferenceUUID());
+        log.debug("Copying Documents from case: {}, to case: {}", request.getFromReferenceUUID(),
+            request.getToReferenceUUID());
 
-        Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(request.getFromReferenceUUID());
+        Set<DocumentData> documentData = documentRepository.findAllActiveByExternalReferenceUUID(
+            request.getFromReferenceUUID());
 
-        List<DocumentData> copiedDocumentData = documentData
-                .stream()
-                .filter(it -> request.getTypes().contains(it.getType()))
-                .map(it -> copyDocument(it, request.getToReferenceUUID())).toList();
+        List<DocumentData> copiedDocumentData = documentData.stream().filter(
+            it -> request.getTypes().contains(it.getType())).map(
+            it -> copyDocument(it, request.getToReferenceUUID())).toList();
 
         documentRepository.saveAll(copiedDocumentData);
         auditClient.createDocumentsAudit(copiedDocumentData);
 
-        log.info("Successfully copied Documents from case: {}, to case: {}",
-                request.getFromReferenceUUID(), request.getToReferenceUUID());
+        log.info("Successfully copied Documents from case: {}, to case: {}", request.getFromReferenceUUID(),
+            request.getToReferenceUUID());
     }
 
     // Used internally only
@@ -178,7 +178,9 @@ public class DocumentDataService {
         if (documentData != null) {
             return documentData;
         } else {
-            throw new ApplicationExceptions.EntityNotFoundException(String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
+            throw new ApplicationExceptions.EntityNotFoundException(
+                String.format("Document UUID: %s not found!", documentUUID), DOCUMENT_NOT_FOUND);
         }
     }
+
 }

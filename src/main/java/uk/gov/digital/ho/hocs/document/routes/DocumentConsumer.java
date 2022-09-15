@@ -21,14 +21,15 @@ import static uk.gov.digital.ho.hocs.document.application.RequestData.transferMD
 public class DocumentConsumer extends RouteBuilder {
 
     private final String fromQueue;
+
     private final String toQueue;
+
     private final DocumentDataService documentDataService;
 
     @Autowired
-    public DocumentConsumer(
-            DocumentDataService documentDataService,
-            @Value("${docs.queue}") String docsQueue,
-            @Value("${malwareQueueName}") String toQueue) {
+    public DocumentConsumer(DocumentDataService documentDataService,
+                            @Value("${docs.queue}") String docsQueue,
+                            @Value("${malwareQueueName}") String toQueue) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
@@ -54,14 +55,14 @@ public class DocumentConsumer extends RouteBuilder {
                 .to(toQueue);
     }
 
-
     private Processor generateMalwareCheck() {
         return exchange -> {
             UUID documentUUID = UUID.fromString(exchange.getProperty("uuid").toString());
             UUID externalReferenceUUID = UUID.fromString(exchange.getProperty("externalReferenceUUID").toString());
             String fileLink = exchange.getProperty("fileLink").toString();
             String convertTo = exchange.getProperty("convertTo").toString();
-            exchange.getOut().setBody( new DocumentMalwareRequest(documentUUID,fileLink, externalReferenceUUID, convertTo));
+            exchange.getOut().setBody(
+                new DocumentMalwareRequest(documentUUID, fileLink, externalReferenceUUID, convertTo));
         };
     }
 

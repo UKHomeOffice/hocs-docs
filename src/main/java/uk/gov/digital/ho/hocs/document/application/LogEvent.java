@@ -23,6 +23,6 @@ public enum LogEvent {
     AUDIT_FAILED,
 
     UNCAUGHT_EXCEPTION;
-    
+
     public static final String EVENT = "event_id";
 }

@@ -30,23 +30,30 @@ import static uk.gov.digital.ho.hocs.document.application.RequestData.transferMD
 public class DocumentConversionConsumer extends RouteBuilder {
 
     private S3DocumentService s3BucketService;
+
     private final String hocsConverterPath;
+
     private final String toQueue;
 
     private static final String STATUS = "status";
+
     private static final String FILENAME = "filename";
+
     private static final String PDF_FILENAME = "pdfFilename";
+
     private static final String UUID_TEXT = "uuid";
+
     private static final String CONVERT_TO = "convertTo";
+
     private static final String DOCUMENT_TYPE = "documentType";
 
     @Autowired
-    public DocumentConversionConsumer(
-            S3DocumentService s3BucketService,
-            @Value("${hocsconverter.path}") String hocsConverterPath,
-            @Value("${documentServiceQueueName}") String toQueue) {
+    public DocumentConversionConsumer(S3DocumentService s3BucketService,
+                                      @Value("${hocsconverter.path}") String hocsConverterPath,
+                                      @Value("${documentServiceQueueName}") String toQueue) {
         this.s3BucketService = s3BucketService;
-        this.hocsConverterPath =  String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true", hocsConverterPath);
+        this.hocsConverterPath = String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true",
+            hocsConverterPath);
         this.toQueue = toQueue;
     }
 
@@ -125,7 +132,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private Processor generateUploadDocument() {
         return exchange -> {
-            byte[] content =  exchange.getIn().getBody(byte[].class);
+            byte[] content = exchange.getIn().getBody(byte[].class);
             String filename = exchange.getProperty(FILENAME).toString();
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
@@ -137,7 +144,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
         return exchange -> {
             String filename = exchange.getProperty(FILENAME).toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
-            byte[] content =  (originalFilename + " failed conversion").getBytes(StandardCharsets.UTF_8);
+            byte[] content = (originalFilename + " failed conversion").getBytes(StandardCharsets.UTF_8);
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
         };
@@ -149,11 +156,16 @@ public class DocumentConversionConsumer extends RouteBuilder {
             DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty(STATUS).toString());
             String pdfFileLink = Optional.ofNullable(exchange.getProperty(PDF_FILENAME)).orElse("").toString();
             String fileLink = Optional.ofNullable(exchange.getProperty(FILENAME)).orElse("").toString();
-            exchange.getOut().setBody(new UpdateDocumentRequest(documentUUID, status, fileLink ,pdfFileLink));
+            exchange.getOut().setBody(new UpdateDocumentRequest(documentUUID, status, fileLink, pdfFileLink));
         };
     }
 
-    private Predicate skipDocumentType = exchangeProperty(DOCUMENT_TYPE).in(Arrays.stream(DocumentConversionExemptTypes.values()).map(DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+    private Predicate skipDocumentType = exchangeProperty(DOCUMENT_TYPE).in(
+        Arrays.stream(DocumentConversionExemptTypes.values()).map(
+            DocumentConversionExemptTypes::getDisplayValue).toArray(String[]::new));
+
     private Predicate skipConvertToIsNone = exchangeProperty(CONVERT_TO).isEqualTo("NONE");
+
     private Predicate skipDocumentConversion = PredicateBuilder.or(skipDocumentType, skipConvertToIsNone);
+
 }

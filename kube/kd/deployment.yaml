@@ -138,7 +138,7 @@ spec:
             - name: CLAMAV_ROOT
               value: 'https4://clamav.virus-scan.svc.cluster.local'
             - name: HOCSCONVERTER_ROOT
-              value: 'https4://hocs-docs-converter.{{.KUBE_NAMESPACE}}.svc.cluster.local'   
+              value: 'https4://hocs-docs-converter.{{.KUBE_NAMESPACE}}.svc.cluster.local'
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
@@ -169,21 +169,21 @@ spec:
                 secretKeyRef:
                   name: {{.KUBE_NAMESPACE}}-docs-rds
                   key: password
-            - name: DOCS_QUEUE_NAME	
-              value:	
-                '{{.KUBE_NAMESPACE}}-document-sqs'	
-            - name: DOCS_QUEUE_DLQ_NAME	
-              value:	
-                '{{.KUBE_NAMESPACE}}-document-sqs-dlq'	
-            - name: DOCS_AWS_SQS_ACCESS_KEY	
-              valueFrom:	
+            - name: DOCS_QUEUE_NAME
+              value:
+                '{{.KUBE_NAMESPACE}}-document-sqs'
+            - name: DOCS_QUEUE_DLQ_NAME
+              value:
+                '{{.KUBE_NAMESPACE}}-document-sqs-dlq'
+            - name: DOCS_AWS_SQS_ACCESS_KEY
+              valueFrom:
                 secretKeyRef:
-                  name: '{{.KUBE_NAMESPACE}}-document-sqs'	
-                  key: access_key_id	
-            - name: DOCS_AWS_SQS_SECRET_KEY	
-              valueFrom:	
-                secretKeyRef:	
-                  name: '{{.KUBE_NAMESPACE}}-document-sqs'	
+                  name: '{{.KUBE_NAMESPACE}}-document-sqs'
+                  key: access_key_id
+            - name: DOCS_AWS_SQS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: '{{.KUBE_NAMESPACE}}-document-sqs'
                   key: secret_access_key
             - name: DOCS_TRUSTEDS3BUCKETNAME
               value:

@@ -32,4 +32,5 @@ public class DocumentDtoTest {
 
         assertThat(documentDto.getHasPdf()).isFalse();
     }
+
 }

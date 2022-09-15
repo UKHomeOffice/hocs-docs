@@ -6,9 +6,13 @@ import java.util.UUID;
 
 @java.lang.SuppressWarnings("squid:S1068")
 public class UpdateDocumentRequest {
+
     private UUID uuid;
+
     private DocumentStatus status;
+
     private String fileLink;
+
     private String pdfLink;
 
     public UpdateDocumentRequest(UUID uuid, DocumentStatus status, String fileLink, String pdfLink) {
@@ -33,4 +37,5 @@ public class UpdateDocumentRequest {
     public String getPdfLink() {
         return pdfLink;
     }
+
 }

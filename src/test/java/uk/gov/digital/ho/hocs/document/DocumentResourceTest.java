@@ -30,6 +30,7 @@ public class DocumentResourceTest {
     private DocumentDataResource documentResource;
 
     private static final String USER_ID = "d030c101-3ff6-43d7-9b6c-9cd54ccf5529";
+
     private static final UUID DOC_ID = UUID.fromString("16664dda-e680-4d3b-951f-c90afb10d62f");
 
     @Before
@@ -46,19 +47,14 @@ public class DocumentResourceTest {
         String fileName = "fileName";
         String convertTo = "convertTo";
 
-        CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(
-                DOC_ID,
-                displayName,
-                fileName,
-                documentType,
-                convertTo);
+        CreateDocumentRequest createDocumentRequest = new CreateDocumentRequest(DOC_ID, displayName, fileName,
+            documentType, convertTo);
 
         when(documentService.createDocument(createDocumentRequest)).thenReturn(documentData);
 
         ResponseEntity<UUID> response = documentResource.createDocument(createDocumentRequest);
 
-        verify(documentService, times(1))
-                .createDocument(createDocumentRequest);
+        verify(documentService, times(1)).createDocument(createDocumentRequest);
 
         verifyNoMoreInteractions(documentService);
 
@@ -94,6 +90,5 @@ public class DocumentResourceTest {
 
         assertFalse(response.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
     }
-
 
 }

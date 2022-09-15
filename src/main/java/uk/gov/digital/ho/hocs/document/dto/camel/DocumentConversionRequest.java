@@ -9,9 +9,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class DocumentConversionRequest {
+
     private UUID documentUUID;
+
     private final String fileLink;
+
     private final String externalReferenceUUID;
+
     private final String fileType;
+
     private final String convertTo;
+
 }

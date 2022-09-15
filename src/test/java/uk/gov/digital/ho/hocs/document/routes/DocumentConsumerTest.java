@@ -17,14 +17,14 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentConsumerTest extends CamelTestSupport {
 
     private String endpoint = "direct://cs-dev-document-sqs";
-    private String toEndpoint = "mock:malwarecheck";
-    private UUID documentUUID = UUID.randomUUID();
 
+    private String toEndpoint = "mock:malwarecheck";
+
+    private UUID documentUUID = UUID.randomUUID();
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -35,7 +35,7 @@ public class DocumentConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConsumer(documentDataService, endpoint, toEndpoint);
+        return new DocumentConsumer(documentDataService, endpoint, toEndpoint);
     }
 
     @Test
@@ -43,8 +43,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
         UUID externalReferenceUUID = UUID.randomUUID();
         UUID uploadOwnerUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class)))
-                .thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName", uploadOwnerUUID));
+        when(documentDataService.getDocumentData(any(String.class))).thenReturn(
+            new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName", uploadOwnerUUID));
 
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
@@ -64,8 +64,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
         UUID externalReferenceUUID = UUID.randomUUID();
         UUID uploadOwnerUUID = UUID.randomUUID();
 
-        when(documentDataService.getDocumentData(any(String.class)))
-                .thenReturn(new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName",uploadOwnerUUID));
+        when(documentDataService.getDocumentData(any(String.class))).thenReturn(
+            new DocumentData(externalReferenceUUID, "ORIGINAL", "SomeDisplayName", uploadOwnerUUID));
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("externalReferenceUUID", externalReferenceUUID.toString());
         mockEndpoint.expectedPropertyReceived("uuid", documentUUID.toString());
@@ -73,6 +73,5 @@ public class DocumentConsumerTest extends CamelTestSupport {
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         mockEndpoint.assertIsSatisfied();
     }
-
 
 }

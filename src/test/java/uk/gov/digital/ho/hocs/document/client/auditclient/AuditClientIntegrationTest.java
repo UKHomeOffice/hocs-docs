@@ -11,7 +11,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 
-
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -28,12 +27,11 @@ public class AuditClientIntegrationTest extends CamelTestSupport {
 
     private AuditClient auditClient;
 
-
     @Before
     public void setup() {
         when(requestData.correlationId()).thenReturn(UUID.randomUUID().toString());
         when(requestData.userId()).thenReturn("some user");
-        auditClient = new AuditClient(template, toEndpoint,"hocs-docs","namespace", mapper, requestData);
+        auditClient = new AuditClient(template, toEndpoint, "hocs-docs", "namespace", mapper, requestData);
     }
 
     @Test
@@ -44,7 +42,8 @@ public class AuditClientIntegrationTest extends CamelTestSupport {
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         auditClient.createDocumentAudit(docData);
         mockEndpoint.assertIsSatisfied();
-        mockEndpoint.expectedBodyReceived().body().convertToString().contains(String.format("\"\"documentUUID\"\":\"%s\"", docData.getUuid().toString()));
+        mockEndpoint.expectedBodyReceived().body().convertToString().contains(
+            String.format("\"\"documentUUID\"\":\"%s\"", docData.getUuid().toString()));
     }
 
 }

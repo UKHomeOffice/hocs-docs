@@ -29,7 +29,8 @@ public class RestResponseEntityExceptionHandler {
 
     @ExceptionHandler(ApplicationExceptions.S3Exception.class)
     public ResponseEntity handle(ApplicationExceptions.S3Exception e) {
-        log.error("S3Exception: {} caused by {}", e.getMessage(), e.getCause().getMessage(), value(EVENT, e.getEvent()));
+        log.error("S3Exception: {} caused by {}", e.getMessage(), e.getCause().getMessage(),
+            value(EVENT, e.getEvent()));
         return new ResponseEntity<>(e.getMessage(), INTERNAL_SERVER_ERROR);
     }
 
@@ -38,6 +39,5 @@ public class RestResponseEntityExceptionHandler {
         log.error("Exception: {}", e.getMessage(), value(EVENT, UNCAUGHT_EXCEPTION));
         return new ResponseEntity<>(e.getMessage(), INTERNAL_SERVER_ERROR);
     }
-
 
 }

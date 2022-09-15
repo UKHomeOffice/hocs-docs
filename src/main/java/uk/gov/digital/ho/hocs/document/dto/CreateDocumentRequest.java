@@ -8,18 +8,19 @@ import java.util.UUID;
 
 @Getter
 public class CreateDocumentRequest {
-    public CreateDocumentRequest(
-            UUID externalReferenceUUID,
-            String name,
-            String fileLink,
-            String type,
-            String convertTo) {
+
+    public CreateDocumentRequest(UUID externalReferenceUUID,
+                                 String name,
+                                 String fileLink,
+                                 String type,
+                                 String convertTo) {
         this.name = name;
         this.type = type;
         this.fileLink = fileLink;
         this.externalReferenceUUID = externalReferenceUUID;
         this.convertTo = convertTo;
     }
+
     @JsonProperty("externalReferenceUUID")
     private UUID externalReferenceUUID;
 
@@ -34,4 +35,5 @@ public class CreateDocumentRequest {
 
     @JsonProperty("convertTo")
     private String convertTo = "PDF";
+
 }

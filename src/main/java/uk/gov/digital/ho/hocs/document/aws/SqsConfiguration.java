@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
 
 @Configuration
-@Profile({ "sqs"})
+@Profile({ "sqs" })
 public class SqsConfiguration {
 
     @Bean
@@ -33,10 +33,9 @@ public class SqsConfiguration {
             throw new BeanCreationException("Failed to create SQS client bean. Need non-blank values for region");
         }
 
-        return AmazonSQSClientBuilder.standard()
-                .withRegion(region)
-                .withCredentials(new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                .withClientConfiguration(new ClientConfiguration())
-                .build();
+        return AmazonSQSClientBuilder.standard().withRegion(region).withCredentials(
+            new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))).withClientConfiguration(
+            new ClientConfiguration()).build();
     }
+
 }

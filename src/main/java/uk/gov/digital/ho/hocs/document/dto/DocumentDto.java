@@ -50,18 +50,10 @@ public class DocumentDto {
     private Boolean hasOriginalFile;
 
     public static DocumentDto from(DocumentData documentData) {
-        return new DocumentDto(
-                documentData.getUuid(),
-                documentData.getExternalReferenceUUID(),
-                documentData.getType(),
-                documentData.getDisplayName(),
-                documentData.getUploadOwnerUUID(),
-                documentData.getStatus(),
-                documentData.getCreated(),
-                documentData.getUpdated(),
-                documentData.getDeleted(),
-                StringUtils.hasText(documentData.getPdfLink()),
-                StringUtils.hasText(documentData.getFileLink())
-        );
+        return new DocumentDto(documentData.getUuid(), documentData.getExternalReferenceUUID(), documentData.getType(),
+            documentData.getDisplayName(), documentData.getUploadOwnerUUID(), documentData.getStatus(),
+            documentData.getCreated(), documentData.getUpdated(), documentData.getDeleted(),
+            StringUtils.hasText(documentData.getPdfLink()), StringUtils.hasText(documentData.getFileLink()));
     }
+
 }

@@ -10,13 +10,13 @@ import javax.annotation.PreDestroy;
 @Slf4j
 public class HocsDocsApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(HocsDocsApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(HocsDocsApplication.class, args);
+    }
 
-	@PreDestroy
-	public void stop() {
-		log.info("Stopping gracefully");
-	}
+    @PreDestroy
+    public void stop() {
+        log.info("Stopping gracefully");
+    }
 
 }

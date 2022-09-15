@@ -7,8 +7,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class UploadDocument {
+
     private String filename;
+
     private byte[] data;
+
     private String externalReferenceUUID;
+
     private String originalFileName;
+
 }

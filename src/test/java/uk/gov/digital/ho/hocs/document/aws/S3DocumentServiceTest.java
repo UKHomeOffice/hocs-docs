@@ -14,6 +14,7 @@ import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,16 +26,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-
 public class S3DocumentServiceTest {
+
     private static final String untrustedBucketName = "untrusted-bucked";
+
     private static final String trustedBucketName = "trusted-bucked";
 
     @ClassRule
     public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
 
     private AmazonS3 untrustedClient;
+
     private AmazonS3 trustedClient;
+
     private S3DocumentService service;
 
     @Before
@@ -69,10 +73,9 @@ public class S3DocumentServiceTest {
 
     @Test
     public void shouldThrowNotFoundExceptionWhenFileNotInUntrustedBucket() {
-        assertThatThrownBy(() -> service.getFileFromUntrustedS3("a missing file.ext"))
-                .isInstanceOf(ApplicationExceptions.S3Exception.class)
-                .hasMessage("File not found in S3 bucket")
-                .hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
+        assertThatThrownBy(() -> service.getFileFromUntrustedS3("a missing file.ext")).isInstanceOf(
+            ApplicationExceptions.S3Exception.class).hasMessage(
+            "File not found in S3 bucket").hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
     }
 
     @Test
@@ -81,25 +84,24 @@ public class S3DocumentServiceTest {
         AmazonS3Exception S3500Exception = new AmazonS3Exception("something went wrong");
         S3500Exception.setStatusCode(500);
         when(failingClient.getObject(any())).thenThrow(S3500Exception);
-        S3DocumentService badService = new S3DocumentService(untrustedBucketName, trustedBucketName, failingClient, failingClient, "");
-        assertThatThrownBy(() -> badService.getFileFromUntrustedS3("a bad file"))
-                .isInstanceOf(ApplicationExceptions.S3Exception.class)
-                .hasFieldOrPropertyWithValue("event", LogEvent.S3_DOWNLOAD_FAILURE);
+        S3DocumentService badService = new S3DocumentService(untrustedBucketName, trustedBucketName, failingClient,
+            failingClient, "");
+        assertThatThrownBy(() -> badService.getFileFromUntrustedS3("a bad file")).isInstanceOf(
+            ApplicationExceptions.S3Exception.class).hasFieldOrPropertyWithValue("event", LogEvent.S3_DOWNLOAD_FAILURE);
     }
 
     @Test
     public void shouldThrowNotFoundExceptionWhenFileNotInTrustedBucket() {
-        assertThatThrownBy(() -> service.getFileFromTrustedS3("a missing file.ext"))
-                .isInstanceOf(ApplicationExceptions.S3Exception.class)
-                .hasMessage("File not found in S3 bucket")
-                .hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
+        assertThatThrownBy(() -> service.getFileFromTrustedS3("a missing file.ext")).isInstanceOf(
+            ApplicationExceptions.S3Exception.class).hasMessage(
+            "File not found in S3 bucket").hasFieldOrPropertyWithValue("event", LogEvent.S3_FILE_NOT_FOUND);
     }
 
     @Test
     public void shouldCopyToTrustedBucket() throws IOException {
 
         assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
-        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx", "PDF");
+        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx", "someCase", "docx", "PDF");
         S3Document document = service.copyToTrustedBucket(copyRequest);
         assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
@@ -107,10 +109,10 @@ public class S3DocumentServiceTest {
     @Test
     public void shouldSetMetaDataWhenCopyToTrustedBucket() throws IOException {
 
-        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx","someCase", "docx", "PDF");
+        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx", "someCase", "docx", "PDF");
         S3Document document = service.copyToTrustedBucket(copyRequest);
 
-        ObjectMetadata metadata = trustedClient.getObjectMetadata(trustedBucketName,document.getFilename());
+        ObjectMetadata metadata = trustedClient.getObjectMetadata(trustedBucketName, document.getFilename());
         assertThat(metadata.getContentType()).isEqualTo("application/docx");
         assertThat(metadata.getUserMetaDataOf("filename")).startsWith("someCase");
         assertThat(metadata.getUserMetaDataOf("originalName")).isEqualTo("sample.docx");
@@ -120,7 +122,7 @@ public class S3DocumentServiceTest {
     public void shouldUploadToTrustedBucket() throws IOException, URISyntaxException {
 
         assertThat(trustedClient.listObjectsV2(trustedBucketName).getKeyCount()).isEqualTo(0);
-        UploadDocument uploadRequest = new UploadDocument("someUUID.docx", getPDFDocument(),"someCase", "sample.docx");
+        UploadDocument uploadRequest = new UploadDocument("someUUID.docx", getPDFDocument(), "someCase", "sample.docx");
         S3Document document = service.uploadFile(uploadRequest);
         assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
     }
@@ -130,19 +132,23 @@ public class S3DocumentServiceTest {
         metaData.setContentType("application/docx");
         metaData.addUserMetadata("originalName", "sample.docx");
         metaData.addUserMetadata("filename", "someUUID.docx");
-        untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()), metaData));
+        untrustedClient.putObject(
+            new PutObjectRequest(untrustedBucketName, "someUUID.docx", new ByteArrayInputStream(getDocumentByteArray()),
+                metaData));
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
-        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
+        return Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
     }
 
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
-        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
+        return Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
     }
 
     private void clearS3Buckets() {
-        if(untrustedClient.doesBucketExistV2(untrustedBucketName)) {
+        if (untrustedClient.doesBucketExistV2(untrustedBucketName)) {
             ObjectListing objectListing = untrustedClient.listObjects(untrustedBucketName);
             while (true) {
                 for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
@@ -157,7 +163,7 @@ public class S3DocumentServiceTest {
             untrustedClient.deleteBucket(untrustedBucketName);
         }
 
-        if(trustedClient.doesBucketExistV2(trustedBucketName)) {
+        if (trustedClient.doesBucketExistV2(trustedBucketName)) {
             ObjectListing objectListing = trustedClient.listObjects(trustedBucketName);
             while (true) {
                 for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
@@ -175,4 +181,5 @@ public class S3DocumentServiceTest {
         untrustedClient.createBucket(untrustedBucketName);
         trustedClient.createBucket(trustedBucketName);
     }
+
 }
