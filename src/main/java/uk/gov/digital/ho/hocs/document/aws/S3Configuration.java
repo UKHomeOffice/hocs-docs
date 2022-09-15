@@ -13,20 +13,20 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
 
 @Configuration
-@Profile({ "s3"})
+@Profile({ "s3" })
 public class S3Configuration {
 
     @Bean("Trusted")
     public AmazonS3 trustedS3Client(@Value("${trusted.aws.s3.access.key}") String accessKey,
-                             @Value("${trusted.aws.s3.secret.key}") String secretKey,
-                             @Value("${aws.sqs.region}") String region) {
+                                    @Value("${trusted.aws.s3.secret.key}") String secretKey,
+                                    @Value("${aws.sqs.region}") String region) {
         return s3Client(accessKey, secretKey, region);
     }
 
     @Bean("UnTrusted")
     public AmazonS3 untrustedS3Client(@Value("${untrusted.aws.s3.access.key}") String accessKey,
-                             @Value("${untrusted.aws.s3.secret.key}") String secretKey,
-                             @Value("${aws.sqs.region}") String region) {
+                                      @Value("${untrusted.aws.s3.secret.key}") String secretKey,
+                                      @Value("${aws.sqs.region}") String region) {
         return s3Client(accessKey, secretKey, region);
     }
 
@@ -43,10 +43,9 @@ public class S3Configuration {
             throw new BeanCreationException("Failed to create S3 bean. Need non-blank values for region");
         }
 
-        return AmazonS3ClientBuilder.standard()
-                .withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                .withClientConfiguration(new ClientConfiguration())
-                .build();
+        return AmazonS3ClientBuilder.standard().withRegion(region).withCredentials(
+            new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))).withClientConfiguration(
+            new ClientConfiguration()).build();
     }
+
 }

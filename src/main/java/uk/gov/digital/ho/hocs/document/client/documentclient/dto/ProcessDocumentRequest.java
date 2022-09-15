@@ -16,4 +16,5 @@ public class ProcessDocumentRequest {
 
     @JsonProperty("convertTo")
     private String convertTo;
+
 }

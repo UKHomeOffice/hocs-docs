@@ -31,16 +31,19 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     S3DocumentService s3BucketService;
 
     private final String endpoint = "direct:convertdocument";
+
     private final String toEndpoint = "mock:updaterecord";
-    public  final String mockNoConvertEndEndpoint = "mock:noConvertEndEndpoint";
+
+    public final String mockNoConvertEndEndpoint = "mock:noConvertEndEndpoint";
 
     private final String conversionService = "mock:conversion-service";
-    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx", "PDF");
 
+    private DocumentConversionRequest request = new DocumentConversionRequest(UUID.randomUUID(), "sample.docx",
+        "externalReferenceUUID", "docx", "PDF");
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-      return new DocumentConversionConsumer(s3BucketService, conversionService, toEndpoint);
+        return new DocumentConversionConsumer(s3BucketService, conversionService, toEndpoint);
     }
 
     @Test
@@ -49,14 +52,15 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         when(s3BucketService.uploadFile(any())).thenReturn(getTestDocument());
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         getMockEndpoint(toEndpoint).assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
     }
 
     @Test
     public void shouldNotAddDocumentToDocumentServiceQueueWhenShouldNotConvert() throws Exception {
-        DocumentConversionRequest noneRequest = new DocumentConversionRequest(UUID.randomUUID(),"sample.docx", "externalReferenceUUID", "docx", "NONE");
+        DocumentConversionRequest noneRequest = new DocumentConversionRequest(UUID.randomUUID(), "sample.docx",
+            "externalReferenceUUID", "docx", "NONE");
 
         context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
@@ -66,16 +70,13 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         });
 
         MockEndpoint mockConversionService = mockConversionService();
-        template.sendBody(endpoint,noneRequest);
+        template.sendBody(endpoint, noneRequest);
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
         getMockEndpoint(toEndpoint).assertIsSatisfied();
         mockConversionService.assertIsNotSatisfied();
 
-        assertTrue(
-                getMockEndpoint(mockNoConvertEndEndpoint)
-                        .getReceivedExchanges()
-                        .get(0).getMessage().getHeaders().containsKey(SqsConstants.RECEIPT_HANDLE)
-        );
+        assertTrue(getMockEndpoint(mockNoConvertEndEndpoint).getReceivedExchanges().get(
+            0).getMessage().getHeaders().containsKey(SqsConstants.RECEIPT_HANDLE));
     }
 
     @Test
@@ -86,7 +87,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedMessageCount(1);
         mockEndpoint.expectedPropertyReceived("status", DocumentStatus.UPLOADED.toString());
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         mockEndpoint.assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
         verify(s3BucketService).uploadFile(any());
@@ -99,7 +100,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedMessageCount(1);
         mockEndpoint.expectedPropertyReceived("status", DocumentStatus.FAILED_CONVERSION.toString());
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         mockEndpoint.assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
         verify(s3BucketService).uploadFile(any());
@@ -110,7 +111,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
         MockEndpoint mockConversionService = mockConversionService();
         when(s3BucketService.getFileFromTrustedS3(any())).thenThrow(new IOException());
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         mockConversionService.assertIsNotSatisfied();
     }
 
@@ -119,7 +120,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService(400);
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         getMockEndpoint(toEndpoint).assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
     }
@@ -129,7 +130,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService(500);
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         getMockEndpoint(toEndpoint).assertIsSatisfied();
         mockConversionService.assertIsSatisfied();
     }
@@ -139,12 +140,13 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
         mockEndpoint.expectedPropertyReceived("externalReferenceUUID", "externalReferenceUUID");
-        template.sendBody(endpoint,request);
+        template.sendBody(endpoint, request);
         mockEndpoint.assertIsSatisfied();
     }
 
     private MockEndpoint mockConversionService() {
-        MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
+        MockEndpoint mock = getMockEndpoint(
+            "mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
             exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
@@ -154,7 +156,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     private MockEndpoint mockFailedConversionService(int responseCode) {
-        MockEndpoint mock = getMockEndpoint("mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
+        MockEndpoint mock = getMockEndpoint(
+            "mock:conversion-service?throwExceptionOnFailure=false&useSystemProperties=true");
         mock.expectedMessageCount(1);
         mock.whenAnyExchangeReceived(exchange -> {
             exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, responseCode);
@@ -164,11 +167,15 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     }
 
     private S3Document getTestDocument() throws URISyntaxException, IOException {
-        byte[] data = Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
-        return new S3Document("someexternalReferenceUUID/UUID.pdf", "sample.docx", data, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        byte[] data = Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
+        return new S3Document("someexternalReferenceUUID/UUID.pdf", "sample.docx", data, "docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
-        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
+        return Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
     }
+
 }

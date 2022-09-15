@@ -14,13 +14,12 @@ public class UpdateDocumentConsumer extends RouteBuilder {
     private DocumentDataService documentDataService;
 
     @Autowired
-    public UpdateDocumentConsumer(
-            DocumentDataService documentDataService){
+    public UpdateDocumentConsumer(DocumentDataService documentDataService) {
         this.documentDataService = documentDataService;
     }
 
     @Override
-    public void configure()  {
+    public void configure() {
 
         errorHandler(deadLetterChannel("log:document-update-queue"));
 
@@ -28,6 +27,7 @@ public class UpdateDocumentConsumer extends RouteBuilder {
                 .process(RequestData.transferHeadersToMDC())
                 .bean(documentDataService, "updateDocument(${body.uuid},${body.status}, ${body.fileLink},${body.pdfLink})")
 
-                .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
+            .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE));
     }
+
 }

@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
 
 @Configuration
-@Profile({"sns"})
+@Profile({ "sns" })
 public class SnsConfiguration {
 
     @Bean("auditSnsClient")
@@ -30,13 +30,13 @@ public class SnsConfiguration {
         }
 
         if (StringUtils.isEmpty(region)) {
-            throw new BeanCreationException("Failed to create SNS client bean. Need non-blank values for region: " + region);
+            throw new BeanCreationException(
+                "Failed to create SNS client bean. Need non-blank values for region: " + region);
         }
 
-        return AmazonSNSClientBuilder.standard()
-                .withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                .withClientConfiguration(new ClientConfiguration())
-                .build();
+        return AmazonSNSClientBuilder.standard().withRegion(region).withCredentials(
+            new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))).withClientConfiguration(
+            new ClientConfiguration()).build();
     }
+
 }

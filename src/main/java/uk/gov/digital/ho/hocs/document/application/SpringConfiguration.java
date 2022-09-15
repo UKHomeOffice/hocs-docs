@@ -31,7 +31,6 @@ public class SpringConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(createRequestData());
     }
 
-
     @Bean
     public CamelContextConfiguration contextConfiguration() {
         return new CamelContextConfiguration() {
@@ -53,7 +52,6 @@ public class SpringConfiguration implements WebMvcConfigurer {
         return new RestTemplate();
     }
 
-
     public static ObjectMapper initialiseObjectMapper() {
         ObjectMapper m = new ObjectMapper();
         m.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
@@ -70,4 +68,5 @@ public class SpringConfiguration implements WebMvcConfigurer {
     public JacksonDataFormat jacksonDataFormat(ObjectMapper objectMapper) {
         return new JacksonDataFormat(objectMapper, Object.class);
     }
+
 }

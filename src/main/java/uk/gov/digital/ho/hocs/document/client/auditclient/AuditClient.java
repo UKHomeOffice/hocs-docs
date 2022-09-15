@@ -6,7 +6,9 @@ import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import javax.json.Json;
+
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.client.auditclient.dto.CreateAuditRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
@@ -25,11 +27,17 @@ import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 public class AuditClient {
 
     private final String auditQueue;
+
     private final String raisingService;
+
     private final String namespace;
+
     private final ProducerTemplate producerTemplate;
+
     private final ObjectMapper objectMapper;
-    private static final String EVENT_TYPE_HEADER ="event_type";
+
+    private static final String EVENT_TYPE_HEADER = "event_type";
+
     private final RequestData requestData;
 
     @Autowired
@@ -49,16 +57,13 @@ public class AuditClient {
 
     public void createDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-                createAuditPayload(documentData),
-                EventType.DOCUMENT_CREATED.toString());
+            createAuditPayload(documentData), EventType.DOCUMENT_CREATED.toString());
         try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request),
+                getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Create Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(),
-                    documentData.getExternalReferenceUUID(),
-                    requestData.correlationId(),
-                    requestData.userId(),
-                    value(EVENT, AUDIT_EVENT_CREATED));
+                documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(),
+                requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
             logError(e, documentData.getUuid());
         }
@@ -70,16 +75,13 @@ public class AuditClient {
 
     public void updateDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-                createAuditPayload(documentData),
-                EventType.DOCUMENT_UPDATED.toString());
+            createAuditPayload(documentData), EventType.DOCUMENT_UPDATED.toString());
         try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request),
+                getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
             log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(),
-                    documentData.getExternalReferenceUUID(),
-                    requestData.correlationId(),
-                    requestData.userId(),
-                    value(EVENT, AUDIT_EVENT_CREATED));
+                documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(),
+                requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
             logError(e, documentData.getUuid());
         }
@@ -87,16 +89,13 @@ public class AuditClient {
 
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-                createAuditPayload(documentData),
-                EventType.DOCUMENT_DELETED.toString());
+            createAuditPayload(documentData), EventType.DOCUMENT_DELETED.toString());
         try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request), getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
+            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request),
+                getQueueHeaders(EventType.DOCUMENT_DELETED.toString()));
             log.info("Auditing 'Delete Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                    documentData.getUuid(),
-                    documentData.getExternalReferenceUUID(),
-                    requestData.correlationId(),
-                    requestData.userId(),
-                    value(EVENT, AUDIT_EVENT_CREATED));
+                documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(),
+                requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
         } catch (Exception e) {
             logError(e, documentData.getUuid());
         }
@@ -104,24 +103,13 @@ public class AuditClient {
 
     private String createAuditPayload(DocumentData documentData) {
 
-        return Json.createObjectBuilder()
-                .add("documentUUID", documentData.getUuid().toString())
-                .add("documentTitle", documentData.getDisplayName())
-                .add("documentType", documentData.getType())
-                .build()
-                .toString();
+        return Json.createObjectBuilder().add("documentUUID", documentData.getUuid().toString()).add("documentTitle",
+            documentData.getDisplayName()).add("documentType", documentData.getType()).build().toString();
     }
 
     private CreateAuditRequest generateAuditRequest(UUID caseUUID, String auditPayload, String eventType) {
-        return new CreateAuditRequest(
-                requestData.correlationId(),
-                caseUUID,
-                raisingService,
-                auditPayload,
-                namespace,
-                LocalDateTime.now(),
-                eventType,
-                requestData.userId());
+        return new CreateAuditRequest(requestData.correlationId(), caseUUID, raisingService, auditPayload, namespace,
+            LocalDateTime.now(), eventType, requestData.userId());
     }
 
     private Map<String, Object> getQueueHeaders(String eventType) {
@@ -134,7 +122,9 @@ public class AuditClient {
         return headers;
     }
 
-    private void logError(Exception e, UUID documentUUID){
-        log.error("Failed to create audit event for document UUID {} for reason {}", documentUUID, e, value(EVENT, AUDIT_FAILED));
+    private void logError(Exception e, UUID documentUUID) {
+        log.error("Failed to create audit event for document UUID {} for reason {}", documentUUID, e,
+            value(EVENT, AUDIT_FAILED));
     }
+
 }

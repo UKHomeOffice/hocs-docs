@@ -39,13 +39,15 @@ public class AuditClientTest {
     ArgumentCaptor jsonCaptor;
 
     @Captor
-    ArgumentCaptor<HashMap<String,Object>> headerCaptor;
+    ArgumentCaptor<HashMap<String, Object>> headerCaptor;
 
     private SpringConfiguration configuration = new SpringConfiguration();
+
     private ObjectMapper mapper;
 
     private AuditClient auditClient;
-    private String auditQueue ="audit-queue";
+
+    private String auditQueue = "audit-queue";
 
     @Before
     public void setUp() {
@@ -54,21 +56,22 @@ public class AuditClientTest {
         when(requestData.groups()).thenReturn("some groups");
         when(requestData.username()).thenReturn("some username");
         mapper = configuration.initialiseObjectMapper();
-        auditClient = new AuditClient(producerTemplate, auditQueue,"hocs-docs","namespace", mapper, requestData);
+        auditClient = new AuditClient(producerTemplate, auditQueue, "hocs-docs", "namespace", mapper, requestData);
 
     }
 
     @Test
-    public void shouldSetHeaders()  {
+    public void shouldSetHeaders() {
         UUID caseUUID = UUID.randomUUID();
         UUID uploadOwnerUUID = UUID.randomUUID();
         DocumentData docData = new DocumentData(caseUUID, "ORIGINAL", "a document", uploadOwnerUUID);
-        Map<String, Object> expectedHeaders = new HashMap<String, Object>(){{
-                put("event_type", EventType.DOCUMENT_CREATED.toString());
-                put(RequestData.CORRELATION_ID_HEADER, requestData.correlationId());
-                put(RequestData.USER_ID_HEADER, requestData.userId());
-                put(RequestData.USERNAME_HEADER, requestData.username());
-                put(RequestData.GROUP_HEADER, requestData.groups());}};
+        Map<String, Object> expectedHeaders = new HashMap<String, Object>() {{
+            put("event_type", EventType.DOCUMENT_CREATED.toString());
+            put(RequestData.CORRELATION_ID_HEADER, requestData.correlationId());
+            put(RequestData.USER_ID_HEADER, requestData.userId());
+            put(RequestData.USERNAME_HEADER, requestData.username());
+            put(RequestData.GROUP_HEADER, requestData.groups());
+        }};
 
         auditClient.createDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), any(), headerCaptor.capture());
@@ -85,7 +88,7 @@ public class AuditClientTest {
 
         auditClient.createDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
-        CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
+        CreateAuditRequest request = mapper.readValue((String) jsonCaptor.getValue(), CreateAuditRequest.class);
         assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_CREATED.toString());
         assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
         assertThat(request.getCorrelationID()).isEqualTo(requestData.correlationId());
@@ -100,8 +103,9 @@ public class AuditClientTest {
         UUID uploadOwnerUUID = UUID.randomUUID();
         DocumentData docData = new DocumentData(caseUUID, "ORIGINAL", "a document", uploadOwnerUUID);
 
-        doThrow(new RuntimeException("An error occurred")).when(producerTemplate).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
-        assertThatCode(() -> { auditClient.createDocumentAudit(docData);}).doesNotThrowAnyException();
+        doThrow(new RuntimeException("An error occurred")).when(producerTemplate).sendBodyAndHeaders(eq(auditQueue),
+            jsonCaptor.capture(), any());
+        assertThatCode(() -> {auditClient.createDocumentAudit(docData);}).doesNotThrowAnyException();
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
     }
 
@@ -113,7 +117,7 @@ public class AuditClientTest {
 
         auditClient.createDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
-        CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
+        CreateAuditRequest request = mapper.readValue((String) jsonCaptor.getValue(), CreateAuditRequest.class);
         assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_CREATED.toString());
         assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
     }
@@ -127,8 +131,9 @@ public class AuditClientTest {
 
         auditClient.deleteDocumentAudit(docData);
         verify(producerTemplate, times(1)).sendBodyAndHeaders(eq(auditQueue), jsonCaptor.capture(), any());
-        CreateAuditRequest request = mapper.readValue((String)jsonCaptor.getValue(), CreateAuditRequest.class);
+        CreateAuditRequest request = mapper.readValue((String) jsonCaptor.getValue(), CreateAuditRequest.class);
         assertThat(request.getType()).isEqualTo(EventType.DOCUMENT_DELETED.toString());
         assertThat(request.getCaseUUID()).isEqualTo(docData.getExternalReferenceUUID());
     }
+
 }

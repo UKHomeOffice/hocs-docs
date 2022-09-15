@@ -27,14 +27,12 @@ public class TestConfiguration {
     }
 
     public AmazonS3 s3Client() {
-        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration("http://localhost:9003/", "eu-west-2");
+        AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(
+            "http://localhost:9003/", "eu-west-2");
 
-        return AmazonS3ClientBuilder.standard()
-                .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
-                .withCredentials(awsCredentialsProvider)
-                .withPathStyleAccessEnabled(true)
-                .withEndpointConfiguration(endpoint)
-                .build();
+        return AmazonS3ClientBuilder.standard().withClientConfiguration(
+            new ClientConfiguration().withProtocol(Protocol.HTTP)).withCredentials(
+            awsCredentialsProvider).withPathStyleAccessEnabled(true).withEndpointConfiguration(endpoint).build();
     }
 
     private final AWSCredentialsProvider awsCredentialsProvider = new AWSCredentialsProvider() {
@@ -50,4 +48,5 @@ public class TestConfiguration {
         }
 
     };
+
 }

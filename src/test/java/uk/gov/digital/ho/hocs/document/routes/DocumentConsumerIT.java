@@ -28,6 +28,7 @@ import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,10 +37,10 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -57,8 +58,11 @@ public class DocumentConsumerIT {
 
     private String endpoint = "direct://cs-dev-document-sqs";
 
-    @Value("${docs.untrustedS3bucketName}") private String untrustedBucketName;
-    @Value("${docs.trustedS3bucketName}") private String trustedBucketName;
+    @Value("${docs.untrustedS3bucketName}")
+    private String untrustedBucketName;
+
+    @Value("${docs.trustedS3bucketName}")
+    private String trustedBucketName;
 
     @Autowired
     ObjectMapper mapper;
@@ -82,16 +86,23 @@ public class DocumentConsumerIT {
     private static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().port(9002));
 
     private String documentUUID;
+
     private String documentStandardLineUUID;
+
     private String documentTemplateUUID;
+
     private final String filename = "someUUID.docx";
+
     private final String originalFilename = "sample.docx";
 
-    private ProcessDocumentRequest request ;
-    private ProcessDocumentRequest requestStandardLine ;
-    private ProcessDocumentRequest requestTemplate ;
+    private ProcessDocumentRequest request;
+
+    private ProcessDocumentRequest requestStandardLine;
+
+    private ProcessDocumentRequest requestTemplate;
 
     private static final UUID EXTERNAL_REFERENCE_UUID = UUID.fromString("41d6f4d5-9bee-4b1c-b01c-35f5f3899f7c");
+
     private static final UUID USER_ID = UUID.fromString("d030c101-3ff6-43d7-9b6c-9cd54ccf5529");
 
     private HttpHeaders headers = new HttpHeaders();
@@ -102,23 +113,23 @@ public class DocumentConsumerIT {
         headers.add("X-Auth-UserId", USER_ID.toString());
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
-
-        CreateDocumentRequest requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
-                "some document", "some fileName", "ORIGINAL", "PDF");
+        CreateDocumentRequest requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID, "some document",
+            "some fileName", "ORIGINAL", "PDF");
         HttpEntity<String> documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
-        ResponseEntity<UUID> documentRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+        ResponseEntity<UUID> documentRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",
+            documentReqBody, UUID.class);
 
-
-        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
-                        "some document", "some fileName", "STANDARD_LINE", "PDF");
+        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID, "some document", "some fileName",
+            "STANDARD_LINE", "PDF");
         documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
-        ResponseEntity<UUID> documentStandardLineRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+        ResponseEntity<UUID> documentStandardLineRequest = restTemplate.postForEntity(
+            "http://localhost:" + port + "/document", documentReqBody, UUID.class);
 
-
-        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID,
-                        "some document", "some fileName", "TEMPLATE", "PDF");
+        requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID, "some document", "some fileName", "TEMPLATE",
+            "PDF");
         documentReqBody = new HttpEntity<>(mapper.writeValueAsString(requestBody), headers);
-        ResponseEntity<UUID> documentTemplateRequest = restTemplate.postForEntity("http://localhost:" + port + "/document",documentReqBody, UUID.class);
+        ResponseEntity<UUID> documentTemplateRequest = restTemplate.postForEntity(
+            "http://localhost:" + port + "/document", documentReqBody, UUID.class);
 
         if (documentRequest.getBody() == null || documentStandardLineRequest.getBody() == null || documentTemplateRequest.getBody() == null) {
             throw new RuntimeException("Test set up failure");
@@ -131,12 +142,12 @@ public class DocumentConsumerIT {
         requestStandardLine = new ProcessDocumentRequest(documentStandardLineUUID, filename, "PDF");
         requestTemplate = new ProcessDocumentRequest(documentTemplateUUID, filename, "PDF");
 
-        if(!setUpIsDone) {
+        if (!setUpIsDone) {
             configureFor("localhost", 9002);
             wireMockServer.start();
             startMockS3Service();
             uploadUntrustedFiles();
-            setUpIsDone =true;
+            setUpIsDone = true;
         }
     }
 
@@ -164,8 +175,8 @@ public class DocumentConsumerIT {
     public void shouldNotCallConversionServiceWhenMalwareCheckFails() throws Exception {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
 
@@ -176,8 +187,9 @@ public class DocumentConsumerIT {
     @Test
     public void shouldNotCallConversionServiceWhenMalwareFound() throws Exception {
         wireMockServer.resetAll();
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : false")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/convert")));
@@ -186,8 +198,9 @@ public class DocumentConsumerIT {
     @Test
     public void shouldNotCallConversionServiceIfDocumentTypeIsStandardLine() throws Exception {
         wireMockServer.resetAll();
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : True")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : True")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/convert")));
@@ -197,24 +210,24 @@ public class DocumentConsumerIT {
     public void shouldNotRetryWhenMalwareCheckFails() throws Exception {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
-
 
     @Test
     public void shouldNotRetryWhenConversionFails() throws Exception {
 
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/convert"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+        stubFor(post(urlEqualTo("/convert")).willReturn(
+            aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -234,13 +247,15 @@ public class DocumentConsumerIT {
         String pdfKey = getKeyFromExtension("pdf");
         String docxKey = getKeyFromExtension("docx");
 
-       ObjectMetadata pdfMetadata = trustedClient.getObjectMetadata(trustedBucketName, pdfKey);
-       assertThat(pdfMetadata.getContentType()).isEqualTo("application/pdf");
-       assertThat(pdfMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(EXTERNAL_REFERENCE_UUID.toString());
-       assertThat(pdfMetadata.getUserMetaDataOf("originalName")).isEqualTo("sample.pdf");
+        ObjectMetadata pdfMetadata = trustedClient.getObjectMetadata(trustedBucketName, pdfKey);
+        assertThat(pdfMetadata.getContentType()).isEqualTo("application/pdf");
+        assertThat(pdfMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(
+            EXTERNAL_REFERENCE_UUID.toString());
+        assertThat(pdfMetadata.getUserMetaDataOf("originalName")).isEqualTo("sample.pdf");
 
         ObjectMetadata docxMetadata = trustedClient.getObjectMetadata(trustedBucketName, docxKey);
-        assertThat(docxMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(EXTERNAL_REFERENCE_UUID.toString());
+        assertThat(docxMetadata.getUserMetaDataOf("externalReferenceUUID")).isEqualTo(
+            EXTERNAL_REFERENCE_UUID.toString());
         assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
     }
 
@@ -259,8 +274,9 @@ public class DocumentConsumerIT {
 
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : false")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : false")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -273,11 +289,12 @@ public class DocumentConsumerIT {
     public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure500() throws Exception {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/convert"))
-                .willReturn(aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
+        stubFor(post(urlEqualTo("/convert")).willReturn(
+            aResponse().withStatus(500).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -291,11 +308,12 @@ public class DocumentConsumerIT {
     public void shouldUpdateDocumentStatusInDatabaseOnConversionFailure400() throws Exception {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/convert"))
-                .willReturn(aResponse().withStatus(400).withHeader("Content-Type", "application/json").withBody("")));
+        stubFor(post(urlEqualTo("/convert")).willReturn(
+            aResponse().withStatus(400).withHeader("Content-Type", "application/json").withBody("")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -305,21 +323,21 @@ public class DocumentConsumerIT {
         assertThat(updatedDocument.getStatus()).isEqualTo(DocumentStatus.FAILED_CONVERSION);
     }
 
-
     private String getKeyFromExtension(String extension) {
-        return trustedClient.listObjectsV2(trustedBucketName)
-                .getObjectSummaries().stream().filter(s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(EXTERNAL_REFERENCE_UUID.toString()))))
-                .findFirst().get().getKey();
+        return trustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().stream().filter(
+            s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(
+                EXTERNAL_REFERENCE_UUID.toString())))).findFirst().get().getKey();
     }
 
     private void runSuccessfulConversion() throws IOException, URISyntaxException {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
-        stubFor(post(urlEqualTo("/convert"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
+        stubFor(post(urlEqualTo("/convert")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(request), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -329,8 +347,9 @@ public class DocumentConsumerIT {
     private void runSuccessfulConversionForStandardLine() throws IOException, URISyntaxException {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
         template.sendBodyAndHeaders(endpoint, mapper.writeValueAsString(requestStandardLine), getHeaders());
         verify(1, postRequestedFor(urlEqualTo("/scan")));
@@ -340,21 +359,23 @@ public class DocumentConsumerIT {
     private void runSuccessfulConversionForTemplate() throws IOException, URISyntaxException {
         wireMockServer.resetAll();
 
-        stubFor(post(urlEqualTo("/scan"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("Everything ok : true")));
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
 
         template.sendBody(endpoint, mapper.writeValueAsString(requestTemplate));
         verify(1, postRequestedFor(urlEqualTo("/scan")));
         verify(0, postRequestedFor(urlEqualTo("/convert")));
     }
 
-
     private byte[] getDocumentByteArray() throws URISyntaxException, IOException {
-        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
+        return Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.docx").toURI()));
     }
 
     private byte[] getPDFDocument() throws URISyntaxException, IOException {
-        return Files.readAllBytes(Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
+        return Files.readAllBytes(
+            Paths.get(this.getClass().getClassLoader().getResource("testdata/sample.pdf").toURI()));
     }
 
     private void startMockS3Service() {
@@ -371,7 +392,9 @@ public class DocumentConsumerIT {
         metaData.setContentType("application/docx");
         metaData.addUserMetadata("originalName", originalFilename);
         metaData.addUserMetadata("filename", filename);
-        untrustedClient.putObject(new PutObjectRequest(untrustedBucketName, filename, new ByteArrayInputStream(getDocumentByteArray()), metaData));
+        untrustedClient.putObject(
+            new PutObjectRequest(untrustedBucketName, filename, new ByteArrayInputStream(getDocumentByteArray()),
+                metaData));
     }
 
     Map<String, Object> getHeaders() {

@@ -45,7 +45,10 @@ class DocumentDataResource {
     }
 
     @GetMapping(value = "/document/reference/{externalReferenceUUID}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID, @RequestParam(name = "type", required = false) String type) {
+    public ResponseEntity<GetDocumentsResponse> getDocumentsForCaseForType(@PathVariable UUID externalReferenceUUID,
+                                                                           @RequestParam(name = "type",
+                                                                                         required = false)
+                                                                           String type) {
         Set<DocumentData> documents = documentDataService.getDocumentsByReference(externalReferenceUUID, type);
         return ResponseEntity.ok(GetDocumentsResponse.from(documents));
     }
@@ -79,15 +82,15 @@ class DocumentDataResource {
     private static ResponseEntity<ByteArrayResource> generateFileResponseEntity(S3Document document) {
         ByteArrayResource resource = new ByteArrayResource(document.getData());
 
-        var response = ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + document.getOriginalFilename());
+        var response = ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment;filename=" + document.getOriginalFilename());
 
         if (StringUtils.hasText(document.getMimeType())) {
             MediaType mediaType = MediaType.valueOf(document.getMimeType());
             response = response.contentType(mediaType);
         }
 
-        return response.contentLength(document.getData().length)
-                .body(resource);
+        return response.contentLength(document.getData().length).body(resource);
     }
+
 }

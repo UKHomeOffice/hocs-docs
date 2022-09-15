@@ -23,15 +23,18 @@ import static uk.gov.digital.ho.hocs.document.application.LogEvent.*;
 public class DocumentClient {
 
     private final String documentQueue;
+
     private final ProducerTemplate producerTemplate;
+
     private final ObjectMapper objectMapper;
+
     private final RequestData requestData;
 
     @Autowired
     public DocumentClient(ProducerTemplate producerTemplate,
                           @Value("${docs.queue}") String documentQueue,
                           ObjectMapper objectMapper,
-                          RequestData requestData){
+                          RequestData requestData) {
         this.producerTemplate = producerTemplate;
         this.documentQueue = documentQueue;
         this.objectMapper = objectMapper;
@@ -41,10 +44,12 @@ public class DocumentClient {
     public void processDocument(UUID documentUUID, String fileLocation, String convertTo) {
         ProcessDocumentRequest request = new ProcessDocumentRequest(documentUUID, fileLocation, convertTo);
         try {
-            producerTemplate.sendBodyAndHeaders(documentQueue, objectMapper.writeValueAsString(request), getQueueHeaders());
+            producerTemplate.sendBodyAndHeaders(documentQueue, objectMapper.writeValueAsString(request),
+                getQueueHeaders());
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));
         } catch (JsonProcessingException e) {
-            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e), DOCUMENT_CLIENT_FAILURE);
+            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e),
+                DOCUMENT_CLIENT_FAILURE);
         }
     }
 
@@ -56,4 +61,5 @@ public class DocumentClient {
         headers.put(RequestData.GROUP_HEADER, requestData.groups());
         return headers;
     }
+
 }

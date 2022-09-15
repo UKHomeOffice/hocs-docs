@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({ "local"})
+@Profile({ "local" })
 public class LocalStackConfiguration {
 
     private static final String EU_WEST_2 = "eu-west-2";
@@ -47,22 +47,18 @@ public class LocalStackConfiguration {
         String host = String.format("http://%s:%s/", awsHost, sqsPort);
 
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
-        return AmazonSQSClientBuilder.standard()
-                .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
-                .withCredentials(awsCredentialsProvider)
-                .withEndpointConfiguration(endpoint)
-                .build();
+        return AmazonSQSClientBuilder.standard().withClientConfiguration(
+            new ClientConfiguration().withProtocol(Protocol.HTTP)).withCredentials(
+            awsCredentialsProvider).withEndpointConfiguration(endpoint).build();
     }
 
     @Bean("auditSnsClient")
     public AmazonSNS auditSnsClient() {
         String host = String.format("http://%s:%s/", awsHost, snsPort);
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
-        return AmazonSNSClientBuilder.standard()
-                .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
-                .withCredentials(awsCredentialsProvider)
-                .withEndpointConfiguration(endpoint)
-                .build();
+        return AmazonSNSClientBuilder.standard().withClientConfiguration(
+            new ClientConfiguration().withProtocol(Protocol.HTTP)).withCredentials(
+            awsCredentialsProvider).withEndpointConfiguration(endpoint).build();
     }
 
     @Bean("Trusted")
@@ -81,13 +77,10 @@ public class LocalStackConfiguration {
 
         AwsClientBuilder.EndpointConfiguration endpoint = new AwsClientBuilder.EndpointConfiguration(host, EU_WEST_2);
 
-        return AmazonS3ClientBuilder.standard()
-                .withClientConfiguration(new ClientConfiguration().withProtocol(Protocol.HTTP))
-                .withCredentials(awsCredentialsProvider)
-                .withPathStyleAccessEnabled(true)
-                .withEndpointConfiguration(endpoint)
-                .disableChunkedEncoding()
-                .build();
+        return AmazonS3ClientBuilder.standard().withClientConfiguration(
+            new ClientConfiguration().withProtocol(Protocol.HTTP)).withCredentials(
+            awsCredentialsProvider).withPathStyleAccessEnabled(true).withEndpointConfiguration(
+            endpoint).disableChunkedEncoding().build();
     }
 
     private final AWSCredentialsProvider awsCredentialsProvider = new AWSCredentialsProvider() {

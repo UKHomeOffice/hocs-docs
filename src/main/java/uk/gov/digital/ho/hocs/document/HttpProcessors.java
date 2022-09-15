@@ -21,16 +21,17 @@ public class HttpProcessors {
     public static Processor buildMultipartEntity() {
         return exchange -> {
             S3Document response = exchange.getIn().getBody(S3Document.class);
-            ContentBody content = new InputStreamBody(new ByteArrayInputStream(response.getData()), response.getFilename());
-            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
-                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                    .addPart("file", content)
-                    .addTextBody("name", response.getFilename());
+            ContentBody content = new InputStreamBody(new ByteArrayInputStream(response.getData()),
+                response.getFilename());
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(
+                HttpMultipartMode.BROWSER_COMPATIBLE).addPart("file", content).addTextBody("name",
+                response.getFilename());
             exchange.getOut().setBody(multipartEntityBuilder.build());
         };
     }
 
     public static final Predicate validateHttpResponse = header(Exchange.HTTP_RESPONSE_CODE).isLessThan(300);
+
     public static final Predicate badRequestResponse = header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(400);
 
 }

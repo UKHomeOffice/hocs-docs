@@ -17,11 +17,9 @@ public class GetDocumentsResponse {
     private Set<DocumentDto> documentDtos;
 
     public static GetDocumentsResponse from(Set<DocumentData> documents) {
-        Set<DocumentDto> documentDtoResponse = documents
-                .stream()
-                .map(DocumentDto::from)
-                .collect(Collectors.toSet());
+        Set<DocumentDto> documentDtoResponse = documents.stream().map(DocumentDto::from).collect(Collectors.toSet());
 
         return new GetDocumentsResponse(documentDtoResponse);
     }
+
 }
