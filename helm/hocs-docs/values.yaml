@@ -1,0 +1,27 @@
+---
+hocs-backend-service:
+  nameOverride: hocs-docs
+
+  app:
+    image:
+      repository: quay.io/ukhomeofficedigital/hocs-docs
+    resources:
+      limits:
+        memory: 1280Mi
+      requests:
+        memory: 1280Mi
+    javaOpts: >-
+      -XX:InitialRAMPercentage=30 -XX:MaxRAMPercentage=50
+      -Djava.security.egd=file:/dev/./urandom
+      -Djavax.net.ssl.trustStore=/etc/keystore/truststore.jks
+      -Dhttps.proxyHost=hocs-outbound-proxy.{{ .Release.Namespace }}.svc.cluster.local
+      -Dhttps.proxyPort=31290
+      -Dhttp.nonProxyHosts=*.{{ .Release.Namespace }}.svc.cluster.local
+    springProfiles: 'sqs, sns, s3'
+    clamAvRoot: 'https4://clamav.virus-scan.svc.cluster.local'
+    conveterRoot: 'https4://hocs-docs-converter.{{ .Release.Namespace }}.svc.cluster.local'
+    docsQueueName: '{{ .Release.Namespace }}-document-sqs'
+    docsQueueNameDlq: '{{ .Release.Namespace }}-document-sqs-dlq'
+    trustedBucketName: '{{ .Release.Namespace }}-trusted-s3'
+    untrustedBucketName: '{{ .Release.Namespace }}-untrusted-s3'
+    auditTopicName: '{{ .Release.Namespace }}-sns'
