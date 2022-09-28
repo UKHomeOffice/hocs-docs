@@ -57,16 +57,6 @@
   value: '{{ tpl .Values.app.trustedBucketName . }}'
 - name: DOCS_UNTRUSTEDS3BUCKETNAME
   value: '{{ tpl .Values.app.untrustedBucketName . }}'
-- name: DOCS_AWS_SQS_ACCESS_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Release.Namespace }}-document-sqs
-      key: access_key_id
-- name: DOCS_AWS_SQS_SECRET_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Release.Namespace }}-document-sqs
-      key: secret_access_key
 - name: TRUSTED_AWS_S3_ACCESS_KEY
   valueFrom:
     secretKeyRef:
