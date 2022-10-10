@@ -8,7 +8,7 @@
 - name: CLAMAV_ROOT
   value: '{{ tpl .Values.env.app.clamAvRoot . }}'
 - name: HOCSCONVERTER_ROOT
-  value: '{{ tpl .Values.env.app.conveterRoot . }}'
+  value: '{{ tpl .Values.env.app.converterRoot . }}'
 - name: DB_HOST
   valueFrom:
     secretKeyRef:
