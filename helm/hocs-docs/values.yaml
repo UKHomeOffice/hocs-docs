@@ -1,5 +1,5 @@
 ---
-hocs-backend-service:
+hocs-generic-service:
   nameOverride: hocs-docs
 
   app:
@@ -10,19 +10,20 @@ hocs-backend-service:
         memory: 1280Mi
       requests:
         memory: 1280Mi
-    javaOpts: >-
-      -XX:InitialRAMPercentage=30 -XX:MaxRAMPercentage=50
-      -Djava.security.egd=file:/dev/./urandom
-      -Djavax.net.ssl.trustStore=/etc/keystore/truststore.jks
-      -Dhttps.proxyHost=hocs-outbound-proxy.{{ .Release.Namespace }}.svc.cluster.local
-      -Dhttps.proxyPort=31290
-      -Dhttp.nonProxyHosts=*.svc.cluster.local
-#  on most services the line above is -Dhttp.nonProxyHosts=*.{{ .Release.Namespace }}.svc.cluster.local to discourage cross namespace communication, but this service talks to 'clamav.virus-scan.svc.cluster.local' too.
-    springProfiles: 'sqs, sns, s3'
-    clamAvRoot: 'https4://clamav.virus-scan.svc.cluster.local'
-    conveterRoot: 'https4://hocs-docs-converter.{{ .Release.Namespace }}.svc.cluster.local'
-    docsQueueName: '{{ .Release.Namespace }}-document-sqs'
-    docsQueueNameDlq: '{{ .Release.Namespace }}-document-sqs-dlq'
-    trustedBucketName: '{{ .Release.Namespace }}-trusted-s3'
-    untrustedBucketName: '{{ .Release.Namespace }}-untrusted-s3'
-    auditTopicName: '{{ .Release.Namespace }}-sns'
+    env:
+      javaOpts: >-
+        -XX:InitialRAMPercentage=30 -XX:MaxRAMPercentage=50
+        -Djava.security.egd=file:/dev/./urandom
+        -Djavax.net.ssl.trustStore=/etc/keystore/truststore.jks
+        -Dhttps.proxyHost=hocs-outbound-proxy.{{ .Release.Namespace }}.svc.cluster.local
+        -Dhttps.proxyPort=31290
+        -Dhttp.nonProxyHosts=*.svc.cluster.local
+      #  on most services the line above is -Dhttp.nonProxyHosts=*.{{ .Release.Namespace }}.svc.cluster.local to discourage cross namespace communication, but this service talks to 'clamav.virus-scan.svc.cluster.local' too.
+      springProfiles: 'sqs, sns, s3'
+      clamAvRoot: 'https4://clamav.virus-scan.svc.cluster.local'
+      converterRoot: 'https4://hocs-docs-converter.{{ .Release.Namespace }}.svc.cluster.local'
+      docsQueueName: '{{ .Release.Namespace }}-document-sqs'
+      docsQueueNameDlq: '{{ .Release.Namespace }}-document-sqs-dlq'
+      trustedBucketName: '{{ .Release.Namespace }}-trusted-s3'
+      untrustedBucketName: '{{ .Release.Namespace }}-untrusted-s3'
+      auditTopicName: '{{ .Release.Namespace }}-sns'
