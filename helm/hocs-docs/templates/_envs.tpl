@@ -1,14 +1,14 @@
 {{- define "deployment.envs" }}
 - name: JAVA_OPTS
-  value: '{{ tpl .Values.env.app.javaOpts . }}'
+  value: '{{ tpl .Values.app.env.javaOpts . }}'
 - name: SERVER_PORT
   value: '{{ include "hocs-app.port" . }}'
 - name: SPRING_PROFILES_ACTIVE
-  value: '{{ tpl .Values.env.app.springProfiles . }}'
+  value: '{{ tpl .Values.app.env.springProfiles . }}'
 - name: CLAMAV_ROOT
-  value: '{{ tpl .Values.env.app.clamAvRoot . }}'
+  value: '{{ tpl .Values.app.env.clamAvRoot . }}'
 - name: HOCSCONVERTER_ROOT
-  value: '{{ tpl .Values.env.app.converterRoot . }}'
+  value: '{{ tpl .Values.app.env.converterRoot . }}'
 - name: DB_HOST
   valueFrom:
     secretKeyRef:
@@ -40,9 +40,9 @@
       name: {{ .Release.Namespace }}-docs-rds
       key: password
 - name: DOCS_QUEUE_NAME
-  value: '{{ tpl .Values.env.app.docsQueueName . }}'
+  value: '{{ tpl .Values.app.env.docsQueueName . }}'
 - name: DOCS_QUEUE_DLQ_NAME
-  value: '{{ tpl .Values.env.app.docsQueueNameDlq . }}'
+  value: '{{ tpl .Values.app.env.docsQueueNameDlq . }}'
 - name: DOCS_AWS_SQS_ACCESS_KEY
   valueFrom:
     secretKeyRef:
@@ -54,9 +54,9 @@
       name: {{ .Release.Namespace }}-document-sqs
       key: secret_access_key
 - name: DOCS_TRUSTEDS3BUCKETNAME
-  value: '{{ tpl .Values.env.app.trustedBucketName . }}'
+  value: '{{ tpl .Values.app.env.trustedBucketName . }}'
 - name: DOCS_UNTRUSTEDS3BUCKETNAME
-  value: '{{ tpl .Values.env.app.untrustedBucketName . }}'
+  value: '{{ tpl .Values.app.env.untrustedBucketName . }}'
 - name: TRUSTED_AWS_S3_ACCESS_KEY
   valueFrom:
     secretKeyRef:
@@ -83,7 +83,7 @@
       name: {{ .Release.Namespace }}-untrusted-s3
       key: secret_access_key
 - name: AUDIT_TOPIC_NAME
-  value: '{{ tpl .Values.env.app.auditTopicName . }}'
+  value: '{{ tpl .Values.app.env.auditTopicName . }}'
 - name: AUDIT_AWS_SNS_ACCESS_KEY
   valueFrom:
     secretKeyRef:
