@@ -29,7 +29,7 @@ steps:
         from_secret: cs_notprod
       VERSION: ${DRONE_TAG}
     commands:
-      - ./ci/helm/helm-deploy.sh --values ./helm/hocs-docs.yaml
+      - ./ci/helm/helm-chart-deploy.sh --values ./helm/hocs-docs.yaml
     depends_on:
       - checkout
 
