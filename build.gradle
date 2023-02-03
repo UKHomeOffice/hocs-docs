@@ -6,7 +6,7 @@ plugins {
 
 def camelVersion = '2.25.4'
 var s3MockVersion = '2.11.0'
-def lombokVersion = '1.18.24'
+def lombokVersion = '1.18.26'
 
 group = 'uk.gov.digital.ho.hocs'
 sourceCompatibility = JavaVersion.VERSION_17
