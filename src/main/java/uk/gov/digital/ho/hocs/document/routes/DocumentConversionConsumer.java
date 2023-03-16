@@ -123,9 +123,9 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
+                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document, response: ${body}",
                             LogEvent.DOCUMENT_CONVERSION_FAILURE))
-                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice();
 
     }
