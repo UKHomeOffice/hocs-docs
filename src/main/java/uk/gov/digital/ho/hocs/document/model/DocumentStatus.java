@@ -6,8 +6,10 @@ public enum DocumentStatus {
 
     PENDING("Pending"),
     UPLOADED("Uploaded"),
-    FAILED_VIRUS("Failed Virus Scan"),
-    FAILED_CONVERSION("Failed PDF Conversion");
+    FAILED_VIRUS("Malware Found"),
+    FAILED_MALWARE_SCAN("Malware Scan Failed"),
+    FAILED_CONVERSION("Failed PDF Conversion"),
+    AWAITING_CONVERSION("Awaiting Document Conversion");
 
     @Getter
     private String displayValue;

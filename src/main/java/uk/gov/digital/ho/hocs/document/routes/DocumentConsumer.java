@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
@@ -61,7 +60,7 @@ public class DocumentConsumer extends RouteBuilder {
             UUID externalReferenceUUID = UUID.fromString(exchange.getProperty("externalReferenceUUID").toString());
             String fileLink = exchange.getProperty("fileLink").toString();
             String convertTo = exchange.getProperty("convertTo").toString();
-            exchange.getOut().setBody(
+            exchange.getMessage().setBody(
                 new DocumentMalwareRequest(documentUUID, fileLink, externalReferenceUUID, convertTo));
         };
     }

@@ -9,14 +9,14 @@ import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.hocs.document.application.LogEvent;
-import uk.gov.digital.ho.hocs.document.dto.camel.UpdateDocumentRequest;
-import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.HttpProcessors;
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
-import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentConversionExemptTypes;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -31,9 +31,9 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private S3DocumentService s3BucketService;
 
-    private final String hocsConverterPath;
+    private DocumentDataService documentDataService;
 
-    private final String toQueue;
+    private final String hocsConverterPath;
 
     private static final String STATUS = "status";
 
@@ -47,14 +47,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private static final String DOCUMENT_TYPE = "documentType";
 
-    @Autowired
     public DocumentConversionConsumer(S3DocumentService s3BucketService,
-                                      @Value("${hocsconverter.path}") String hocsConverterPath,
-                                      @Value("${documentServiceQueueName}") String toQueue) {
+                                      DocumentDataService documentDataService,
+                                      @Value("${hocsconverter.path}") String hocsConverterPath) {
         this.s3BucketService = s3BucketService;
+        this.documentDataService = documentDataService;
         this.hocsConverterPath = String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true",
             hocsConverterPath);
-        this.toQueue = toQueue;
     }
 
     @Override
@@ -62,13 +61,22 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         errorHandler(deadLetterChannel("log:conversion-queue"));
 
-        from("direct:convertdocument").routeId("conversion-queue")
-                .onCompletion()
-                    .onWhen(exchangeProperty(STATUS).isNotNull())
-                    .process(generateDocumentUpdateRequest())
-                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .process(transferMDCToHeaders())
-                    .to(toQueue)
+        onException(ApplicationExceptions.DocumentConversionException.class)
+            .handled(true).process(exchange -> {
+                UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
+                documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
+        });
+
+        from("direct:convertdocument").routeId("conversion-queue").onCompletion().onWhen(
+                exchangeProperty(STATUS).isNotNull()).setHeader(SqsConstants.RECEIPT_HANDLE,
+                exchangeProperty(SqsConstants.RECEIPT_HANDLE))
+            .process(exchange -> {
+                UUID documentUUID = UUID.fromString(exchange.getProperty(UUID_TEXT, String.class));
+                DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty(STATUS).toString());
+                String pdfFileLink = exchange.getProperty(PDF_FILENAME, String.class);
+                String fileLink = exchange.getProperty(FILENAME, String.class);
+                documentDataService.updateDocument(documentUUID, status, fileLink, pdfFileLink);
+            })
                 .end()
                 .log(LoggingLevel.DEBUG,"Attempt to convert document of type ${property.documentType}")
                 .process(transferHeadersToMDC())
@@ -123,8 +131,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document, response: ${body}",
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document",
                             LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .endChoice();
 
@@ -136,7 +143,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
             String filename = exchange.getProperty(FILENAME).toString();
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
             String originalFilename = exchange.getProperty("originalFilename").toString();
-            exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
+            exchange.getMessage().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
         };
     }
 
@@ -146,19 +153,10 @@ public class DocumentConversionConsumer extends RouteBuilder {
             String originalFilename = exchange.getProperty("originalFilename").toString();
             byte[] content = (originalFilename + " failed conversion").getBytes(StandardCharsets.UTF_8);
             String externalReferenceUUID = exchange.getProperty("externalReferenceUUID").toString();
-            exchange.getOut().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
+            exchange.getMessage().setBody(new UploadDocument(filename, content, externalReferenceUUID, originalFilename));
         };
     }
 
-    private Processor generateDocumentUpdateRequest() {
-        return exchange -> {
-            UUID documentUUID = UUID.fromString(exchange.getProperty(UUID_TEXT).toString());
-            DocumentStatus status = DocumentStatus.valueOf(exchange.getProperty(STATUS).toString());
-            String pdfFileLink = Optional.ofNullable(exchange.getProperty(PDF_FILENAME)).orElse("").toString();
-            String fileLink = Optional.ofNullable(exchange.getProperty(FILENAME)).orElse("").toString();
-            exchange.getOut().setBody(new UpdateDocumentRequest(documentUUID, status, fileLink, pdfFileLink));
-        };
-    }
 
     private Predicate skipDocumentType = exchangeProperty(DOCUMENT_TYPE).in(
         Arrays.stream(DocumentConversionExemptTypes.values()).map(

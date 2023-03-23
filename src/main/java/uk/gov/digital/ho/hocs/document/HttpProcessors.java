@@ -26,7 +26,7 @@ public class HttpProcessors {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create().setMode(
                 HttpMultipartMode.BROWSER_COMPATIBLE).addPart("file", content).addTextBody("name",
                 response.getFilename());
-            exchange.getOut().setBody(multipartEntityBuilder.build());
+            exchange.getMessage().setBody(multipartEntityBuilder.build());
         };
     }
 
