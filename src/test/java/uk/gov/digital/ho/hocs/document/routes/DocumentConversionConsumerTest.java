@@ -10,10 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
-import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,7 +22,13 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.digital.ho.hocs.document.model.DocumentStatus.FAILED_CONVERSION;
+import static uk.gov.digital.ho.hocs.document.model.DocumentStatus.UPLOADED;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentConversionConsumerTest extends CamelTestSupport {
@@ -30,9 +36,10 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     @Mock
     S3DocumentService s3BucketService;
 
-    private final String endpoint = "direct:convertdocument";
+    @Mock
+    DocumentDataService documentDataService;
 
-    private final String toEndpoint = "mock:updaterecord";
+    private final String endpoint = "direct:convertdocument";
 
     public final String mockNoConvertEndEndpoint = "mock:noConvertEndEndpoint";
 
@@ -43,18 +50,20 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        return new DocumentConversionConsumer(s3BucketService, conversionService, toEndpoint);
+        return new DocumentConversionConsumer(s3BucketService, documentDataService, conversionService);
     }
 
     @Test
-    public void shouldAddDocumentToDocumentServiceQueueOnSuccess() throws Exception {
+    public void shouldUpdateDocumentStatusToUploadedOnSuccess() throws Exception {
         MockEndpoint mockConversionService = mockConversionService();
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         when(s3BucketService.uploadFile(any())).thenReturn(getTestDocument());
-        getMockEndpoint(toEndpoint).expectedMessageCount(1);
+
+        doNothing().when(documentDataService).updateDocument(any(), eq(UPLOADED), any(), any());
         template.sendBody(endpoint, request);
-        getMockEndpoint(toEndpoint).assertIsSatisfied();
+
         mockConversionService.assertIsSatisfied();
+        verify(documentDataService, times(1)).updateDocument(any(), eq(UPLOADED), any(), any());
     }
 
     @Test
@@ -62,19 +71,19 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         DocumentConversionRequest noneRequest = new DocumentConversionRequest(UUID.randomUUID(), "sample.docx",
             "externalReferenceUUID", "docx", "NONE");
 
+        doNothing().when(documentDataService).updateDocument(any(), eq(UPLOADED), any(), any());
         context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 weaveAddLast().to(mockNoConvertEndEndpoint);
             }
         });
 
         MockEndpoint mockConversionService = mockConversionService();
         template.sendBody(endpoint, noneRequest);
-        getMockEndpoint(toEndpoint).expectedMessageCount(1);
-        getMockEndpoint(toEndpoint).assertIsSatisfied();
-        mockConversionService.assertIsNotSatisfied();
 
+        mockConversionService.assertIsNotSatisfied();
+        verify(documentDataService, times(1)).updateDocument(any(), eq(UPLOADED), any(), any());
         assertTrue(getMockEndpoint(mockNoConvertEndEndpoint).getReceivedExchanges().get(
             0).getMessage().getHeaders().containsKey(SqsConstants.RECEIPT_HANDLE));
     }
@@ -84,11 +93,11 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
         MockEndpoint mockConversionService = mockConversionService();
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         when(s3BucketService.uploadFile(any())).thenReturn(getTestDocument());
-        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedMessageCount(1);
-        mockEndpoint.expectedPropertyReceived("status", DocumentStatus.UPLOADED.toString());
+        doNothing().when(documentDataService).updateDocument(any(), eq(UPLOADED), any(), any());
+
         template.sendBody(endpoint, request);
-        mockEndpoint.assertIsSatisfied();
+
+        verify(documentDataService, times(1)).updateDocument(any(), eq(UPLOADED), any(), any());
         mockConversionService.assertIsSatisfied();
         verify(s3BucketService).uploadFile(any());
     }
@@ -97,11 +106,11 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldSetStatusToFailedOnConversionError() throws Exception {
         MockEndpoint mockConversionService = mockFailedConversionService(400);
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
-        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedMessageCount(1);
-        mockEndpoint.expectedPropertyReceived("status", DocumentStatus.FAILED_CONVERSION.toString());
+
+        doNothing().when(documentDataService).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         template.sendBody(endpoint, request);
-        mockEndpoint.assertIsSatisfied();
+
+        verify(documentDataService, times(1)).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         mockConversionService.assertIsSatisfied();
         verify(s3BucketService).uploadFile(any());
     }
@@ -119,9 +128,11 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldCallUpdateDocumentWhenConversionServiceReturnsBadRequest() throws Exception {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService(400);
-        getMockEndpoint(toEndpoint).expectedMessageCount(1);
+
+        doNothing().when(documentDataService).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         template.sendBody(endpoint, request);
-        getMockEndpoint(toEndpoint).assertIsSatisfied();
+
+        verify(documentDataService, times(1)).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         mockConversionService.assertIsSatisfied();
     }
 
@@ -129,20 +140,13 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldCallUpdateDocumentWhenConversionServiceFails() throws Exception {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService(500);
-        getMockEndpoint(toEndpoint).expectedMessageCount(1);
+        doNothing().when(documentDataService).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         template.sendBody(endpoint, request);
-        getMockEndpoint(toEndpoint).assertIsSatisfied();
+
+        verify(documentDataService, times(1)).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
         mockConversionService.assertIsSatisfied();
     }
 
-    @Test
-    public void shouldAddPropertiesToExchange() throws Exception {
-        when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
-        MockEndpoint mockEndpoint = getMockEndpoint(toEndpoint);
-        mockEndpoint.expectedPropertyReceived("externalReferenceUUID", "externalReferenceUUID");
-        template.sendBody(endpoint, request);
-        mockEndpoint.assertIsSatisfied();
-    }
 
     private MockEndpoint mockConversionService() {
         MockEndpoint mock = getMockEndpoint(
