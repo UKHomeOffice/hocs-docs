@@ -82,6 +82,16 @@ public class DocumentDataService {
             value(EVENT, DOCUMENT_UPDATED));
     }
 
+    public void updateDocument(UUID documentUUID, DocumentStatus status) {
+        log.debug("Updating Document: {}", documentUUID);
+        DocumentData documentData = getDocumentData(documentUUID);
+        documentData.update(status);
+        documentRepository.save(documentData);
+        auditClient.updateDocumentAudit(documentData);
+        log.info("Updated Document: {} to status {}", documentData.getUuid(), documentData.getStatus(),
+            value(EVENT, DOCUMENT_UPDATED));
+    }
+
     // Used internally only
     public DocumentData getDocumentData(String documentUUID) {
         return getDocumentData(UUID.fromString(documentUUID));

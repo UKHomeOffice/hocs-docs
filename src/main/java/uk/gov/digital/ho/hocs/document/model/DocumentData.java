@@ -96,6 +96,16 @@ public class DocumentData implements Serializable {
         this.updated = LocalDateTime.now();
     }
 
+    public void update(DocumentStatus status) {
+        if (status == null) {
+            throw new ApplicationExceptions.EntityCreationException("Cannot call DocumentData.update",
+                DOCUMENT_UPDATE_FAILURE);
+        }
+        this.status = status.toString();
+        this.updated = LocalDateTime.now();
+    }
+
+
     public DocumentStatus getStatus() {
         return DocumentStatus.valueOf(this.status);
     }
