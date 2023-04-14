@@ -6,7 +6,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
@@ -20,7 +19,6 @@ import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.digital.ho.hocs.document.application.RequestData.transferHeadersToMDC;
@@ -62,6 +60,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel("log:conversion-queue"));
 
         onException(ApplicationExceptions.DocumentConversionException.class)
+            .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
