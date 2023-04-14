@@ -46,8 +46,6 @@ dependencies {
     testImplementation "org.apache.camel:camel-test-spring:${camelVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation "com.adobe.testing:s3mock-junit4:${s3MockVersion}"
-    testImplementation "com.adobe.testing:s3mock:${s3MockVersion}"
 }
 
 jar {

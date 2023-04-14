@@ -55,7 +55,7 @@ import static org.awaitility.Awaitility.await;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({ "local" })
+@ActiveProfiles( "local" )
 public class DocumentConsumerIT {
 
     private static final String PDF = "PDF";
