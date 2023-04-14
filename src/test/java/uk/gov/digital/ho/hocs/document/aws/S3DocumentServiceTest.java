@@ -1,14 +1,18 @@
 package uk.gov.digital.ho.hocs.document.aws;
 
-import com.adobe.testing.s3mock.junit4.S3MockRule;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
@@ -26,34 +30,30 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@ActiveProfiles("local")
 public class S3DocumentServiceTest {
 
-    private static final String untrustedBucketName = "untrusted-bucked";
+    @Value("${docs.untrustedS3bucketName}")
+    private String untrustedBucketName;
+    @Value("${docs.trustedS3bucketName}")
+    private String trustedBucketName;
 
-    private static final String trustedBucketName = "trusted-bucked";
+    @Autowired
+    @Qualifier("UnTrusted")
+    AmazonS3 untrustedClient;
+    @Autowired
+    @Qualifier("Trusted")
+    AmazonS3 trustedClient;
 
-    @ClassRule
-    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().withSecureConnection(false).build();
-
-    private AmazonS3 untrustedClient;
-
-    private AmazonS3 trustedClient;
-
-    private S3DocumentService service;
+    S3DocumentService service;
 
     @Before
     public void setUp() throws Exception {
-        untrustedClient = S3_MOCK_RULE.createS3Client();
-        trustedClient = S3_MOCK_RULE.createS3Client();
         service = new S3DocumentService(untrustedBucketName, trustedBucketName, trustedClient, untrustedClient, "");
         clearS3Buckets();
         uploadUntrustedFiles();
-    }
-
-    @After
-    public void takeDown() {
-        untrustedClient.shutdown();
-        trustedClient.shutdown();
     }
 
     @Test
@@ -148,38 +148,10 @@ public class S3DocumentServiceTest {
     }
 
     private void clearS3Buckets() {
-        if (untrustedClient.doesBucketExistV2(untrustedBucketName)) {
-            ObjectListing objectListing = untrustedClient.listObjects(untrustedBucketName);
-            while (true) {
-                for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
-                    untrustedClient.deleteObject(untrustedBucketName, s3ObjectSummary.getKey());
-                }
-                if (objectListing.isTruncated()) {
-                    objectListing = untrustedClient.listNextBatchOfObjects(objectListing);
-                } else {
-                    break;
-                }
-            }
-            untrustedClient.deleteBucket(untrustedBucketName);
-        }
+        trustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().forEach(
+            s -> trustedClient.deleteObject(trustedBucketName, s.getKey()));
 
-        if (trustedClient.doesBucketExistV2(trustedBucketName)) {
-            ObjectListing objectListing = trustedClient.listObjects(trustedBucketName);
-            while (true) {
-                for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
-                    trustedClient.deleteObject(trustedBucketName, s3ObjectSummary.getKey());
-                }
-                if (objectListing.isTruncated()) {
-                    objectListing = trustedClient.listNextBatchOfObjects(objectListing);
-                } else {
-                    break;
-                }
-            }
-            trustedClient.deleteBucket(trustedBucketName);
-        }
-
-        untrustedClient.createBucket(untrustedBucketName);
-        trustedClient.createBucket(trustedBucketName);
+        untrustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().forEach(
+            s -> trustedClient.deleteObject(trustedBucketName, s.getKey()));
     }
-
 }
