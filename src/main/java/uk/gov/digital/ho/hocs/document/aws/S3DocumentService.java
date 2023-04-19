@@ -89,9 +89,10 @@ public class S3DocumentService {
         try {
             trustedS3Client.putObject(uploadRequest);
         } catch (AmazonServiceException e) {
+            log.error("Unable to copy file {} to S3 bucket {}", destinationKey, trustedS3BucketName, value(EVENT, S3_TRUSTED_COPY_FAILURE));
             throw new ApplicationExceptions.S3Exception(
                 String.format("Unable to upload file %s to S3 bucket %s", destinationKey, trustedS3BucketName),
-                S3_UPLOAD_FAILURE, e);
+                S3_TRUSTED_COPY_FAILURE, e);
         }
 
         return new S3Document(destinationKey, copyDocument.getOriginalFilename(), null, copyDocument.getFileType(),
@@ -118,6 +119,7 @@ public class S3DocumentService {
         try {
             response = trustedS3Client.putObject(uploadRequest);
         } catch (AmazonServiceException e) {
+            log.error("Unable to upload file {} to S3 bucket {}", destinationKey, trustedS3BucketName, value(EVENT, S3_UPLOAD_FAILURE));
             throw new ApplicationExceptions.S3Exception(
                 String.format("Unable to upload file %s to bucket %s", destinationKey, trustedS3BucketName),
                 S3_UPLOAD_FAILURE, e);
@@ -145,8 +147,10 @@ public class S3DocumentService {
 
         } catch (AmazonS3Exception ex) {
             if (ex.getStatusCode() == 404) {
+                log.error("File not found in S3 bucket {}", key, value(EVENT, S3_FILE_NOT_FOUND));
                 throw new ApplicationExceptions.S3Exception("File not found in S3 bucket", S3_FILE_NOT_FOUND, ex);
             } else {
+                log.error("Failed to get file from S3 bucket {}", key, value(EVENT, S3_DOWNLOAD_FAILURE));
                 throw new ApplicationExceptions.S3Exception("Error retrieving document from S3", S3_DOWNLOAD_FAILURE,
                     ex);
             }
