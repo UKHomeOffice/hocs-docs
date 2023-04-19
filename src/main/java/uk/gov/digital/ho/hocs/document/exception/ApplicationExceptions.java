@@ -49,6 +49,21 @@ public interface ApplicationExceptions {
 
     }
 
+    class EntityUpdateException extends RuntimeException {
+
+        private final LogEvent event;
+
+        public EntityUpdateException(String msg, LogEvent event) {
+            super(msg);
+            this.event = event;
+        }
+
+        public LogEvent getEvent() {
+            return event;
+        }
+
+    }
+
     class EntityNotFoundException extends RuntimeException {
 
         private final LogEvent event;
@@ -70,21 +85,6 @@ public interface ApplicationExceptions {
 
         public S3Exception(String msg, LogEvent event, Exception cause) {
             super(msg, cause);
-            this.event = event;
-        }
-
-        public LogEvent getEvent() {
-            return event;
-        }
-
-    }
-
-    class ResourceException extends RuntimeException {
-
-        private final LogEvent event;
-
-        ResourceException(String msg, LogEvent event, Object... args) {
-            super(String.format(msg, args));
             this.event = event;
         }
 

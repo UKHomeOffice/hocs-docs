@@ -198,7 +198,7 @@ public class DocumentServiceTest {
     }
 
     @Test
-    public void shouldUpdateDocumentWithValidParams() throws ApplicationExceptions.EntityCreationException, ApplicationExceptions.EntityNotFoundException {
+    public void shouldUpdateDocumentWithValidParams() throws ApplicationExceptions.EntityUpdateException, ApplicationExceptions.EntityNotFoundException {
 
         UUID uuid = UUID.randomUUID();
         String displayName = "name";
@@ -264,7 +264,7 @@ public class DocumentServiceTest {
 
     }
 
-    @Test(expected = ApplicationExceptions.EntityCreationException.class)
+    @Test(expected = ApplicationExceptions.EntityUpdateException.class)
     public void shouldNotUpdateDocumentWhenDocumentStatusIsNullException() {
 
         UUID uuid = UUID.randomUUID();
@@ -293,7 +293,7 @@ public class DocumentServiceTest {
 
         try {
             documentService.updateDocument(uuid, null, link, link);
-        } catch (ApplicationExceptions.EntityCreationException e) {
+        } catch (ApplicationExceptions.EntityUpdateException e) {
             // Do Nothing.
         }
 
@@ -305,7 +305,7 @@ public class DocumentServiceTest {
 
     }
 
-    @Test(expected = ApplicationExceptions.EntityCreationException.class)
+    @Test(expected = ApplicationExceptions.EntityUpdateException.class)
     public void shouldNotUpdateDocumentWhenDocumentFileLinkIsNullException() {
 
         UUID uuid = UUID.randomUUID();
@@ -336,7 +336,7 @@ public class DocumentServiceTest {
 
         try {
             documentService.updateDocument(uuid, documentStatus, null, link);
-        } catch (ApplicationExceptions.EntityCreationException e) {
+        } catch (ApplicationExceptions.EntityUpdateException e) {
             // Do Nothing.
         }
 

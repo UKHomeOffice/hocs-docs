@@ -86,7 +86,7 @@ public class DocumentData implements Serializable {
 
     public void update(String fileLink, String pdfLink, DocumentStatus status) {
         if (fileLink == null || status == null) {
-            throw new ApplicationExceptions.EntityCreationException(
+            throw new ApplicationExceptions.EntityUpdateException(
                 String.format("Cannot call DocumentData.update(%s, %s, %s).", fileLink, pdfLink, status),
                 DOCUMENT_UPDATE_FAILURE);
         }
@@ -98,7 +98,7 @@ public class DocumentData implements Serializable {
 
     public void update(DocumentStatus status) {
         if (status == null) {
-            throw new ApplicationExceptions.EntityCreationException("Cannot call DocumentData.update",
+            throw new ApplicationExceptions.EntityUpdateException("Cannot call DocumentData.update with null status",
                 DOCUMENT_UPDATE_FAILURE);
         }
         this.status = status.toString();
