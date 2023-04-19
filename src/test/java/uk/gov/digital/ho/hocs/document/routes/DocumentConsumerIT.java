@@ -195,6 +195,26 @@ public class DocumentConsumerIT {
     }
 
     @Test
+    public void shouldSetStatusAndNotCallClamAVOrConversionServiceWhenS3DocumentNotFound() throws Exception {
+
+        CreateDocumentRequest requestBody = new CreateDocumentRequest(EXTERNAL_REFERENCE_UUID, "some document",
+            "thisfiledoesnotexist.test", "ORIGINAL", "PDF");
+        HttpEntity<CreateDocumentRequest> documentReqBody = new HttpEntity<CreateDocumentRequest>(requestBody, headers);
+        ResponseEntity<UUID> response = restTemplate.postForEntity("http://localhost:" + port + "/document",
+            documentReqBody, UUID.class);
+
+        // document created in database
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        //wait for documented status to be set
+        await().until(() -> documentService.getDocumentData(
+            response.getBody().toString()).getStatus() == DocumentStatus.FAILED_MALWARE_SCAN);
+
+        verify(0, postRequestedFor(urlEqualTo("/scan")));
+        verify(0, postRequestedFor(urlEqualTo("/convert")));
+    }
+
+    @Test
     public void shouldSetStatusAndNotCallConversionServiceWhenMalwareFound() throws Exception {
 
         stubFor(post(urlEqualTo("/scan")).willReturn(

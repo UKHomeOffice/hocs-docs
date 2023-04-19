@@ -59,7 +59,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         errorHandler(deadLetterChannel("log:conversion-queue"));
 
-        onException(ApplicationExceptions.DocumentConversionException.class)
+        onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
