@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentMalwareRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.util.UUID;
 
@@ -36,7 +37,6 @@ public class DocumentConsumer extends RouteBuilder {
 
     @Override
     public void configure() {
-
         errorHandler(deadLetterChannel("log:document-queue"));
 
         from(fromQueue).routeId("document-queue")
@@ -49,6 +49,10 @@ public class DocumentConsumer extends RouteBuilder {
                 .bean(documentDataService, "getDocumentData(${body.uuid})")
                 .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
                 .setProperty("documentType", simple("${body.type}") )
+                .process(exchange -> {
+                    UUID uuid = UUID.fromString(exchange.getProperty("uuid", String.class));
+                    documentDataService.updateDocument(uuid, DocumentStatus.AWAITING_MALWARE_SCAN);
+                })
                 .process(generateMalwareCheck())
                 .process(transferMDCToHeaders())
                 .to(toQueue);

@@ -11,10 +11,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
 import uk.gov.digital.ho.hocs.document.dto.camel.ProcessDocumentRequest;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
+import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
 
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,6 +54,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
         getMockEndpoint(toEndpoint).expectedMessageCount(1);
         template.sendBody(endpoint, mapper.writeValueAsString(request));
         getMockEndpoint(toEndpoint).assertIsSatisfied();
+
+        verify(documentDataService).updateDocument(any(), eq(DocumentStatus.AWAITING_MALWARE_SCAN));
     }
 
     @Test
@@ -56,6 +63,8 @@ public class DocumentConsumerTest extends CamelTestSupport {
         getMockEndpoint(toEndpoint).expectedMessageCount(0);
         template.sendBody(endpoint, "BAD BODY");
         getMockEndpoint(toEndpoint).assertIsSatisfied();
+
+        verify(documentDataService, times(0)).updateDocument(any(), eq(DocumentStatus.AWAITING_MALWARE_SCAN));
     }
 
     @Test
