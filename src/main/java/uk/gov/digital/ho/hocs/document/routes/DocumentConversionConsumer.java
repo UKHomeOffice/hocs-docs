@@ -33,6 +33,8 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private final String hocsConverterPath;
 
+    private String conversionQueue;
+
     private static final String STATUS = "status";
 
     private static final String FILENAME = "filename";
@@ -47,11 +49,13 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     public DocumentConversionConsumer(S3DocumentService s3BucketService,
                                       DocumentDataService documentDataService,
-                                      @Value("${hocsconverter.path}") String hocsConverterPath) {
+                                      @Value("${hocsconverter.path}") String hocsConverterPath,
+                                      @Value("${conversionQueueName}") String conversionQueue) {
         this.s3BucketService = s3BucketService;
         this.documentDataService = documentDataService;
         this.hocsConverterPath = String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true",
             hocsConverterPath);
+        this.conversionQueue = conversionQueue;
     }
 
     @Override
@@ -66,7 +70,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
         });
 
-        from("direct:convertdocument").routeId("conversion-queue").onCompletion().onWhen(
+        from(conversionQueue).routeId("conversion-queue").onCompletion().onWhen(
                 exchangeProperty(STATUS).isNotNull()).setHeader(SqsConstants.RECEIPT_HANDLE,
                 exchangeProperty(SqsConstants.RECEIPT_HANDLE))
             .process(exchange -> {
