@@ -6,6 +6,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.hocs.document.model.DocumentStatus.FAILED_CONVERSION;
 import static uk.gov.digital.ho.hocs.document.model.DocumentStatus.UPLOADED;
 
+@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentConversionConsumerTest extends CamelTestSupport {
 

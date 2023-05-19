@@ -66,16 +66,14 @@ public class DocumentConversionConsumer extends RouteBuilder {
     @Override
     public void configure() {
 
-      //  errorHandler(deadLetterChannel("log:conversion-queue"));
-
-        onException()
+        onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
-        });
+        }).to("log:conversion-queue?level=ERROR&showCaughtException=true");
 
-        from(conversionQueue).routeId("conversion-queue").errorHandler(noErrorHandler())
+        from(conversionQueue).routeId("conversion-queue")
             .onCompletion().onWhen(
                 exchangeProperty(STATUS).isNotNull()).setHeader(SqsConstants.RECEIPT_HANDLE,
                 exchangeProperty(SqsConstants.RECEIPT_HANDLE))
@@ -113,7 +111,6 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         from("seda:convert?concurrentConsumers=" + conversionThreads).routeId("conversion-convert-queue")
                 .process(transferHeadersToMDC())
-                .errorHandler(noErrorHandler())
                 .log(LoggingLevel.INFO, "Calling document converter service")
                 .to(hocsConverterPath)
                 .choice()
@@ -139,12 +136,8 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .endChoice()
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
-                    .process(exchange -> {
-                        UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
-                        documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
-                    })
-                    .removeHeader(SqsConstants.RECEIPT_HANDLE)
-                    .stop()
+                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document",
+                          LogEvent.DOCUMENT_CONVERSION_FAILURE))
                     .endChoice();
 
     }
