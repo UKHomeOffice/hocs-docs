@@ -35,6 +35,8 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private String conversionQueue;
 
+    private int conversionThreads;
+
     private static final String STATUS = "status";
 
     private static final String FILENAME = "filename";
@@ -47,30 +49,34 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private static final String DOCUMENT_TYPE = "documentType";
 
+
     public DocumentConversionConsumer(S3DocumentService s3BucketService,
                                       DocumentDataService documentDataService,
                                       @Value("${hocsconverter.path}") String hocsConverterPath,
-                                      @Value("${conversionQueueName}") String conversionQueue) {
+                                      @Value("${docs.conversion.consumer}") String conversionQueue,
+                                      @Value("${docs.conversion.maxThreads}") int malwareThreads) {
         this.s3BucketService = s3BucketService;
         this.documentDataService = documentDataService;
         this.hocsConverterPath = String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true",
             hocsConverterPath);
         this.conversionQueue = conversionQueue;
+        this.conversionThreads = malwareThreads;
     }
 
     @Override
     public void configure() {
 
-        errorHandler(deadLetterChannel("log:conversion-queue"));
+      //  errorHandler(deadLetterChannel("log:conversion-queue"));
 
-        onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
+        onException()
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
         });
 
-        from(conversionQueue).routeId("conversion-queue").onCompletion().onWhen(
+        from(conversionQueue).routeId("conversion-queue").errorHandler(noErrorHandler())
+            .onCompletion().onWhen(
                 exchangeProperty(STATUS).isNotNull()).setHeader(SqsConstants.RECEIPT_HANDLE,
                 exchangeProperty(SqsConstants.RECEIPT_HANDLE))
             .process(exchange -> {
@@ -102,10 +108,10 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .process(transferMDCToHeaders())
-                    .to("direct:convert")
+                    .to("seda:convert")
                     .endChoice();
 
-        from("direct:convert").routeId("conversion-convert-queue")
+        from("seda:convert?concurrentConsumers=" + conversionThreads).routeId("conversion-convert-queue")
                 .process(transferHeadersToMDC())
                 .errorHandler(noErrorHandler())
                 .log(LoggingLevel.INFO, "Calling document converter service")
@@ -133,9 +139,12 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .endChoice()
                 .otherwise()
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
-                    .setProperty(STATUS, simple(DocumentStatus.FAILED_CONVERSION.toString()))
-                    .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document",
-                            LogEvent.DOCUMENT_CONVERSION_FAILURE))
+                    .process(exchange -> {
+                        UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
+                        documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
+                    })
+                    .removeHeader(SqsConstants.RECEIPT_HANDLE)
+                    .stop()
                     .endChoice();
 
     }

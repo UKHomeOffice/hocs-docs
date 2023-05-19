@@ -24,15 +24,23 @@ public class DocumentConsumer extends RouteBuilder {
 
     private final String toQueue;
 
+    private int malwareThreads;
+
+    private int maxQueueSize;
+
     private final DocumentDataService documentDataService;
 
     @Autowired
     public DocumentConsumer(DocumentDataService documentDataService,
                             @Value("${docs.queue}") String docsQueue,
-                            @Value("${malwareQueueName}") String toQueue) {
+                            @Value("${docs.malware.producer}") String toQueue,
+                            @Value("${docs.malware.maxThreads}") int malwareThreads,
+                            @Value("${docs.maxInternalQueueSize}") int maxQueueSize) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
+        this.malwareThreads = malwareThreads;
+        this.maxQueueSize = maxQueueSize;
     }
 
     @Override
@@ -40,22 +48,32 @@ public class DocumentConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel("log:document-queue"));
 
         from(fromQueue).routeId("document-queue")
-                .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
-                .process(transferHeadersToMDC())
-                .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
-                .setProperty("uuid", simple("${body.uuid}"))
-                .setProperty("fileLink", simple("${body.fileLink}"))
-                .setProperty("convertTo", simple("${body.convertTo}"))
-                .bean(documentDataService, "getDocumentData(${body.uuid})")
-                .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
-                .setProperty("documentType", simple("${body.type}") )
-                .process(exchange -> {
-                    UUID uuid = UUID.fromString(exchange.getProperty("uuid", String.class));
-                    documentDataService.updateDocument(uuid, DocumentStatus.AWAITING_MALWARE_SCAN);
-                })
-                .process(generateMalwareCheck())
-                .process(transferMDCToHeaders())
-                .to(toQueue);
+            .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
+            .process(transferHeadersToMDC())
+            .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
+            .setProperty("uuid", simple("${body.uuid}"))
+            .process(exchange -> {
+                UUID uuid = UUID.fromString(exchange.getProperty("uuid", String.class));
+                documentDataService.updateDocument(uuid, DocumentStatus.AWAITING_PROCESSING);
+            })
+            .to("seda:internalProcessQueue?blockWhenFull=true&size=" + maxQueueSize);
+
+        from("seda:internalProcessQueue?concurrentConsumers=" + malwareThreads + "&size=" + maxQueueSize).routeId("internal-holding-queue")
+            .process(transferHeadersToMDC())
+            .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
+            .setProperty("uuid", simple("${body.uuid}"))
+            .setProperty("fileLink", simple("${body.fileLink}"))
+            .setProperty("convertTo", simple("${body.convertTo}"))
+            .bean(documentDataService, "getDocumentData(${body.uuid})")
+            .setProperty("externalReferenceUUID", simple("${body.externalReferenceUUID}"))
+            .setProperty("documentType", simple("${body.type}") )
+            .process(exchange -> {
+                UUID uuid = UUID.fromString(exchange.getProperty("uuid", String.class));
+                documentDataService.updateDocument(uuid, DocumentStatus.AWAITING_MALWARE_SCAN);
+            })
+            .process(generateMalwareCheck())
+            .process(transferMDCToHeaders())
+            .to(toQueue);
     }
 
     private Processor generateMalwareCheck() {

@@ -50,7 +50,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        return new DocumentConversionConsumer(s3BucketService, documentDataService, conversionService, endpoint);
+        return new DocumentConversionConsumer(s3BucketService, documentDataService, conversionService, endpoint, 1);
     }
 
     @Test
