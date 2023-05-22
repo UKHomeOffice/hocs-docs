@@ -35,7 +35,9 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
     private String conversionQueue;
 
-    private int conversionThreads;
+    private String convertProducer;
+
+    private String convertConsumer;
 
     private static final String STATUS = "status";
 
@@ -54,24 +56,28 @@ public class DocumentConversionConsumer extends RouteBuilder {
                                       DocumentDataService documentDataService,
                                       @Value("${hocsconverter.path}") String hocsConverterPath,
                                       @Value("${docs.conversion.consumer}") String conversionQueue,
-                                      @Value("${docs.conversion.maxThreads}") int malwareThreads) {
+                                      @Value("${docs.convert.producer}") String convertProducer,
+                                      @Value("${docs.convert.consumer}") String convertConsumer) {
         this.s3BucketService = s3BucketService;
         this.documentDataService = documentDataService;
         this.hocsConverterPath = String.format("%s?throwExceptionOnFailure=false&useSystemProperties=true",
             hocsConverterPath);
         this.conversionQueue = conversionQueue;
-        this.conversionThreads = malwareThreads;
+        this.convertProducer = convertProducer;
+        this.convertConsumer = convertConsumer;
     }
 
     @Override
     public void configure() {
+
+        errorHandler(deadLetterChannel("log:conversion-queue"));
 
         onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
-        }).to("log:conversion-queue?level=ERROR&showCaughtException=true");
+        });
 
         from(conversionQueue).routeId("conversion-queue")
             .onCompletion().onWhen(
@@ -106,10 +112,10 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .process(HttpProcessors.buildMultipartEntity())
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .process(transferMDCToHeaders())
-                    .to("seda:convert")
+                    .to(convertProducer)
                     .endChoice();
 
-        from("seda:convert?concurrentConsumers=" + conversionThreads).routeId("conversion-convert-queue")
+        from(convertConsumer).routeId("conversion-convert-queue")
                 .process(transferHeadersToMDC())
                 .log(LoggingLevel.INFO, "Calling document converter service")
                 .to(hocsConverterPath)

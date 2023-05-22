@@ -52,10 +52,6 @@ public class DocumentConsumer extends RouteBuilder {
             .process(transferHeadersToMDC())
             .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
             .setProperty("uuid", simple("${body.uuid}"))
-            .process(exchange -> {
-                UUID uuid = UUID.fromString(exchange.getProperty("uuid", String.class));
-                documentDataService.updateDocument(uuid, DocumentStatus.AWAITING_PROCESSING);
-            })
             .to("seda:internalProcessQueue?blockWhenFull=true&size=" + maxQueueSize);
 
         from("seda:internalProcessQueue?concurrentConsumers=" + malwareThreads + "&size=" + maxQueueSize).routeId("internal-holding-queue")

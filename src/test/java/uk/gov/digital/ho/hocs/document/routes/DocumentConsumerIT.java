@@ -386,7 +386,7 @@ public class DocumentConsumerIT {
     @Test
     public void shouldAuditOnSuccess() throws Exception {
         runSuccessfulConversion();
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 5);
+        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 4);
     }
 
     @Test
@@ -399,7 +399,7 @@ public class DocumentConsumerIT {
         await().until(() -> documentService.getDocumentData(
             response.getBody().toString()).getStatus() == DocumentStatus.FAILED_MALWARE_SCAN);
 
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 4);
+        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 3);
     }
 
     @Test
@@ -416,7 +416,7 @@ public class DocumentConsumerIT {
         await().until(() -> documentService.getDocumentData(
             response.getBody().toString()).getStatus() == DocumentStatus.FAILED_CONVERSION);
 
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 5);
+        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 4);
     }
 
     private String getKeyFromExtension(String extension) {
