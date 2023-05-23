@@ -24,23 +24,16 @@ public class DocumentConsumer extends RouteBuilder {
 
     private final String toQueue;
 
-    private int malwareThreads;
-
-    private int maxQueueSize;
 
     private final DocumentDataService documentDataService;
 
     @Autowired
     public DocumentConsumer(DocumentDataService documentDataService,
                             @Value("${docs.queue}") String docsQueue,
-                            @Value("${docs.malware.producer}") String toQueue,
-                            @Value("${docs.malware.maxThreads}") int malwareThreads,
-                            @Value("${docs.maxInternalQueueSize}") int maxQueueSize) {
+                            @Value("${docs.malware.producer}") String toQueue) {
         this.documentDataService = documentDataService;
         this.fromQueue = docsQueue;
         this.toQueue = toQueue;
-        this.malwareThreads = malwareThreads;
-        this.maxQueueSize = maxQueueSize;
     }
 
     @Override
