@@ -48,13 +48,8 @@ public class DocumentConsumer extends RouteBuilder {
         errorHandler(deadLetterChannel("log:document-queue"));
 
         from(fromQueue).routeId("document-queue")
-            .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
             .process(transferHeadersToMDC())
             .unmarshal().json(JsonLibrary.Jackson, ProcessDocumentRequest.class)
-            .setProperty("uuid", simple("${body.uuid}"))
-            .to("seda:internalProcessQueue?blockWhenFull=true&size=" + maxQueueSize);
-
-        from("seda:internalProcessQueue?concurrentConsumers=" + malwareThreads + "&size=" + maxQueueSize).routeId("internal-holding-queue")
             .process(transferHeadersToMDC())
             .setProperty(SqsConstants.RECEIPT_HANDLE, header(SqsConstants.RECEIPT_HANDLE))
             .setProperty("uuid", simple("${body.uuid}"))
