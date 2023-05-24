@@ -383,42 +383,6 @@ public class DocumentConsumerIT {
         assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
     }
 
-    @Test
-    public void shouldAuditOnSuccess() throws Exception {
-        runSuccessfulConversion();
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 4);
-    }
-
-    @Test
-    public void shouldAuditOnMalwareFailure() throws Exception {
-        stubFor(post(urlEqualTo("/scan")).willReturn(
-            aResponse().withStatus(500).withHeader("Content-Type", "application/json")));
-
-        ResponseEntity<UUID> response = createDocumentRequest(ORIGINAL, PDF);
-
-        await().until(() -> documentService.getDocumentData(
-            response.getBody().toString()).getStatus() == DocumentStatus.FAILED_MALWARE_SCAN);
-
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 3);
-    }
-
-    @Test
-    public void shouldAuditOnConversionFailure() throws Exception {
-        stubFor(post(urlEqualTo("/scan")).willReturn(
-            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
-                "Everything ok : true")));
-
-        stubFor(post(urlEqualTo("/convert")).willReturn(
-            aResponse().withStatus(400).withHeader("Content-Type", "application/json").withBody("")));
-
-        ResponseEntity<UUID> response = createDocumentRequest(ORIGINAL, PDF);
-
-        await().until(() -> documentService.getDocumentData(
-            response.getBody().toString()).getStatus() == DocumentStatus.FAILED_CONVERSION);
-
-        await().until(() -> getNumberOfMessagesOnQueue(auditQueue) == 4);
-    }
-
     private String getKeyFromExtension(String extension) {
         return trustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().stream().filter(
             s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(

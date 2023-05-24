@@ -74,6 +74,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
+            .process(transferHeadersToMDC())
             .handled(true).process(exchange -> {
                 UUID documentUUID = UUID.fromString(exchange.getProperty("uuid", String.class));
                 documentDataService.updateDocument(documentUUID, DocumentStatus.FAILED_CONVERSION);
@@ -141,6 +142,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
                     .setHeader(SqsConstants.RECEIPT_HANDLE, exchangeProperty(SqsConstants.RECEIPT_HANDLE))
                     .endChoice()
                 .otherwise()
+                    .process(transferMDCToHeaders())
                     .log(LoggingLevel.ERROR, "Failed to convert document, response: ${body}")
                     .throwException(new ApplicationExceptions.DocumentConversionException("Failed to convert document",
                           LogEvent.DOCUMENT_CONVERSION_FAILURE))

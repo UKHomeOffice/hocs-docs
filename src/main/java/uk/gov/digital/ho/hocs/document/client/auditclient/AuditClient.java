@@ -73,20 +73,6 @@ public class AuditClient {
         documentData.forEach(this::createDocumentAudit);
     }
 
-    public void updateDocumentAudit(DocumentData documentData) {
-        CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
-            createAuditPayload(documentData), EventType.DOCUMENT_UPDATED.toString());
-        try {
-            producerTemplate.sendBodyAndHeaders(auditQueue, objectMapper.writeValueAsString(request),
-                getQueueHeaders(EventType.DOCUMENT_CREATED.toString()));
-            log.info("Auditing 'Update Document', document UUID: {}, case UUID: {}, correlationID: {}, UserID: {}",
-                documentData.getUuid(), documentData.getExternalReferenceUUID(), requestData.correlationId(),
-                requestData.userId(), value(EVENT, AUDIT_EVENT_CREATED));
-        } catch (Exception e) {
-            logError(e, documentData.getUuid());
-        }
-    }
-
     public void deleteDocumentAudit(DocumentData documentData) {
         CreateAuditRequest request = generateAuditRequest(documentData.getExternalReferenceUUID(),
             createAuditPayload(documentData), EventType.DOCUMENT_DELETED.toString());
