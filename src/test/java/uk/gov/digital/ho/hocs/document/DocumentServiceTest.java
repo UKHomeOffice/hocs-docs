@@ -216,7 +216,6 @@ public class DocumentServiceTest {
 
         verify(documentRepository).findByUuid(uuid);
         verify(documentRepository).save(documentData);
-        verify(auditClient).updateDocumentAudit(documentData);
         verifyNoInteractions(documentClient);
         verifyNoMoreInteractions(auditClient);
         verifyNoMoreInteractions(documentRepository);
@@ -390,22 +389,6 @@ public class DocumentServiceTest {
         verify(auditClient).createDocumentAudit(documentData);
         verifyNoMoreInteractions(auditClient);
 
-    }
-
-    @Test
-    public void shouldAuditSuccessfulUpdateDocument() {
-
-        UUID uuid = UUID.randomUUID();
-        String displayName = "name";
-        String documentType = "ORIGINAL";
-        UUID uploadOwnerUUID = UUID.fromString(USER_ID);
-        DocumentData documentData = new DocumentData(uuid, documentType, displayName, uploadOwnerUUID);
-        when(documentRepository.findByUuid(uuid)).thenReturn(documentData);
-
-        documentService.updateDocument(uuid, DocumentStatus.UPLOADED, "", "");
-
-        verify(auditClient).updateDocumentAudit(documentData);
-        verifyNoMoreInteractions(auditClient);
     }
 
     @Test

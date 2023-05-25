@@ -11,9 +11,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.hocs.document.DocumentDataService;
+import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.aws.S3DocumentService;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
+import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -41,6 +43,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     private final String endpoint = "direct:convertdocument";
 
+    private final String convertQueue = "direct:convert";
+
     public final String mockNoConvertEndEndpoint = "mock:noConvertEndEndpoint";
 
     private final String conversionService = "mock:conversion-service";
@@ -50,7 +54,8 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        return new DocumentConversionConsumer(s3BucketService, documentDataService, conversionService);
+        return new DocumentConversionConsumer(s3BucketService, documentDataService, conversionService, endpoint,
+            convertQueue, convertQueue);
     }
 
     @Test
@@ -119,7 +124,7 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldNotCallConversionServiceOnS3Error() throws Exception {
 
         MockEndpoint mockConversionService = mockConversionService();
-        when(s3BucketService.getFileFromTrustedS3(any())).thenThrow(new IOException());
+        when(s3BucketService.getFileFromTrustedS3(any())).thenThrow(new ApplicationExceptions.S3Exception(null, LogEvent.S3_DOWNLOAD_FAILURE,new IOException()));
         template.sendBody(endpoint, request);
         mockConversionService.assertIsNotSatisfied();
     }
@@ -140,10 +145,10 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
     public void shouldCallUpdateDocumentWhenConversionServiceFails() throws Exception {
         when(s3BucketService.getFileFromTrustedS3(any())).thenReturn(getTestDocument());
         MockEndpoint mockConversionService = mockFailedConversionService(500);
-        doNothing().when(documentDataService).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
+        doNothing().when(documentDataService).updateDocument(any(), eq(FAILED_CONVERSION));
         template.sendBody(endpoint, request);
 
-        verify(documentDataService, times(1)).updateDocument(any(), eq(FAILED_CONVERSION), any(), any());
+        verify(documentDataService, times(1)).updateDocument(any(), eq(FAILED_CONVERSION));
         mockConversionService.assertIsSatisfied();
     }
 
