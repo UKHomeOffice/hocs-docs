@@ -5,7 +5,7 @@ plugins {
 }
 
 def camelVersion = '2.25.4'
-def lombokVersion = '1.18.26'
+def lombokVersion = '1.18.28'
 
 group = 'uk.gov.digital.ho.hocs'
 sourceCompatibility = JavaVersion.VERSION_17
