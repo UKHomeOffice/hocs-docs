@@ -72,7 +72,7 @@ public class DocumentConversionConsumer extends RouteBuilder {
 
         errorHandler(deadLetterChannel("log:conversion-queue"));
 
-        onException(ApplicationExceptions.DocumentConversionException.class, ApplicationExceptions.S3Exception.class)
+        onException()
             .removeHeader(SqsConstants.RECEIPT_HANDLE)
             .process(transferHeadersToMDC())
             .handled(true).process(exchange -> {
