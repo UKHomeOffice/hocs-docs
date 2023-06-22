@@ -83,7 +83,7 @@ class DocumentDataResource {
         ByteArrayResource resource = new ByteArrayResource(document.getData());
 
         var response = ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-            "attachment;filename=" + document.getOriginalFilename());
+            "attachment;filename=\"%s\"".formatted(document.getOriginalFilename()));
 
         if (StringUtils.hasText(document.getMimeType())) {
             MediaType mediaType = MediaType.valueOf(document.getMimeType());
