@@ -383,6 +383,46 @@ public class DocumentConsumerIT {
         assertThat(docxMetadata.getUserMetaDataOf("originalName")).isEqualTo(originalFilename);
     }
 
+    @Test
+    public void shouldConvertConversionFailuresOnRetry() throws Exception {
+
+        // stub clamAV for initial document conversion
+        stubFor(post(urlEqualTo("/scan")).willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(
+                "Everything ok : true")));
+
+        // stub conversion to fail first time and succeed second time
+        stubFor(post(urlEqualTo("/convert")).inScenario("conversion failure").whenScenarioStateIs(
+            Scenario.STARTED).willReturn(
+            aResponse().withStatus(400).withHeader("Content-Type", "application/json").withBody("")).willSetStateTo(
+            "conversion failure"));
+
+        stubFor(post(urlEqualTo("/convert")).inScenario("conversion failure").whenScenarioStateIs(
+            "conversion failure").willReturn(
+            aResponse().withStatus(200).withHeader("Content-Type", "application/pdf").withBody(getPDFDocument())));
+
+        ResponseEntity<UUID> response = createDocumentRequest(ORIGINAL, PDF);
+
+        // wait for document status to be set to conversion failure
+        await().until(() -> documentService.getDocumentData(
+            response.getBody().toString()).getStatus() == DocumentStatus.FAILED_CONVERSION);
+
+
+        //Retry conversion failures
+        var retryResponse = restTemplate.postForEntity("http://localhost:" + port + "/documents/retry/convert", HttpEntity.EMPTY, Void.class);
+        assertThat(retryResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        //wait for the conversion to succeed
+        await().atMost(20, TimeUnit.SECONDS).until(() -> documentService.getDocumentData(
+            response.getBody().toString()).getStatus() == DocumentStatus.UPLOADED);
+
+        //retry should not call clamAV
+        verify(1, postRequestedFor(urlEqualTo("/scan")));
+
+        // converter should be called twice, once for failure, once when it succeeds after calling the retry
+        verify(2, postRequestedFor(urlEqualTo("/convert")));
+    }
+
     private String getKeyFromExtension(String extension) {
         return trustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().stream().filter(
             s -> (s.getKey().endsWith(extension) && (s.getKey().startsWith(

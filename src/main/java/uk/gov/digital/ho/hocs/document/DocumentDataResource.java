@@ -79,6 +79,12 @@ class DocumentDataResource {
         return generateFileResponseEntity(document);
     }
 
+    @PostMapping(value = "/documents/retry/convert")
+    public ResponseEntity<Void> retryFailedDocumentConversions() {
+        documentDataService.retryFailedDocumentConversions();
+        return ResponseEntity.ok(null);
+    }
+
     private static ResponseEntity<ByteArrayResource> generateFileResponseEntity(S3Document document) {
         ByteArrayResource resource = new ByteArrayResource(document.getData());
 

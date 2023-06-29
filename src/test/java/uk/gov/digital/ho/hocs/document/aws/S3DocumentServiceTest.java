@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.digital.ho.hocs.document.application.LogEvent;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3DocumentMetaData;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
@@ -104,6 +105,18 @@ public class S3DocumentServiceTest {
         DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx", "someCase", "docx", "PDF");
         S3Document document = service.copyToTrustedBucket(copyRequest);
         assertThat(trustedClient.doesObjectExist(trustedBucketName, document.getFilename())).isTrue();
+    }
+
+    @Test
+    public void shouldReturnMetaDataFromTrustedBucket() throws IOException {
+        DocumentCopyRequest copyRequest = new DocumentCopyRequest("someUUID.docx", "someCase", "docx", "PDF");
+        service.copyToTrustedBucket(copyRequest);
+
+        String objectKey = trustedClient.listObjectsV2(trustedBucketName).getObjectSummaries().get(0).getKey();
+        S3DocumentMetaData metaData = service.getMetaDataFromTrustedS3(objectKey);
+        assertThat(metaData.getOriginalFilename()).isEqualTo("sample.docx");
+        assertThat(metaData.getFilename()).isEqualTo(objectKey);
+        assertThat(metaData.getFileType()).isEqualTo("docx");
     }
 
     @Test
