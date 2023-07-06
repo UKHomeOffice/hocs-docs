@@ -3,6 +3,7 @@ package uk.gov.digital.ho.hocs.document.aws;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3control.model.S3ObjectMetadata;
 import com.amazonaws.util.IOUtils;
 import com.amazonaws.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.digital.ho.hocs.document.dto.camel.DocumentCopyRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3DocumentMetaData;
 import uk.gov.digital.ho.hocs.document.dto.camel.UploadDocument;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
@@ -128,6 +130,30 @@ public class S3DocumentService {
         return new S3Document(destinationKey, document.getFilename(), null, response.getContentMd5(),
             "application/pdf");
 
+    }
+
+    public S3DocumentMetaData getMetaDataFromTrustedS3(String key) throws IOException {
+        try {
+
+            ObjectMetadata metaData = trustedS3Client.getObjectMetadata(new GetObjectMetadataRequest(trustedS3BucketName, key));
+            String originalName = Optional.ofNullable(
+                metaData.getUserMetaDataOf(ORIGINAL_NAME)).orElse("");
+
+            String filename = Optional.ofNullable(metaData.getUserMetaDataOf(FILENAME)).orElse(key);
+            String extension = getFileExtension(originalName);
+
+            return new S3DocumentMetaData(filename, originalName, extension, metaData.getContentType());
+
+        } catch (AmazonS3Exception ex) {
+            if (ex.getStatusCode() == 404) {
+                log.error("File not found in S3 bucket {}", key, value(EVENT, S3_FILE_NOT_FOUND));
+                throw new ApplicationExceptions.S3Exception("File not found in S3 bucket", S3_FILE_NOT_FOUND, ex);
+            } else {
+                log.error("Failed to get file from S3 bucket {}", key, value(EVENT, S3_DOWNLOAD_FAILURE));
+                throw new ApplicationExceptions.S3Exception("Error retrieving document from S3", S3_DOWNLOAD_FAILURE,
+                    ex);
+            }
+        }
     }
 
     private S3Document getFileFromS3Bucket(String key, AmazonS3 s3Client, String bucketName) throws IOException {

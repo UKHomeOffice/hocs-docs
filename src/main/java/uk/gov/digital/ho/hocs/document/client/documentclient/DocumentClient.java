@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.hocs.document.application.RequestData;
 import uk.gov.digital.ho.hocs.document.client.documentclient.dto.ProcessDocumentRequest;
+import uk.gov.digital.ho.hocs.document.dto.camel.DocumentConversionRequest;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 
 import java.util.HashMap;
@@ -24,6 +25,8 @@ public class DocumentClient {
 
     private final String documentQueue;
 
+    private final String conversionQueue;
+
     private final ProducerTemplate producerTemplate;
 
     private final ObjectMapper objectMapper;
@@ -33,10 +36,12 @@ public class DocumentClient {
     @Autowired
     public DocumentClient(ProducerTemplate producerTemplate,
                           @Value("${docs.queue}") String documentQueue,
+                          @Value("${docs.conversion.producer}") String conversionQueue,
                           ObjectMapper objectMapper,
                           RequestData requestData) {
         this.producerTemplate = producerTemplate;
         this.documentQueue = documentQueue;
+        this.conversionQueue = conversionQueue;
         this.objectMapper = objectMapper;
         this.requestData = requestData;
     }
@@ -48,6 +53,17 @@ public class DocumentClient {
                 getQueueHeaders());
             log.info("Processed Document {}", documentUUID, value(EVENT, DOCUMENT_CLIENT_PROCESS_SUCCESS));
         } catch (JsonProcessingException e) {
+            throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e),
+                DOCUMENT_CLIENT_FAILURE);
+        }
+    }
+
+    public void processConversion(UUID documentUUID, String fileLink, String externalReferenceUUID, String fileType, String convertTo) {
+        DocumentConversionRequest request = new DocumentConversionRequest(documentUUID,fileLink, externalReferenceUUID, fileType, convertTo);
+        try {
+            producerTemplate.sendBodyAndHeaders(conversionQueue, request,
+                getQueueHeaders());
+        } catch (Exception e) {
             throw new ApplicationExceptions.EntityCreationException(String.format("Could not process Document: %s", e),
                 DOCUMENT_CLIENT_FAILURE);
         }

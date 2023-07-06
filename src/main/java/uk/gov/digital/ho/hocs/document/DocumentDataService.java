@@ -11,6 +11,7 @@ import uk.gov.digital.ho.hocs.document.client.documentclient.DocumentClient;
 import uk.gov.digital.ho.hocs.document.dto.CreateDocumentRequest;
 import uk.gov.digital.ho.hocs.document.dto.CopyDocumentsRequest;
 import uk.gov.digital.ho.hocs.document.dto.camel.S3Document;
+import uk.gov.digital.ho.hocs.document.dto.camel.S3DocumentMetaData;
 import uk.gov.digital.ho.hocs.document.exception.ApplicationExceptions;
 import uk.gov.digital.ho.hocs.document.model.DocumentData;
 import uk.gov.digital.ho.hocs.document.model.DocumentStatus;
@@ -147,6 +148,26 @@ public class DocumentDataService {
         } catch (IOException e) {
             throw new ApplicationExceptions.EntityNotFoundException(e.getMessage(), DOCUMENT_NOT_FOUND);
         }
+    }
+
+    public void retryFailedDocumentConversions() {
+        log.info("Retrying failed document conversions", value(EVENT, DOCUMENT_DATA_REQUEST));
+        List<DocumentData> failedDocuments = documentRepository.findAllByStatus(DocumentStatus.FAILED_CONVERSION.name());
+        failedDocuments.forEach(documentData -> {
+            try {
+                log.info("Retrying document conversion for document {}", documentData.getUuid());
+                S3DocumentMetaData documentMetaData = s3DocumentService.getMetaDataFromTrustedS3(documentData.getFileLink());
+                documentClient.processConversion(documentData.getUuid(),
+                    documentMetaData.getFilename(),
+                    documentData.getExternalReferenceUUID().toString(),
+                    documentMetaData.getFileType(),
+                    DocumentType.PDF.name()
+                    );
+            }
+            catch (Exception e) {
+                log.error("Failed to retry document conversion for document {}", documentData.getUuid(), e, value(EVENT, DOCUMENT_CONVERSION_FAILURE));
+            }
+        });
     }
 
     private enum DocumentType {
