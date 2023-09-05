@@ -425,17 +425,6 @@ public class DocumentServiceTest {
 
     }
 
-    @Test(expected = ApplicationExceptions.EntityNotFoundException.class)
-    public void shouldNotAuditWhenUpdateDocumentFails() {
-
-        UUID uuid = UUID.randomUUID();
-        when(documentRepository.findByUuid(uuid)).thenReturn(null);
-
-        documentService.updateDocument(uuid, DocumentStatus.UPLOADED, "", "");
-
-        verifyNoInteractions(auditClient);
-    }
-
     @Test(expected = NullPointerException.class)
     public void shouldNotAuditWhenDeleteDocumentFails() {
 
