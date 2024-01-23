@@ -25,7 +25,7 @@ public class RequestData implements HandlerInterceptor {
 
     public static final String ANONYMOUS = "anonymous";
 
-    @Override
+    //@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         MDC.clear();
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
@@ -35,7 +35,7 @@ public class RequestData implements HandlerInterceptor {
         return true;
     }
 
-    @Override
+   // @Override
     public void postHandle(HttpServletRequest request,
                            HttpServletResponse response,
                            Object handler,
@@ -43,7 +43,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.clear();
     }
 
-    @Override
+    //@Override
     public void afterCompletion(HttpServletRequest request,
                                 HttpServletResponse response,
                                 Object handler,
