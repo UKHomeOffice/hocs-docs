@@ -37,6 +37,9 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk:1.12.646'
     implementation 'org.glassfish:javax.json:1.1.4'
 
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+
     implementation 'org.flywaydb:flyway-core:9.19.3'
     runtimeOnly 'org.postgresql:postgresql:42.6.0'
 
