@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 @Slf4j
@@ -25,7 +25,7 @@ public class RequestData implements HandlerInterceptor {
 
     public static final String ANONYMOUS = "anonymous";
 
-    @Override
+    //@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         MDC.clear();
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
@@ -35,7 +35,7 @@ public class RequestData implements HandlerInterceptor {
         return true;
     }
 
-    @Override
+   // @Override
     public void postHandle(HttpServletRequest request,
                            HttpServletResponse response,
                            Object handler,
@@ -43,7 +43,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.clear();
     }
 
-    @Override
+    //@Override
     public void afterCompletion(HttpServletRequest request,
                                 HttpServletResponse response,
                                 Object handler,

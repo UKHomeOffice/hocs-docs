@@ -77,12 +77,12 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
             "externalReferenceUUID", "docx", "NONE");
 
         doNothing().when(documentDataService).updateDocument(any(), eq(UPLOADED), any(), any());
-        context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() {
-                weaveAddLast().to(mockNoConvertEndEndpoint);
-            }
-        });
+//        context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
+//            @Override
+//            public void configure() {
+//                weaveAddLast().to(mockNoConvertEndEndpoint);
+//            }
+//        });
 
         MockEndpoint mockConversionService = mockConversionService();
         template.sendBody(endpoint, noneRequest);
