@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.1.2'
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.3'
 }
 
-def camelVersion = '2.25.4'
+def camelVersion = '4.4.0'
 def lombokVersion = '1.18.30'
 
 group = 'uk.gov.digital.ho.hocs'
@@ -25,15 +25,16 @@ dependencies {
 
     implementation 'net.logstash.logback:logstash-logback-encoder:7.3'
 
-//    configurations.all {
-//        exclude group: "commons-logging", module: "commons-logging"
-//    }
-
-    implementation "org.apache.camel:camel-spring-boot:${camelVersion}"
-    implementation "org.apache.camel:camel-jackson:${camelVersion}"
-    implementation "org.apache.camel:camel-aws:2.25.4"
-    implementation "org.apache.camel:camel-http4:2.25.4"
+    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:4.4.0'
+    implementation 'org.apache.camel:camel-jackson:4.4.0'
+   // implementation 'org.apache.camel:camel-aws:2.25.4'
+    implementation group: 'org.apache.camel', name: 'camel-aws2-sqs', version: '4.4.0'
+    implementation 'org.apache.camel:camel-aws:3.0.0-M1'
+    implementation 'org.apache.camel:camel-http:4.4.0'
+    implementation 'org.apache.camel:camel-core:4.4.0'
+    implementation 'org.apache.camel:camel-support:4.4.0'
     implementation 'org.apache.httpcomponents:httpmime:4.5.14'
+
     implementation 'com.amazonaws:aws-java-sdk:1.12.646'
     implementation 'org.glassfish:javax.json:1.1.4'
 
@@ -44,21 +45,17 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-    //implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-jakarta-xmlbind-annotations', version: '2.16.1'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'com.github.tomakehurst:wiremock-standalone:3.0.1'
-    testImplementation "org.apache.camel:camel-test-spring:3.22.0"
+    testImplementation 'org.apache.camel:camel-test-spring:3.22.1'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
 }
 
 jar {
     enabled = false
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 }
 
-tasks.named('bootJar') {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
+
