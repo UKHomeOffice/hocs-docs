@@ -3,7 +3,7 @@ package uk.gov.digital.ho.hocs.document.aws;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.services.s3control.model.S3ObjectMetadata;
+//import com.amazonaws.services.s3control.model.S3ObjectMetadata;
 import com.amazonaws.util.IOUtils;
 import com.amazonaws.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;

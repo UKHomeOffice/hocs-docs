@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.hocs.document.routes;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.sqs.SqsConstants;
@@ -77,12 +78,16 @@ public class DocumentConversionConsumerTest extends CamelTestSupport {
             "externalReferenceUUID", "docx", "NONE");
 
         doNothing().when(documentDataService).updateDocument(any(), eq(UPLOADED), any(), any());
-        context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
+
+        AdviceWith.adviceWith(context, "conversion-queue", routeBuilder -> {
+            routeBuilder.weaveAddLast().to(mockNoConvertEndEndpoint);
+        });
+        /*context.getRouteDefinition("conversion-queue").adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
                 weaveAddLast().to(mockNoConvertEndEndpoint);
             }
-        });
+        });*/
 
         MockEndpoint mockConversionService = mockConversionService();
         template.sendBody(endpoint, noneRequest);
